@@ -12,7 +12,7 @@ Description
 	website		: "jasp-stats.org"
 	license		: "GPL (>= 2)"
 	icon		: "testcloud.svg"
-	hasWrappers	: true
+	hasWrappers	: false
 
 	
 	Analysis

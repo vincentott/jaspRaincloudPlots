@@ -21,11 +21,23 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # ready <- (length(options$variables) > 0)
   #
   # if (ready) {
-  #   #dataset <- .readDataSetToEnd(dataset, options)
+  #   dataset <- .readDataSetToEnd(dataset, options)
   # }
+
+  # Sanity Check with table
+  if (is.null(jaspResults[["myTable"]])) {
+    NULL
+  }
 
   if (is.null(jaspResults[["raincloudPlot"]])) {
     .createRaincloudPlot(jaspResults, dataset, options)  # Add ready
+  }
+
+  if (options$myCheckbox) {
+    if (is.null(jaspResults[["myText"]])) {
+      myText <- createJaspHtml(text = gettextf("This is a public service announcement."))
+      jaspResults[["myText"]] <- myText
+    }
   }
 
   return()
