@@ -30,5 +30,5 @@ Form
 		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")	}
 	}
 
-	CheckBox { name: "myCheckbox"; label: qsTr("My first checkbox") }
+	CheckBox { name: "myCheckbox"; label: qsTr("Show plots") }
 }

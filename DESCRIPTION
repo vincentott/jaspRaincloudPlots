@@ -10,9 +10,10 @@ Description: Create raincloud plots
 License: GPL (>= 2)
 Encoding: UTF-8
 Imports:
-  ggplot2,
   jaspBase,
-  jaspGraphs
+  jaspGraphs,
+  ggplot2,
+  ggrain
 Remotes:
   jasp-stats/jaspBase,
   jasp-stats/jaspGraphs

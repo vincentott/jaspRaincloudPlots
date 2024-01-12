@@ -16,55 +16,62 @@
 #
 
 
+# Main function ----
 raincloudPlots <- function(jaspResults, dataset, options) {
 
-  # ready <- (length(options$variables) > 0)
-  #
-  # if (ready) {
-  #   dataset <- .readDataSetToEnd(dataset, options)
-  # }
+  ready <- (length(options$variables) > 0)
+  if (ready) {
+    dataset <- .readDataSetToEnd(columns.as.numeric = options$variables)
 
-  # Sanity Check with table
-  if (is.null(jaspResults[["myTable"]])) {
-    NULL
-  }
-
-  if (is.null(jaspResults[["raincloudPlot"]])) {
-    .createRaincloudPlot(jaspResults, dataset, options)  # Add ready
-  }
-
-  if (options$myCheckbox) {
-    if (is.null(jaspResults[["myText"]])) {
-      myText <- createJaspHtml(text = gettextf("This is a public service announcement."))
-      jaspResults[["myText"]] <- myText
+    if (is.null(jaspResults[["raincloudPlot"]])) {
+      .createRaincloudPlot(jaspResults, dataset, options, ready)
     }
   }
-
-  return()
 
 }  # End raincloudPlots
 
 
-.createRaincloudPlot <- function(jaspResults, dataset, options) {  # Add ready
+# Create plot ----
+.createRaincloudPlot <- function(jaspResults, dataset, options, ready) {  # Add ready
 
-  raincloudPlot <- createJaspPlot(title = "Look at that cloud!", width = 160, height = 320)
-  # raincloudPlot$dependOn(c("myCheckbox"))
+  if (ready && options$myCheckbox) {
 
-  jaspResults[["raincloudPlot"]] <- raincloudPlot
+    variable_name = options$variables[1]
+    raincloudPlot <- createJaspPlot(title = variable_name)
 
-  # if (ready) {
-  #   .fillRaincloudPlot(raincloudPlot, dataset, options)
-  # }
-  .fillRaincloudPlot(raincloudPlot, dataset, options)
+    raincloudPlot$dependOn(c("variables","myCheckbox"))
 
-  return()
+    jaspResults[["raincloudPlot"]] <- raincloudPlot
+
+    .fillRaincloudPlot(raincloudPlot, dataset, variable_name)
+  }
 
 }  # End .createRaincloudPlot
 
 
-.fillRaincloudPlot <- function(raincloudPlot, dataset, options) {
+# Fill plot ----
+.fillRaincloudPlot <- function(raincloudPlot, dataset, variable_name) {
 
-  plot <- ggplot2::qplot(rnorm(100))
+  # variable <- rnorm(50)
+  # df <- data.frame(variable)
+  # ggplot2::ggplot(df, aes(1, variable)) +
+  #   geom_rain()
+
+  # plot <- ggplot2::qplot(dataset[[variable]]) +
+  #   ggplot2::xlab("")
+  # raincloudPlot$plotObject <- plot
+
+  variable <- dataset[[variable_name]]
+  df <- data.frame(variable)
+
+  plot <- ggplot2::ggplot(
+    df,
+    ggplot2::aes(1, variable, fill = variable_name)) +
+    ggrain::geom_rain() +
+    ggplot2::theme_classic() +
+    ggplot2::scale_fill_brewer(palette = "Dark2")
+
   raincloudPlot$plotObject <- plot
 
 }  # End .fillRaincloudPlot
+
