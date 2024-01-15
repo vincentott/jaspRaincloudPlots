@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2013-2018 University of Amsterdam
+// Copyright (C) 2013-2024 University of Amsterdam
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -30,5 +30,30 @@ Form
 		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")	}
 	}
 
-	CheckBox { name: "myCheckbox"; label: qsTr("Show plots") }
+	Section
+	{
+		title: qsTr("Simple Plots")
+		columns: 1
+
+		// ColorPalette{}
+
+		CheckBox
+		{
+			name: "simplePlots";
+			label: qsTr("Show simple plots")
+
+			Group
+			{
+				CheckBox {	name: "horizontal";		label: qsTr("Horizontal plots")	}
+				CheckBox {	name: "flipped";		label: qsTr("Flipped plots")		}
+			}
+
+		}
+	}
+
+	Section
+	{
+		title: qsTr("Advanced Plots: Over Time")
+		columns: 1
+	}
 }

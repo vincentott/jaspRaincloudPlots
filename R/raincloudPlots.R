@@ -16,62 +16,74 @@
 #
 
 
-# Main function ----
+# Main function: raincloudPlouts() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
 
   ready <- (length(options$variables) > 0)
-  if (ready) {
-    dataset <- .readDataSetToEnd(columns.as.numeric = options$variables)
+  dataset <- .rainReadData(dataset, options)
+  .rainSimplePlots(jaspResults, dataset, options, ready)
 
-    if (is.null(jaspResults[["raincloudPlot"]])) {
-      .createRaincloudPlot(jaspResults, dataset, options, ready)
-    }
+}  # End raincloudPlots()
+
+
+# .rainReadData() ----
+.rainReadData <- function(dataset, options) {
+
+  if(!is.null(dataset)) {
+    return(dataset)
+  } else {
+    return(.readDataSetToEnd(columns.as.numeric = options$variables))
   }
 
-}  # End raincloudPlots
+} # End .rainReadData()
 
 
-# Create plot ----
-.createRaincloudPlot <- function(jaspResults, dataset, options, ready) {  # Add ready
+# .rainSimplePlots() ----
+.rainSimplePlots <- function(jaspResults, dataset, options, ready) {  # Add ready
 
-  if (ready && options$myCheckbox) {
+  if(!options[["simplePlots"]]) return()
 
-    variable_name = options$variables[1]
-    raincloudPlot <- createJaspPlot(title = variable_name)
 
-    raincloudPlot$dependOn(c("variables","myCheckbox"))
+  # Add if (is.null(jaspResults[["simplePlots"]])) { or something like that
 
-    jaspResults[["raincloudPlot"]] <- raincloudPlot
 
-    .fillRaincloudPlot(raincloudPlot, dataset, variable_name)
+  container <- createJaspContainer(title = "Simple Plots")
+
+  if (!ready) {  # When no variables are selected, a placeholder plot is created
+    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("simplePlots", "variables"))
   }
 
-}  # End .createRaincloudPlot
+  for (variable in options[["variables"]]) {
+
+    # If plot for variable already exists, we can skip recalculating plot
+    if (!is.null(container[[variable]])) next
+
+    current_plot <- createJaspPlot(title = variable, dependencies = c("simplePlots", "variables"))
+    .rainFillPlot(current_plot, dataset, variable)
+
+    container[[variable]] <- current_plot
+
+  }
+
+  jaspResults[["simplePlots"]] <- container
+
+}  # End .rainMakePlot()
 
 
 # Fill plot ----
-.fillRaincloudPlot <- function(raincloudPlot, dataset, variable_name) {
+.rainFillPlot <- function(input_plot, dataset, variable) {
 
-  # variable <- rnorm(50)
-  # df <- data.frame(variable)
-  # ggplot2::ggplot(df, aes(1, variable)) +
-  #   geom_rain()
-
-  # plot <- ggplot2::qplot(dataset[[variable]]) +
-  #   ggplot2::xlab("")
-  # raincloudPlot$plotObject <- plot
-
-  variable <- dataset[[variable_name]]
+  # Tranform to data.frame() format - required for ggplot
+  variable <- dataset[[variable]]
   df <- data.frame(variable)
 
-  plot <- ggplot2::ggplot(
+  filling <- ggplot2::ggplot(
     df,
-    ggplot2::aes(1, variable, fill = variable_name)) +
+    ggplot2::aes(1, variable)) +
     ggrain::geom_rain() +
-    ggplot2::theme_classic() +
-    ggplot2::scale_fill_brewer(palette = "Dark2")
+    ggplot2::theme_classic()
 
-  raincloudPlot$plotObject <- plot
+  input_plot$plotObject <- filling
 
-}  # End .fillRaincloudPlot
+}  # End .rainFillPlot()
 
