@@ -26,8 +26,9 @@ Form
 {
 	VariablesForm
 	{
-		AvailableVariablesList	{ name: "allVariablesList"								}
-		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")	}
+		AvailableVariablesList	{ name: "allVariablesList"																									}
+		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")																		}
+		AssignedVariablesList	{ name: "splitBy";			title: qsTr("Split");		singleVariable: true; suggestedColumns: ["nominal"];	id: splitBy }
 	}
 
 	Section

@@ -29,12 +29,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # .rainReadData() ----
 .rainReadData <- function(dataset, options) {
 
+  output = NULL
+
   if(!is.null(dataset)) {
-    return(dataset)
+    output = dataset
   } else {
-    return(.readDataSetToEnd(columns.as.numeric = options$variables))
+    num_var = options[["variables"]]
+    split_var = options[["splitBy"]]
+    if (split_var == "") split_var = c()
+    output <- .readDataSetToEnd(columns.as.numeric = num_var, columns.as.factor = split_var)
   }
 
+  return(output)
 } # End .rainReadData()
 
 
@@ -46,11 +52,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Add if (is.null(jaspResults[["simplePlots"]])) { or something like that
 
+  depends = c("simplePlots", "variables", "splitBy")
 
-  container <- createJaspContainer(title = "Simple Plots")
+  container <- createJaspContainer(title = "Simple Plots", dependencies = depends)
 
   if (!ready) {  # When no variables are selected, a placeholder plot is created
-    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("simplePlots", "variables"))
+    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("simplePlots"))
   }
 
   for (variable in options[["variables"]]) {
@@ -58,8 +65,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container[[variable]])) next
 
-    current_plot <- createJaspPlot(title = variable, dependencies = c("simplePlots", "variables"))
-    .rainFillPlot(current_plot, dataset, variable)
+    current_plot <- createJaspPlot(title = variable, dependencies = depends)
+    .rainFillPlot(current_plot, dataset, options, variable)
 
     container[[variable]] <- current_plot
 
@@ -70,20 +77,57 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 }  # End .rainMakePlot()
 
 
-# Fill plot ----
-.rainFillPlot <- function(input_plot, dataset, variable) {
+# .rainFillPlot() ----
+.rainFillPlot <- function(input_plot, dataset, options, input_variable) {
 
-  # Tranform to data.frame() format - required for ggplot
-  variable <- dataset[[variable]]
-  df <- data.frame(variable)
+  # Transform to data.frame() format - required for ggplot
+  variable_vector <- dataset[[input_variable]]
+  group <- .rainSplit(dataset, options, variable_vector)
+  df <- data.frame(variable_vector)
 
+  # Arguments for aes()
+  # x = group
+
+  # Arguments for geom_rain()
+  if (!options[["flipped"]]) side <- "r" else side <- "l"
+
+  # Make basic plot
   filling <- ggplot2::ggplot(
     df,
-    ggplot2::aes(1, variable)) +
-    ggrain::geom_rain() +
-    ggplot2::theme_classic()
+    ggplot2::aes(
+      x = group,
+      y = variable_vector,
+      fill = group
+      )  # End aes()
+    ) +  # End ggplot()
+    ggrain::geom_rain(
+      alpha = .5,
+      rain.side = side
+    )  # End geom_rain()
 
-  input_plot$plotObject <- filling
+  # Finetuning additional settings
+  filling = filling + ggplot2::xlab(options[["splitBy"]])
+  filling = filling + ggplot2::scale_fill_brewer(palette = 'Dark2')
+  filling = filling + ggplot2::theme_classic()
+  filling = filling + ggplot2::ylab(input_variable)
+  if (options[["horizontal"]]) filling = filling + ggplot2::coord_flip()
+
+  # Assign to input
+  input_plot[["plotObject"]] <- filling
 
 }  # End .rainFillPlot()
 
+
+# .rainSplit() ----
+# Splits observations into groups depending on split input
+# if there is no split variable, all observations are assigned to the same group
+.rainSplit <- function(dataset, options, variable_vector) {
+
+  if (options[["splitBy"]] == "") {
+    group <- factor(rep("Total", length(variable_vector)))
+  } else {
+    group <- as.factor(dataset[[options$splitBy]])
+  }
+
+  return(group)
+}  # End .rainSplit()
