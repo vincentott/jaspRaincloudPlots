@@ -34,45 +34,53 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if(!is.null(dataset)) {
     output = dataset
   } else {
-    num_var = options[["variables"]]
-    split_var = options[["splitBy"]]
-    if (split_var == "") split_var = c()
-    output <- .readDataSetToEnd(columns.as.numeric = num_var, columns.as.factor = split_var)
+
+    numericVariables = options[["variables"]]
+    splitVariable = options[["splitBy"]]
+    if (splitVariable == "") splitVariable = c()
+    output <- .readDataSetToEnd(columns.as.numeric = numericVariables, columns.as.factor = splitVariable)
+
   }
 
   return(output)
+
 } # End .rainReadData()
 
 
 # .rainSimplePlots() ----
-.rainSimplePlots <- function(jaspResults, dataset, options, ready) {  # Add ready
+.rainSimplePlots <- function(jaspResults, dataset, options, ready) {
 
   if(!options[["simplePlots"]]) return()
 
-
-  # Add if (is.null(jaspResults[["simplePlots"]])) { or something like that
-
-  depends = c("simplePlots", "variables", "splitBy")
-
-  container <- createJaspContainer(title = "Simple Plots", dependencies = depends)
-
-  if (!ready) {  # When no variables are selected, a placeholder plot is created
-    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("simplePlots"))
+  # Macroscopic object in jaspResults
+  if (is.null(jaspResults[["containerSimplePlots"]])) {
+    jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
+    jaspResults[["containerSimplePlots"]]$dependOn(c("simplePlots", "variables", "splitBy"))
   }
 
+  # Microscopic object used subsequently
+  container <- jaspResults[["containerSimplePlots"]]
+
+  # Placeholder plot, if no variables
+  if (!ready) {
+    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("variables"))
+    return()
+  }
+
+  # Plot for each variable
   for (variable in options[["variables"]]) {
 
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container[[variable]])) next
 
-    current_plot <- createJaspPlot(title = variable, dependencies = depends)
-    .rainFillPlot(current_plot, dataset, options, variable)
+    variablePlot <- createJaspPlot(title = variable)
+    variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
-    container[[variable]] <- current_plot
+    .rainFillPlot(variablePlot, dataset, options, variable)
+
+    container[[variable]] <- variablePlot
 
   }
-
-  jaspResults[["simplePlots"]] <- container
 
 }  # End .rainMakePlot()
 
