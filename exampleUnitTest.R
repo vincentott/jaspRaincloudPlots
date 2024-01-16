@@ -12,12 +12,12 @@ results <- jaspTools::runAnalysis("raincloudPlots", "debug.csv", options)
 # results[["state"]][["figures"]][[1]][["obj"]]
 
 
-# ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +
-#   geom_rain(alpha = .5) +
-#   theme_classic() +
-#   scale_fill_brewer(palette = 'Dark2') +
-#   guides(fill = 'none', color = 'none') +
-#   coord_flip()
+ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +
+  geom_rain(alpha = .5) +
+  theme_classic() +
+  scale_fill_brewer(palette = 'Dark2') +
+  guides(fill = 'none', color = 'none') +
+  coord_flip()
 #
 #
 # ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +

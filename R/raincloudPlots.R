@@ -43,7 +43,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   return(output)
-
 } # End .rainReadData()
 
 
@@ -52,13 +51,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   if(!options[["simplePlots"]]) return()
 
-  # Macroscopic object in jaspResults
+  # Create container in jaspResults
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
-    jaspResults[["containerSimplePlots"]]$dependOn(c("simplePlots", "variables", "splitBy"))
+    jaspResults[["containerSimplePlots"]]$dependOn(c("simplePlots", "splitBy", "horizontal", "flipped"))
   }
 
-  # Microscopic object used subsequently
+  # Access through container object
   container <- jaspResults[["containerSimplePlots"]]
 
   # Placeholder plot, if no variables
@@ -73,62 +72,76 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container[[variable]])) next
 
-    variablePlot <- createJaspPlot(title = variable)
+    variablePlot <- createJaspPlot(title = variable, width = 320, height = 320)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(variablePlot, dataset, options, variable)
 
     container[[variable]] <- variablePlot
-
   }
 
 }  # End .rainMakePlot()
 
 
 # .rainFillPlot() ----
-.rainFillPlot <- function(input_plot, dataset, options, input_variable) {
+.rainFillPlot <- function(inputPlot, dataset, options, inputVariable) {
 
-  # Transform to data.frame() format - required for ggplot
-  variable_vector <- dataset[[input_variable]]
-  group <- .rainSplit(dataset, options, variable_vector)
-  df <- data.frame(variable_vector)
+  # Transform to data.frame() - required for ggplot
+  variableVector <- dataset[[inputVariable]]
+  group <- .rainSplit(dataset, options, variableVector)
+  df <- data.frame(variableVector, group)
 
-  # Arguments for aes()
+  # Arguments aes()
   # x = group
 
-  # Arguments for geom_rain()
+  # Arguments geom_rain()
   if (!options[["flipped"]]) side <- "r" else side <- "l"
 
-  # Make basic plot
+  # Basic plot
   filling <- ggplot2::ggplot(
     df,
     ggplot2::aes(
       x = group,
-      y = variable_vector,
-      fill = group
-      )  # End aes()
-    ) +  # End ggplot()
-    ggrain::geom_rain(
-      alpha = .5,
-      rain.side = side
-    )  # End geom_rain()
+      y = variableVector,
+      fill = group,
+      color = group
+    )
+  )
 
-  # Finetuning additional settings
-  filling = filling + ggplot2::xlab(options[["splitBy"]])
-  filling = filling + ggplot2::scale_fill_brewer(palette = 'Dark2')
-  filling = filling + ggplot2::theme_classic()
-  filling = filling + ggplot2::ylab(input_variable)
+  # Geom_rain()
+  filling = filling + ggrain::geom_rain(
+    alpha = .50,
+    rain.side = side
+    # # Neat positioning
+    # boxplot.args.pos = list(width = .075, position = ggplot2::position_nudge(x = 0)),
+    # violin.args.pos = list(width = .70, position = ggplot2::position_nudge(x = 0.05))
+  )
+
+  ### Aesthetic settings
+  filling = filling + ggplot2::theme_classic() +
+    ggplot2::scale_fill_brewer(palette = "Dark2") +
+    ggplot2::scale_color_brewer(palette = "Dark2")
+
   if (options[["horizontal"]]) filling = filling + ggplot2::coord_flip()
 
-  # Assign to input
-  input_plot[["plotObject"]] <- filling
+  filling = filling + ggplot2::ylab(inputVariable)
 
+  # # X and y axis
+  # if (options[["splitBy"]] == "") {
+  #   filling = filling + ggplot2::xlab("Total") +
+  #     ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
+  # } else {
+  #   filling = filling + ggplot2::xlab(options[["splitBy"]])
+  # }
+
+  # Assign to input
+  inputPlot[["plotObject"]] <- filling
 }  # End .rainFillPlot()
 
 
 # .rainSplit() ----
-# Splits observations into groups depending on split input
-# if there is no split variable, all observations are assigned to the same group
+# Splits observations into groups depending on splitBy option
+# if no splitBy option, all same group
 .rainSplit <- function(dataset, options, variable_vector) {
 
   if (options[["splitBy"]] == "") {
