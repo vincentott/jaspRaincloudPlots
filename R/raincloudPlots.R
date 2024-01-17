@@ -54,7 +54,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Create container in jaspResults
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
-    jaspResults[["containerSimplePlots"]]$dependOn(c("simplePlots", "splitBy", "horizontal", "flipped"))
+    jaspResults[["containerSimplePlots"]]$dependOn(c("simplePlots", "splitBy", "horizontal", "yJitter", "colorPalette"))
   }
 
   # Access through container object
@@ -78,7 +78,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     .rainFillPlot(variablePlot, dataset, options, variable)
 
     container[[variable]] <- variablePlot
-  }
+  }  # End for loop
 
 }  # End .rainMakePlot()
 
@@ -91,14 +91,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   group <- .rainSplit(dataset, options, variableVector)
   df <- data.frame(variableVector, group)
 
-  # Arguments aes()
-  # x = group
-
-  # Arguments geom_rain()
-  if (!options[["flipped"]]) side <- "r" else side <- "l"
-
   # Basic plot
-  filling <- ggplot2::ggplot(
+  filledPlot <- ggplot2::ggplot(
     df,
     ggplot2::aes(
       x = group,
@@ -108,34 +102,55 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     )
   )
 
+  # Coloring
+  colorPalette <- options[["colorPalette"]]
+  filledPlot = filledPlot + ggplot2::theme_classic() +
+    jaspGraphs::scale_JASPfill_discrete(colorPalette) +
+    jaspGraphs::scale_JASPcolor_discrete(colorPalette)
+
   # Geom_rain()
-  filling = filling + ggrain::geom_rain(
-    alpha = .50,
-    rain.side = side
-    # # Neat positioning
-    # boxplot.args.pos = list(width = .075, position = ggplot2::position_nudge(x = 0)),
-    # violin.args.pos = list(width = .70, position = ggplot2::position_nudge(x = 0.05))
+  filledPlot = filledPlot + ggrain::geom_rain(
+
+    # Black contours
+    # Alpha set for each anew as .args argument discards defaults, see ggrain vignette
+    boxplot.args = list(color = "black", outlier.shape = NA, alpha = .5),
+    violin.args = list(color = "black", alpha = .5),
+    point.args = list(alpha = .5),
+
+    # Neat positioning
+    rain.side = "r",  # Necessary to specify for neat positioning to work, even though it is the default
+    boxplot.args.pos = list(width = 0.0625, position = ggplot2::position_nudge(x = 0.13)),
+    violin.args.pos = list(width = 0.7, position = ggplot2::position_nudge(x = 0.2)),
+
+    likert = options[["yJitter"]]
+
   )
 
-  ### Aesthetic settings
-  filling = filling + ggplot2::theme_classic() +
-    ggplot2::scale_fill_brewer(palette = "Dark2") +
-    ggplot2::scale_color_brewer(palette = "Dark2")
+  # Axes
+  if (options[["horizontal"]]) filledPlot = filledPlot + ggplot2::coord_flip()
 
-  if (options[["horizontal"]]) filling = filling + ggplot2::coord_flip()
+  filledPlot = filledPlot + ggplot2::theme(legend.position = "none")
 
-  filling = filling + ggplot2::ylab(inputVariable)
+  if (options[["splitBy"]] == "") {
 
-  # # X and y axis
-  # if (options[["splitBy"]] == "") {
-  #   filling = filling + ggplot2::xlab("Total") +
-  #     ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
-  # } else {
-  #   filling = filling + ggplot2::xlab(options[["splitBy"]])
-  # }
+    filledPlot = filledPlot + ggplot2::xlab("Total")
+    if (!options[["horizontal"]]) {
+      filledPlot = filledPlot + ggplot2::theme(axis.text.x = ggplot2::element_blank()) +
+                                ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
+    } else {
+      filledPlot = filledPlot + ggplot2::theme(axis.text.y = ggplot2::element_blank()) +
+                                ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
+    }
+
+  } else {
+    filledPlot = filledPlot + ggplot2::xlab(options[["splitBy"]])
+  }
+
+  filledPlot = filledPlot + ggplot2::ylab(inputVariable) +
+    ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.15, "cm"))  # Inward ticks
 
   # Assign to input
-  inputPlot[["plotObject"]] <- filling
+  inputPlot[["plotObject"]] <- filledPlot
 }  # End .rainFillPlot()
 
 

@@ -28,7 +28,7 @@ Form
 	{
 		AvailableVariablesList	{ name: "allVariablesList"																									}
 		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")																		}
-		AssignedVariablesList	{ name: "splitBy";			title: qsTr("Split");		singleVariable: true; suggestedColumns: ["nominal"];	id: splitBy }
+		AssignedVariablesList	{ name: "splitBy";			title: qsTr("Split");		singleVariable: true; suggestedColumns: ["nominal", "ordinal"];	id: splitBy }
 	}
 
 	Section
@@ -45,8 +45,9 @@ Form
 
 			Group
 			{
-				CheckBox {	name: "horizontal";		label: qsTr("Horizontal plots")	}
-				CheckBox {	name: "flipped";		label: qsTr("Flipped plots")		}
+				ColorPalette{}
+				CheckBox {	name: "horizontal";		label: qsTr("Horizontal plots"); 						checked: true	}
+				CheckBox {	name: "yJitter";		label: qsTr("Add y-jittering (useful for likert data)")					}
 			}
 
 		}
@@ -54,7 +55,7 @@ Form
 
 	Section
 	{
-		title: qsTr("Advanced Plots: Over Time")
+		title: qsTr("Twofactorial design: One of the factors has two levels")
 		columns: 1
 	}
 }
