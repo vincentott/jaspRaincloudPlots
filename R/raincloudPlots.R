@@ -32,14 +32,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   output = NULL
 
   if(!is.null(dataset)) {
-    output = dataset
+    output <- dataset
   } else {
 
-    numericVariables = options[["variables"]]
-    splitVariable = options[["splitBy"]]
-    if (splitVariable == "") splitVariable = c()
-    output <- .readDataSetToEnd(columns.as.numeric = numericVariables, columns.as.factor = splitVariable)
-
+    numericVariables <- options[["variables"]]
+    splitVariable <- options[["splitBy"]]
+    if (splitVariable == "") splitVariable <- c()
+    output <- .readDataSetToEnd(
+      columns.as.numeric = numericVariables,
+      columns.as.factor = splitVariable,
+      )
   }
 
   return(output)
@@ -54,7 +56,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Create container in jaspResults
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
-    jaspResults[["containerSimplePlots"]]$dependOn(c("simplePlots", "splitBy", "horizontal", "yJitter", "colorPalette"))
+    jaspResults[["containerSimplePlots"]]$dependOn(
+      c("simplePlots", "splitBy", "horizontal", "colorPalette")
+    )
   }
 
   # Access through container object
@@ -72,7 +76,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container[[variable]])) next
 
-    variablePlot <- createJaspPlot(title = variable, width = 320, height = 320)
+    variablePlot <- createJaspPlot(title = variable, width = 450, height = 450)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(variablePlot, dataset, options, variable)
@@ -91,15 +95,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   group <- .rainSplit(dataset, options, variableVector)
   df <- data.frame(variableVector, group)
 
-  # Basic plot
+  # Arguments geom_rain()
+  inputAlpha = .5
+  # Likert argument does not work because of ggpp:position_jitternudge()
+
+  # Basic ggplot
   filledPlot <- ggplot2::ggplot(
     df,
-    ggplot2::aes(
-      x = group,
-      y = variableVector,
-      fill = group,
-      color = group
-    )
+    ggplot2::aes(x = group, y = variableVector, fill = group, color = group)
   )
 
   # Coloring
@@ -109,47 +112,65 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspGraphs::scale_JASPcolor_discrete(colorPalette)
 
   # Geom_rain()
-  filledPlot = filledPlot + ggrain::geom_rain(
+  filledPlot <- filledPlot + ggrain::geom_rain(
+
+    cov = NULL,
 
     # Black contours
     # Alpha set for each anew as .args argument discards defaults, see ggrain vignette
-    boxplot.args = list(color = "black", outlier.shape = NA, alpha = .5),
-    violin.args = list(color = "black", alpha = .5),
-    point.args = list(alpha = .5),
+    boxplot.args = list(color = "black", outlier.shape = NA, alpha = inputAlpha),
+    violin.args = list(color = "black", alpha = inputAlpha),
+    point.args = list(alpha = inputAlpha),
 
-    # Neat positioning
+    # Positioning
     rain.side = "r",  # Necessary to specify for neat positioning to work, even though it is the default
-    boxplot.args.pos = list(width = 0.0625, position = ggplot2::position_nudge(x = 0.13)),
-    violin.args.pos = list(width = 0.7, position = ggplot2::position_nudge(x = 0.2)),
-
-    likert = options[["yJitter"]]
+    point.args.pos = list(
+      position = ggpp::position_jitternudge(
+        nudge.from = "original.y",
+        x = -0.14,  # Nudge
+        width = .065,  # Jitter
+        seed = 1  # For reproducible jitter
+      )
+    ),
+    boxplot.args.pos = list(
+      width = 0.0625, position = ggplot2::position_nudge(x = 0)
+    ),
+    violin.args.pos = list(
+      width = 0.7, position = ggplot2::position_nudge(x = 0.07)
+    ),
 
   )
 
-  # Axes
+  # Axis Titles
+  if (options[["splitBy"]] == "") xTitle <- "Total" else xTitle <- options[["splitBy"]]
+  filledPlot <- filledPlot + ggplot2::labs(x = xTitle, y = inputVariable)
+
+  # Theme
+  filledPlot <- filledPlot + ggplot2::theme(
+    axis.title = ggplot2::element_text(size = 14),
+    axis.text = ggplot2::element_text(size = 13, color = "black"),
+    axis.ticks.length = ggplot2::unit(-0.15, "cm"),  # Inward ticks
+    legend.position = "none"
+  )
+
+  # Horizontal
   if (options[["horizontal"]]) filledPlot = filledPlot + ggplot2::coord_flip()
-
-  filledPlot = filledPlot + ggplot2::theme(legend.position = "none")
-
+  # Blank text and ticks for one axis without splitBy - depending on horizontal
   if (options[["splitBy"]] == "") {
-
-    filledPlot = filledPlot + ggplot2::xlab("Total")
     if (!options[["horizontal"]]) {
-      filledPlot = filledPlot + ggplot2::theme(axis.text.x = ggplot2::element_blank()) +
-                                ggplot2::theme(axis.ticks.x = ggplot2::element_blank())
+      filledPlot <- filledPlot + ggplot2::theme(
+        axis.text.x = ggplot2::element_blank(),
+        axis.ticks.x = ggplot2::element_blank()
+      )
     } else {
-      filledPlot = filledPlot + ggplot2::theme(axis.text.y = ggplot2::element_blank()) +
-                                ggplot2::theme(axis.ticks.y = ggplot2::element_blank())
+      filledPlot <- filledPlot + ggplot2::theme(
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks.y = ggplot2::element_blank()
+      )
     }
-
-  } else {
-    filledPlot = filledPlot + ggplot2::xlab(options[["splitBy"]])
   }
 
-  filledPlot = filledPlot + ggplot2::ylab(inputVariable) +
-    ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.15, "cm"))  # Inward ticks
-
-  # Assign to input
+  # Assign to inputPlot
   inputPlot[["plotObject"]] <- filledPlot
 }  # End .rainFillPlot()
 
@@ -162,7 +183,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (options[["splitBy"]] == "") {
     group <- factor(rep("Total", length(variable_vector)))
   } else {
-    group <- as.factor(dataset[[options$splitBy]])
+    group <- as.factor(dataset[[options[["splitBy"]]]])
   }
 
   return(group)

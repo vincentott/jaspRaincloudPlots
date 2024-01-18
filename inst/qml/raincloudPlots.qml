@@ -26,17 +26,36 @@ Form
 {
 	VariablesForm
 	{
-		AvailableVariablesList	{ name: "allVariablesList"																									}
-		AssignedVariablesList	{ name: "variables";		title: qsTr("Variables")																		}
-		AssignedVariablesList	{ name: "splitBy";			title: qsTr("Split");		singleVariable: true; suggestedColumns: ["nominal", "ordinal"];	id: splitBy }
+		AvailableVariablesList	{ name: "allVariablesList"; }
+		AssignedVariablesList
+		{ 
+			name: "variables";
+			title: qsTr("Variables")
+		}
+		AssignedVariablesList
+		{
+			name: "splitBy";
+			title: qsTr("Split");
+			id: splitBy;
+			singleVariable: true;
+			suggestedColumns: ["nominal", "ordinal"]
+		}
+		AssignedVariablesList
+		{
+			name: "covariate"
+			title: qsTr("Covariate")
+			id: covariate
+			singleVariable: true
+			suggestedColumns: ["scale", "ordinal"] 
+		}
 	}
+
+	ColorPalette{}
 
 	Section
 	{
 		title: qsTr("Simple Plots")
 		columns: 1
-
-		// ColorPalette{}
 
 		CheckBox
 		{
@@ -45,9 +64,12 @@ Form
 
 			Group
 			{
-				ColorPalette{}
-				CheckBox {	name: "horizontal";		label: qsTr("Horizontal plots"); 						checked: true	}
-				CheckBox {	name: "yJitter";		label: qsTr("Add y-jittering (useful for likert data)")					}
+				CheckBox
+				{
+					name: "horizontal"
+					label: qsTr("Horizontal plots");
+					checked: true
+				}
 			}
 
 		}
