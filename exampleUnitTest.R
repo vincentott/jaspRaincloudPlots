@@ -1,19 +1,32 @@
 
+# No Split ----
 options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "Sepal.Width"
 options$colorPalette <- "colorblind"
 options$simplePlots <- TRUE
-options$variables <- "contNormal"
 options$horizontal <- FALSE
-options$splitBy <- "facExperim"
+results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
 
-results <- jaspTools::runAnalysis("raincloudPlots", "debug.csv", options)
+# Split ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "Sepal.Width"
+options$splitBy <- "Species"
+options$colorPalette <- "colorblind"
+options$simplePlots <- TRUE
+options$horizontal <- FALSE
+results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
 
+# Split and Covariate ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "Sepal.Width"
+options$splitBy <- "Species"
+options$colorPalette <- "colorblind"
+options$simplePlots <- TRUE
+options$horizontal <- FALSE
+options$covariate <- "Sepal.Length"
+results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
+
+# Storage ----
+# debugonce(jaspRaincloudPlots:::.rainReadData)
 # results <- jaspTools::runAnalysis("raincloudPlots", "debug.csv", options)
 # results[["state"]][["figures"]][[1]][["obj"]]
-
-ggplot(iris, aes(Species, Sepal.Width, fill = Species)) +
-  geom_rain(alpha = .5) +
-  theme_classic() +
-  scale_fill_brewer(palette = 'Dark2') +
-  guides(fill = 'none', color = 'none') +
-  coord_flip()

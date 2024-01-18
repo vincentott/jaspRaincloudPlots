@@ -38,8 +38,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     numericVariables <- options[["variables"]]
     splitVariable <- options[["splitBy"]]
     if (splitVariable == "") splitVariable <- c()
+    covariate <- options[["covariate"]]
+    if (covariate == "") covariate <- c()
     output <- .readDataSetToEnd(
-      columns.as.numeric = numericVariables,
+      columns.as.numeric = c(numericVariables, covariate),
       columns.as.factor = splitVariable,
       )
   }
@@ -57,7 +59,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
     jaspResults[["containerSimplePlots"]]$dependOn(
-      c("simplePlots", "splitBy", "horizontal", "colorPalette")
+      c("simplePlots", "splitBy", "covariate", "horizontal", "colorPalette")
     )
   }
 
@@ -93,10 +95,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Transform to data.frame() - required for ggplot
   variableVector <- dataset[[inputVariable]]
   group <- .rainSplit(dataset, options, variableVector)
-  df <- data.frame(variableVector, group)
+  if (options[["covariate"]] == "") {
+    covariateVector <- rep(NA, length(variableVector))
+  } else {
+    covariateVector <- dataset[[options[["covariate"]]]]
+  }
+  df <- data.frame(variableVector, group, covariateVector)
 
   # Arguments geom_rain()
-  inputAlpha = .5
+  argAlpha <- .5
+  if (options[["covariate"]] == "") argCov <- NULL else argCov <- "covariateVector"
   # Likert argument does not work because of ggpp:position_jitternudge()
 
   # Basic ggplot
@@ -106,21 +114,27 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Coloring
+  # before geom_rain() to set black contours afterwards within geom_rain()
   colorPalette <- options[["colorPalette"]]
-  filledPlot = filledPlot + ggplot2::theme_classic() +
+  filledPlot <- filledPlot + ggplot2::theme_classic() +
     jaspGraphs::scale_JASPfill_discrete(colorPalette) +
     jaspGraphs::scale_JASPcolor_discrete(colorPalette)
+  if (!options[["covariate"]] == "") {
+    filledPlot <- filledPlot + ggplot2::scale_color_viridis_c(
+      option =  "A", direction = 1, name = options[["covariate"]]  # Name sets title for legend
+      )
+  }
 
   # Geom_rain()
   filledPlot <- filledPlot + ggrain::geom_rain(
 
-    cov = NULL,
+    cov = argCov,
 
     # Black contours
     # Alpha set for each anew as .args argument discards defaults, see ggrain vignette
-    boxplot.args = list(color = "black", outlier.shape = NA, alpha = inputAlpha),
-    violin.args = list(color = "black", alpha = inputAlpha),
-    point.args = list(alpha = inputAlpha),
+    boxplot.args = list(color = "black", outlier.shape = NA, alpha = argAlpha),
+    violin.args = list(color = "black", alpha = argAlpha),
+    point.args = list(alpha = argAlpha),
 
     # Positioning
     rain.side = "r",  # Necessary to specify for neat positioning to work, even though it is the default
@@ -139,19 +153,27 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       width = 0.7, position = ggplot2::position_nudge(x = 0.07)
     ),
 
-  )
+  )  # End geom_rain()
 
   # Axis Titles
   if (options[["splitBy"]] == "") xTitle <- "Total" else xTitle <- options[["splitBy"]]
   filledPlot <- filledPlot + ggplot2::labs(x = xTitle, y = inputVariable)
 
   # Theme
+  if (options[["covariate"]] == "") {
+    argLegPosition <- "none"
+  } else {
+    argLegPosition <- "right"
+    filledPlot <- filledPlot + ggplot2::guides(color = "colorbar", fill = "none")
+  }
   filledPlot <- filledPlot + ggplot2::theme(
     axis.title = ggplot2::element_text(size = 14),
     axis.text = ggplot2::element_text(size = 13, color = "black"),
     axis.ticks.length = ggplot2::unit(-0.15, "cm"),  # Inward ticks
-    legend.position = "none"
+    legend.position = argLegPosition
   )
+
+
 
   # Horizontal
   if (options[["horizontal"]]) filledPlot = filledPlot + ggplot2::coord_flip()
