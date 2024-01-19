@@ -24,6 +24,8 @@ import JASP.Widgets
 
 Form
 {
+	columns: 1
+
 	VariablesForm
 	{
 		AvailableVariablesList	{ name: "allVariablesList"; }
@@ -50,34 +52,22 @@ Form
 		}
 	}
 
-	ColorPalette{}
-
-	Section
+	CheckBox
 	{
-		title: qsTr("Simple Plots")
-		columns: 1
-
-		CheckBox
-		{
-			name: "simplePlots";
-			label: qsTr("Show simple plots")
-
-			Group
-			{
-				CheckBox
-				{
-					name: "horizontal"
-					label: qsTr("Horizontal plots");
-					checked: true
-				}
-			}
-
-		}
+		name: "horizontal";
+		label: qsTr("Horizontal plots");
+		checked: true
 	}
 
-	Section
+	ColorPalette
 	{
-		title: qsTr("Twofactorial design: One of the factors has two levels")
-		columns: 1
+		name: "paletteFill";
+		label: qsTr("Color palette for box and violin plot")
 	}
+
+	//ColorPalette
+	//{
+	//	name: "palettePoints";
+	//	label: qsTr("Color palette for covariate")
+	//}
 }

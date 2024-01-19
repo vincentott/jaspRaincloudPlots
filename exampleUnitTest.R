@@ -1,27 +1,23 @@
 
-# No Split ----
+# No Factor ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "Sepal.Width"
-options$colorPalette <- "colorblind"
-options$simplePlots <- TRUE
+options$paletteFill <- "colorblind"
 options$horizontal <- FALSE
 results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
 
-# Split ----
+# Factor ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "Sepal.Width"
 options$factor <- "Species"
-options$colorPalette <- "colorblind"
-options$simplePlots <- TRUE
-options$horizontal <- FALSE
+options$paletteFill <- "colorblind"
 results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
 
-# Split and Covariate ----
+# Factor and Covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "Sepal.Width"
 options$factor <- "Species"
-options$colorPalette <- "colorblind"
-options$simplePlots <- TRUE
+options$paletteFill <- "colorblind"
 options$horizontal <- FALSE
 options$covariate <- "Sepal.Length"
 results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
