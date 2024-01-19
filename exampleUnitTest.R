@@ -10,7 +10,7 @@ results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
 # Split ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "Sepal.Width"
-options$splitBy <- "Species"
+options$factor <- "Species"
 options$colorPalette <- "colorblind"
 options$simplePlots <- TRUE
 options$horizontal <- FALSE
@@ -19,7 +19,7 @@ results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
 # Split and Covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "Sepal.Width"
-options$splitBy <- "Species"
+options$factor <- "Species"
 options$colorPalette <- "colorblind"
 options$simplePlots <- TRUE
 options$horizontal <- FALSE

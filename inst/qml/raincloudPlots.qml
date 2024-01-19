@@ -30,12 +30,12 @@ Form
 		AssignedVariablesList
 		{ 
 			name: "variables";
-			title: qsTr("Variables")
+			title: qsTr("Dependent Variables")
 		}
 		AssignedVariablesList
 		{
-			name: "splitBy";
-			title: qsTr("Split");
+			name: "factor";
+			title: qsTr("Optional: Factor");
 			id: splitBy;
 			singleVariable: true;
 			suggestedColumns: ["nominal", "ordinal"]
@@ -43,7 +43,7 @@ Form
 		AssignedVariablesList
 		{
 			name: "covariate"
-			title: qsTr("Covariate")
+			title: qsTr("Optional: Covariate")
 			id: covariate
 			singleVariable: true
 			suggestedColumns: ["scale", "ordinal"] 
