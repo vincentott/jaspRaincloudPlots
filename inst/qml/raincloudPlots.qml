@@ -24,18 +24,20 @@ import JASP.Widgets
 
 Form
 {
+	columns: 1
+
 	VariablesForm
 	{
 		AvailableVariablesList	{ name: "allVariablesList"; }
 		AssignedVariablesList
 		{ 
 			name: "variables";
-			title: qsTr("Variables")
+			title: qsTr("Dependent Variables")
 		}
 		AssignedVariablesList
 		{
-			name: "splitBy";
-			title: qsTr("Split");
+			name: "factor";
+			title: qsTr("Optional: Factor");
 			id: splitBy;
 			singleVariable: true;
 			suggestedColumns: ["nominal", "ordinal"]
@@ -43,41 +45,29 @@ Form
 		AssignedVariablesList
 		{
 			name: "covariate"
-			title: qsTr("Covariate")
+			title: qsTr("Optional: Covariate")
 			id: covariate
 			singleVariable: true
 			suggestedColumns: ["scale", "ordinal"] 
 		}
 	}
 
-	ColorPalette{}
-
-	Section
+	CheckBox
 	{
-		title: qsTr("Simple Plots")
-		columns: 1
-
-		CheckBox
-		{
-			name: "simplePlots";
-			label: qsTr("Show simple plots")
-
-			Group
-			{
-				CheckBox
-				{
-					name: "horizontal"
-					label: qsTr("Horizontal plots");
-					checked: true
-				}
-			}
-
-		}
+		name: "horizontal";
+		label: qsTr("Horizontal plots");
+		checked: true
 	}
 
-	Section
+	ColorPalette
 	{
-		title: qsTr("Twofactorial design: One of the factors has two levels")
-		columns: 1
+		name: "paletteFill";
+		label: qsTr("Color palette for box and violin plot")
 	}
+
+	//ColorPalette
+	//{
+	//	name: "palettePoints";
+	//	label: qsTr("Color palette for covariate")
+	//}
 }

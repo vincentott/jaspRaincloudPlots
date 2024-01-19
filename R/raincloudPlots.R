@@ -21,7 +21,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   ready <- (length(options$variables) > 0)
   dataset <- .rainReadData(dataset, options)
-  .rainSimplePlots(jaspResults, dataset, options, ready)
+  .rainCreatePlots(jaspResults, dataset, options, ready)
 
 }  # End raincloudPlots()
 
@@ -35,14 +35,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     output <- dataset
   } else {
 
-    numericVariables <- options[["variables"]]
-    splitVariable <- options[["splitBy"]]
-    if (splitVariable == "") splitVariable <- c()
-    covariate <- options[["covariate"]]
-    if (covariate == "") covariate <- c()
+    factor <- if (options$factor == "") c() else options$factor
+    covariate <- if (options$covariate == "") c() else options$covariate
+
     output <- .readDataSetToEnd(
-      columns.as.numeric = c(numericVariables, covariate),
-      columns.as.factor = splitVariable,
+      columns.as.numeric = c(options$variables, covariate),
+      columns.as.factor = factor,
       )
   }
 
@@ -50,16 +48,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 } # End .rainReadData()
 
 
-# .rainSimplePlots() ----
-.rainSimplePlots <- function(jaspResults, dataset, options, ready) {
-
-  if(!options[["simplePlots"]]) return()
+# .rainCreatePlots() ----
+.rainCreatePlots <- function(jaspResults, dataset, options, ready) {
 
   # Create container in jaspResults
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
     jaspResults[["containerSimplePlots"]]$dependOn(
-      c("simplePlots", "splitBy", "covariate", "horizontal", "colorPalette")
+      c("factor", "covariate", "horizontal", "paletteFill", "palettePoints")
     )
   }
 
@@ -73,12 +69,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   # Plot for each variable
-  for (variable in options[["variables"]]) {
+  for (variable in options$variables) {
 
     # If plot for variable already exists, we can skip recalculating plot
-    if (!is.null(container[[variable]])) next
+    if (!is.null(container$variable)) next
 
-    variablePlot <- createJaspPlot(title = variable, width = 450, height = 450)
+    plotWidth <- if (options$covariate == "") 450 else 675
+    variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = 450)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(variablePlot, dataset, options, variable)
@@ -86,7 +83,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     container[[variable]] <- variablePlot
   }  # End for loop
 
-}  # End .rainMakePlot()
+}  # End .rainCreatePlots()
 
 
 # .rainFillPlot() ----
@@ -95,43 +92,28 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Transform to data.frame() - required for ggplot
   variableVector <- dataset[[inputVariable]]
   group <- .rainSplit(dataset, options, variableVector)
-  if (options[["covariate"]] == "") {
-    covariateVector <- rep(NA, length(variableVector))
+  covariateVector <- if (options$covariate == "") {
+    rep(NA, length(variableVector))
   } else {
-    covariateVector <- dataset[[options[["covariate"]]]]
+    dataset[[options$covariate]]
   }
   df <- data.frame(variableVector, group, covariateVector)
 
   # Arguments geom_rain()
   argAlpha <- .5
-  if (options[["covariate"]] == "") argCov <- NULL else argCov <- "covariateVector"
+  argCov <- if (options$covariate == "") NULL else argCov <- "covariateVector"  # argCov in geom_rain() must be string
   # Likert argument does not work because of ggpp:position_jitternudge()
 
   # Basic ggplot
-  filledPlot <- ggplot2::ggplot(
-    df,
-    ggplot2::aes(x = group, y = variableVector, fill = group, color = group)
-  )
-
-  # Coloring
-  # before geom_rain() to set black contours afterwards within geom_rain()
-  colorPalette <- options[["colorPalette"]]
-  filledPlot <- filledPlot + ggplot2::theme_classic() +
-    jaspGraphs::scale_JASPfill_discrete(colorPalette) +
-    jaspGraphs::scale_JASPcolor_discrete(colorPalette)
-  if (!options[["covariate"]] == "") {
-    filledPlot <- filledPlot + ggplot2::scale_color_viridis_c(
-      option =  "A", direction = 1, name = options[["covariate"]]  # Name sets title for legend
-      )
-  }
+  plot <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = variableVector, fill = group, color = group))
 
   # Geom_rain()
-  filledPlot <- filledPlot + ggrain::geom_rain(
+  plot <- plot + ggrain::geom_rain(
 
     cov = argCov,
 
-    # Black contours
-    # Alpha set for each anew as .args argument discards defaults, see ggrain vignette
+    # Black contours for box and violin
+    # Alpha set for each anew as .args arguments discard defaults, see ggrain vignette
     boxplot.args = list(color = "black", outlier.shape = NA, alpha = argAlpha),
     violin.args = list(color = "black", alpha = argAlpha),
     point.args = list(alpha = argAlpha),
@@ -143,69 +125,70 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         nudge.from = "original.y",
         x = -0.14,  # Nudge
         width = .065,  # Jitter
-        seed = 1  # For reproducible jitter
+        seed = 1  # Reproducible jitter
       )
     ),
-    boxplot.args.pos = list(
-      width = 0.0625, position = ggplot2::position_nudge(x = 0)
-    ),
-    violin.args.pos = list(
-      width = 0.7, position = ggplot2::position_nudge(x = 0.07)
-    ),
+    boxplot.args.pos = list(width = 0.0625, position = ggplot2::position_nudge(x = 0)),
+    violin.args.pos = list(width = 0.7, position = ggplot2::position_nudge(x = 0.07)),
 
   )  # End geom_rain()
 
-  # Axis Titles
-  if (options[["splitBy"]] == "") xTitle <- "Total" else xTitle <- options[["splitBy"]]
-  filledPlot <- filledPlot + ggplot2::labs(x = xTitle, y = inputVariable)
-
   # Theme
-  if (options[["covariate"]] == "") {
-    argLegPosition <- "none"
+  legendPosition <- if (options$covariate == "") "none" else "right"
+  plot <- plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw(legend.position = legendPosition)
+
+  covLegend <- if (options$covariate != "") ggplot2::guides(color = "colorbar", fill = "none") else NULL
+
+  xTitle <- if (options$factor == "") "Total" else options$factor
+  axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
+
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
+  yLimits <- range(c(yBreaks, variableVector))
+  yPretty <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
+
+  inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
+
+  plot <- plot + covLegend + axisTitles + yPretty + inwardTicks
+
+  # Colors
+  paletteFill <- options$paletteFill
+  fillScale <- jaspGraphs::scale_JASPfill_discrete(paletteFill)
+  colorScale <- if (options$covariate == "") {
+    jaspGraphs::scale_JASPcolor_discrete(paletteFill)
   } else {
-    argLegPosition <- "right"
-    filledPlot <- filledPlot + ggplot2::guides(color = "colorbar", fill = "none")
+    # jaspGraphs::scale_JASPcolor_continuous(options$palettePoints)
+    ggplot2::scale_color_viridis_c(option =  "H", name = options$covariate)#   Name sets legend title
   }
-  filledPlot <- filledPlot + ggplot2::theme(
-    axis.title = ggplot2::element_text(size = 14),
-    axis.text = ggplot2::element_text(size = 13, color = "black"),
-    axis.ticks.length = ggplot2::unit(-0.15, "cm"),  # Inward ticks
-    legend.position = argLegPosition
-  )
-
-
+  plot <- plot + fillScale + colorScale
 
   # Horizontal
-  if (options[["horizontal"]]) filledPlot = filledPlot + ggplot2::coord_flip()
-  # Blank text and ticks for one axis without splitBy - depending on horizontal
-  if (options[["splitBy"]] == "") {
-    if (!options[["horizontal"]]) {
-      filledPlot <- filledPlot + ggplot2::theme(
-        axis.text.x = ggplot2::element_blank(),
-        axis.ticks.x = ggplot2::element_blank()
-      )
+  coordFlip <- if (options$horizontal) ggplot2::coord_flip() else NULL
+  # Depending on horizontal: If no factor, blank text and ticks for one axis
+  noFactorBlankAxis <- if (options$factor == "") {
+    if (!options$horizontal) {
+      ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
     } else {
-      filledPlot <- filledPlot + ggplot2::theme(
-        axis.text.y = ggplot2::element_blank(),
-        axis.ticks.y = ggplot2::element_blank()
-      )
+      ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
     }
+  } else {
+    NULL
   }
+  plot <- plot + coordFlip + noFactorBlankAxis
 
   # Assign to inputPlot
-  inputPlot[["plotObject"]] <- filledPlot
+  inputPlot[["plotObject"]] <- plot
 }  # End .rainFillPlot()
 
 
 # .rainSplit() ----
-# Splits observations into groups depending on splitBy option
-# if no splitBy option, all same group
-.rainSplit <- function(dataset, options, variable_vector) {
+# Splits observations into groups depending on factor option
+# if no factor option, all same group
+.rainSplit <- function(dataset, options, variableVector) {
 
-  if (options[["splitBy"]] == "") {
-    group <- factor(rep("Total", length(variable_vector)))
+  if (options$factor == "") {
+    group <- factor(rep("Total", length(variableVector)))
   } else {
-    group <- as.factor(dataset[[options[["splitBy"]]]])
+    group <- as.factor(dataset[[options$factor]])
   }
 
   return(group)
