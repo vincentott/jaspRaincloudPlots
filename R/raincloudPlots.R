@@ -92,17 +92,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Transform to data.frame() - required for ggplot
   variableVector <- dataset[[inputVariable]]
   group <- .rainSplit(dataset, options, variableVector)
-  covariateVector <- if (options$covariate == "") {
-    rep(NA, length(variableVector))
-  } else {
-    dataset[[options$covariate]]
-  }
+  covariateVector <- if (options$covariate == "") rep(NA, length(variableVector)) else dataset[[options$covariate]]
   df <- data.frame(variableVector, group, covariateVector)
 
   # Arguments geom_rain()
   argAlpha <- .5
   argCov <- if (options$covariate == "") NULL else argCov <- "covariateVector"  # argCov in geom_rain() must be string
-  # Likert argument does not work because of ggpp:position_jitternudge()
+  # Likert argument does not work because of ggpp:position_jitternudge(); instead use height arg in jitternudge
 
   # Basic ggplot
   plot <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = variableVector, fill = group, color = group))
@@ -135,9 +131,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Theme
   legendPosition <- if (options$covariate == "") "none" else "right"
-  plot <- plot + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw(legend.position = legendPosition)
+  setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = legendPosition)
 
-  covLegend <- if (options$covariate != "") ggplot2::guides(color = "colorbar", fill = "none") else NULL
+  covNoFillLegend <- if (options$covariate != "") ggplot2::guides(fill = "none") else NULL
 
   xTitle <- if (options$factor == "") "Total" else options$factor
   axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
@@ -148,7 +144,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
 
-  plot <- plot + covLegend + axisTitles + yPretty + inwardTicks
+  plot <- plot + jaspGraphs::geom_rangeframe() + setUpTheme + covNoFillLegend + axisTitles + yPretty + inwardTicks
 
   # Colors
   paletteFill <- options$paletteFill
@@ -157,7 +153,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspGraphs::scale_JASPcolor_discrete(paletteFill)
   } else {
     # jaspGraphs::scale_JASPcolor_continuous(options$palettePoints)
-    ggplot2::scale_color_viridis_c(option =  "H", name = options$covariate)#   Name sets legend title
+    ggplot2::scale_color_viridis_c(option =  "H", name = options$covariate)  # Name sets legend title
   }
   plot <- plot + fillScale + colorScale
 
