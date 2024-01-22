@@ -16,7 +16,7 @@
 #
 
 
-# Main function: raincloudPlouts() ----
+# Main function: raincloudPlots() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
 
   ready <- (length(options$variables) > 0)
@@ -35,12 +35,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     output <- dataset
   } else {
 
-    factor <- if (options$factor == "") c() else options$factor
+    factorAxis <- if (options$factorAxis == "") c() else options$factorAxis
+    factorFill <- if (options$factorFill == "") c() else options$factorFill
     covariate <- if (options$covariate == "") c() else options$covariate
 
     output <- .readDataSetToEnd(
-      columns.as.numeric = c(options$variables, covariate),
-      columns.as.factor = factor,
+      columns.as.numeric = options$variables,
+      columns.as.factor = c(factorAxis, factorFill),
+      columns = covariate
       )
   }
 
@@ -55,7 +57,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
     jaspResults[["containerSimplePlots"]]$dependOn(
-      c("factor", "covariate", "horizontal", "paletteFill", "palettePoints")
+      c("factorAxis", "factorFill", "covariate", "horizontal", "paletteFill", "palettePoints")
     )
   }
 
@@ -135,7 +137,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   covNoFillLegend <- if (options$covariate != "") ggplot2::guides(fill = "none") else NULL
 
-  xTitle <- if (options$factor == "") "Total" else options$factor
+  xTitle <- if (options$factorAxis == "") "Total" else options$factorAxis
   axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
 
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
@@ -153,14 +155,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspGraphs::scale_JASPcolor_discrete(paletteFill)
   } else {
     # jaspGraphs::scale_JASPcolor_continuous(options$palettePoints)
-    ggplot2::scale_color_viridis_c(option =  "H", name = options$covariate)  # Name sets legend title
+    if (is.numeric(covariateVector)) {
+      jaspGraphs::scale_JASPcolor_continuous(options$palettePoints, name = options$covariate)  # Name sets legend title
+    } else {
+      jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)  # Name sets legend title
+    }
   }
   plot <- plot + fillScale + colorScale
 
   # Horizontal
   coordFlip <- if (options$horizontal) ggplot2::coord_flip() else NULL
   # Depending on horizontal: If no factor, blank text and ticks for one axis
-  noFactorBlankAxis <- if (options$factor == "") {
+  noFactorBlankAxis <- if (options$factorAxis == "") {
     if (!options$horizontal) {
       ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
     } else {
@@ -181,10 +187,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # if no factor option, all same group
 .rainSplit <- function(dataset, options, variableVector) {
 
-  if (options$factor == "") {
+  if (options$factorAxis == "") {
     group <- factor(rep("Total", length(variableVector)))
   } else {
-    group <- as.factor(dataset[[options$factor]])
+    group <- as.factor(dataset[[options$factorAxis]])
   }
 
   return(group)

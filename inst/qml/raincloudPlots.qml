@@ -28,46 +28,60 @@ Form
 
 	VariablesForm
 	{
-		AvailableVariablesList	{ name: "allVariablesList"; }
+		AvailableVariablesList	{ name: "allVariablesListOne" }
 		AssignedVariablesList
 		{ 
 			name: "variables";
 			title: qsTr("Dependent Variables")
+			suggestedColumns: ["scale"]
 		}
 		AssignedVariablesList
 		{
-			name: "factor";
-			title: qsTr("Optional: Factor");
-			id: splitBy;
+			name: "factorAxis";
+			title: qsTr("Axis");
+			id: factorAxis;
 			singleVariable: true;
 			suggestedColumns: ["nominal", "ordinal"]
 		}
 		AssignedVariablesList
 		{
+			name: "factorFill";
+			title: qsTr("Fill Color");
+			id: factorFill;
+			singleVariable: true;
+			suggestedColumns: ["nominal", "ordinal"]
+		}
+
+		AssignedVariablesList
+		{
 			name: "covariate"
-			title: qsTr("Optional: Covariate")
+			title: qsTr("Point Color")
 			id: covariate
 			singleVariable: true
-			suggestedColumns: ["scale", "ordinal"] 
+			suggestedColumns: ["nominal", "ordinal", "scale"] 
 		}
+
 	}
+
 
 	CheckBox
 	{
 		name: "horizontal";
-		label: qsTr("Horizontal plots");
-		checked: true
+		label: qsTr("Horizontal plot");
+		checked: true;
+		enabled: factorAxis.count === 0 || factorFill.count === 0
 	}
 
 	ColorPalette
 	{
 		name: "paletteFill";
-		label: qsTr("Color palette for box and violin plot")
+		label: qsTr("Fill color palette")
 	}
 
-	//ColorPalette
-	//{
-	//	name: "palettePoints";
-	//	label: qsTr("Color palette for covariate")
-	//}
+	ColorPalette
+	{
+		name: "palettePoints";
+		label: qsTr("Points color palette")
+	}
+
 }
