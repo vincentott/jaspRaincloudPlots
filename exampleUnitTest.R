@@ -1,26 +1,30 @@
 
+library(palmerpenguins)
+data(package = "palmerpenguins")
+View(penguins)
+
 # No Factor ----
 options <- jaspTools::analysisOptions("raincloudPlots")
-options$variables <- "Sepal.Width"
+options$variables <- "bill_length_mm"
 options$paletteFill <- "colorblind"
 options$horizontal <- FALSE
-results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
+results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 # Factor ----
 options <- jaspTools::analysisOptions("raincloudPlots")
-options$variables <- "Sepal.Width"
-options$factor <- "Species"
+options$variables <- "bill_length_mm"
+options$factor <- "species"
 options$paletteFill <- "colorblind"
-results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
+results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 # Factor and Covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
-options$variables <- "Sepal.Width"
-options$factor <- "Species"
+options$variables <- "bill_length_mm"
+options$factor <- "species"
 options$paletteFill <- "colorblind"
 options$horizontal <- FALSE
-options$covariate <- "Sepal.Length"
-results <- jaspTools::runAnalysis("raincloudPlots", "iris.csv", options)
+options$covariate <- "bill_depth_mm"
+results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 # Storage ----
 # debugonce(jaspRaincloudPlots:::.rainReadData)
