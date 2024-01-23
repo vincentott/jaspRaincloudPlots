@@ -1,22 +1,24 @@
 
 library(ggplot2)
 library(ggrain)
+library(palmerpenguins)
 
 simplePenguins <- penguins[complete.cases(penguins), ]
-simplePenguins <- subset(simplePenguins, year < 2009)
-simplePenguins$bill_depth_mm <- as.factor(simplePenguins$bill_depth_mm)
+# simplePenguins <- subset(simplePenguins, year < 2009)
+# simplePenguins <- subset(simplePenguins, species != "Chinstrap")
+simplePenguins$year <- as.factor(simplePenguins$year)
 
 ggplot(
-  simplePenguins,
+  data = simplePenguins,
   aes(
     y = bill_length_mm,  # Dependent variable
-    x = species,
-    fill = NULL
+    x = species, #simplePenguins$year,
+    fill = species, #simplePenguins$species
+    color = species
   )
 ) + geom_rain(
   rain.side = NULL,
   alpha = .5,
-  cov = "bill_depth_mm"
 ) + theme_classic()
 
 # ggplot(iris.long[iris.long$time %in% c('t1', 't2'),], aes(time, Sepal.Width, fill = Species)) +

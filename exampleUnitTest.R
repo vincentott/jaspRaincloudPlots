@@ -6,8 +6,9 @@ View(penguins)
 # No Factor ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$paletteFill <- "colorblind"
+# options$paletteFill <- "colorblind"
 options$horizontal <- FALSE
+debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 # Factor ----

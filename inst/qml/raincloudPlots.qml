@@ -31,34 +31,43 @@ Form
 		AvailableVariablesList	{ name: "allVariablesListOne" }
 		AssignedVariablesList
 		{ 
-			name: "variables";
+			name: "variables"
 			title: qsTr("Dependent Variables")
-			suggestedColumns: ["scale"]
+			allowedColumns: ["scale"]
 		}
 		AssignedVariablesList
 		{
-			name: "factorAxis";
-			title: qsTr("Axis");
+			name: "factorAxis"
+			title: qsTr("Axis")
 			id: factorAxis;
-			singleVariable: true;
+			singleVariable: true
 			suggestedColumns: ["nominal", "ordinal"]
 		}
 		AssignedVariablesList
 		{
-			name: "factorFill";
-			title: qsTr("Fill Color");
-			id: factorFill;
-			singleVariable: true;
+			name: "factorFill"
+			title: qsTr("Color")
+			id: factorFill
+			singleVariable: true
 			suggestedColumns: ["nominal", "ordinal"]
 		}
 
 		AssignedVariablesList
 		{
 			name: "covariate"
-			title: qsTr("Point Color")
+			title: qsTr("Points")
 			id: covariate
 			singleVariable: true
 			suggestedColumns: ["nominal", "ordinal", "scale"] 
+		}
+
+		AssignedVariablesList
+		{
+			name: "id"
+			title: qsTr("ID (feature requires data in Long format)")
+			id: id
+			singleVariable: true
+			suggestedColumns: ["nominal", "ordinal", "scale"]
 		}
 
 	}
@@ -66,22 +75,109 @@ Form
 
 	CheckBox
 	{
-		name: "horizontal";
-		label: qsTr("Horizontal plot");
-		checked: true;
-		enabled: factorAxis.count === 0 || factorFill.count === 0
+		name: "horizontal"
+		label: qsTr("Horizontal plot")
+		checked: true
+		//enabled: factorAxis.count === 0 || factorFill.count === 0
 	}
 
-	ColorPalette
+	CheckBox
 	{
-		name: "paletteFill";
-		label: qsTr("Fill color palette")
+		name: "customLimits"
+		label: qsTr("Custom variable axis:")
+		childrenOnSameRow: true
+		DoubleField
+		{
+			name: "lowerLimit"
+			label: qsTr("Start:")
+			negativeValues: true
+		}
+		IntegerField
+		{
+			name: "customBreaks"
+			label: qsTr("Number of breaks:")
+		}
+		DoubleField
+		{
+			name: "upperLimit"
+			label: qsTr("End:")
+		}
 	}
 
-	ColorPalette
+	Section
 	{
-		name: "palettePoints";
-		label: qsTr("Points color palette")
+		title: qsTr("Colors and Opacity")
+		columns: 2
+
+		ColorPalette
+		{
+			name: "paletteFill"
+			label: qsTr("Color palette")
+		}
+
+		CheckBox
+		{
+			name: "colorAnyway"
+			id: colorAnyway
+			label: qsTr("Apply color palette even without Color input")
+			enabled: factorFill.count === 0
+		}
+
+		//DropDown
+		//{
+		//	name: "violinEdges"
+		//	label: qsTr("Color of violin edges")
+		//	enabled: factorFill.count === 1 || colorAnyway.checked
+		//	values:
+		//	[
+		//		{ label: qsTr("black"), value: "black" },
+		//		{ label: qsTr("as palette"), value: "as palette" },
+		//		{ label: qsTr("none"), value: "none" },
+		//	]
+		//	Layout.columnSpan: 2
+		//}
+
+		PercentField
+		{
+			name: "vioOpacity"
+			label: qsTr("Violin opacity")
+			fieldWidth: 30
+			enabled: factorFill.count === 1 || colorAnyway.checked
+
+		}
+
+					PercentField
+		{
+			name: "boxOpacity"
+			label: qsTr("Box opacity")
+			fieldWidth: 30
+			enabled: factorFill.count === 1 || colorAnyway.checked
+		}
+
+		PercentField
+		{
+			name: "pointOpacity"
+			label: qsTr("Point opacity")
+			fieldWidth: 30
+		}
+
+		ColorPalette
+		{
+			name: "palettePoints"
+			label: qsTr("Point palette")
+			enabled: covariate.count === 1
+		}
+
+	}
+
+	Section
+	{
+		title: qsTr("Element Position and Width")
+	}
+
+	Section
+	{
+		title: qsTr("Settings for ID feature")
 	}
 
 }

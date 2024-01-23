@@ -57,7 +57,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (is.null(jaspResults[["containerSimplePlots"]])) {
     jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
     jaspResults[["containerSimplePlots"]]$dependOn(
-      c("factorAxis", "factorFill", "covariate", "horizontal", "paletteFill", "palettePoints")
+      c(
+        "factorAxis", "factorFill", "covariate",
+        "horizontal",
+        "customLimits", "lowerLimit", "customBreaks", "upperLimit",
+        "paletteFill", "colorAnyway",
+        "vioOpacity", "boxOpacity", "pointOpacity",
+        "palettePoints"
+      )
     )
   }
 
@@ -76,7 +83,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container$variable)) next
 
-    plotWidth <- if (options$covariate == "") 450 else 675
+    plotWidth <- if (options$factorFill != "" || options$covariate != "" || options$colorAnyway) 675 else 450
     variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = 450)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
@@ -93,75 +100,108 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Transform to data.frame() - required for ggplot
   variableVector <- dataset[[inputVariable]]
-  group <- .rainSplit(dataset, options, variableVector)
+  axisVector <- if (options$factorAxis == "") rep("Total", length(variableVector)) else dataset[[options$factorAxis]]
+  fillVector <- if (options$factorFill == "") rep(NA, length(variableVector)) else dataset[[options$factorFill]]
   covariateVector <- if (options$covariate == "") rep(NA, length(variableVector)) else dataset[[options$covariate]]
-  df <- data.frame(variableVector, group, covariateVector)
+  df <- data.frame(variableVector, axisVector, fillVector, covariateVector)
 
-  # Arguments geom_rain()
-  argAlpha <- .5
-  argCov <- if (options$covariate == "") NULL else argCov <- "covariateVector"  # argCov in geom_rain() must be string
-  # Likert argument does not work because of ggpp:position_jitternudge(); instead use height arg in jitternudge
+  # Ggplot with aes()
+  aesX <- if(options$factorAxis == "") 1 else axisVector
+  aesFill <- if(options$factorFill != "") {
+    fillVector
+  } else if (options$colorAnyway) {
+    aesX
+  } else {
+    NULL
+  }
 
-  # Basic ggplot
-  plot <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = variableVector, fill = group, color = group))
+  aesColor <- if(options$covariate == "") NULL else covariateVector
+
+  plot <- ggplot2::ggplot(
+    data = df,
+    ggplot2::aes(
+      y = variableVector,
+      x = aesX,
+      fill = aesFill,
+      color = aesColor
+    )
+  )
 
   # Geom_rain()
+  vioOpacity <- options$vioOpacity
+  boxOpacity <- options$boxOpacity
+  pointOpacity <- options$pointOpacity
+
+  geomRainCov <- if (options$covariate == "") {
+    NULL
+  } else {
+    "covariateVector"  # Cov argument in geom_rain() must be string
+  }
+
   plot <- plot + ggrain::geom_rain(
 
-    cov = argCov,
-
-    # Black contours for box and violin
-    # Alpha set for each anew as .args arguments discard defaults, see ggrain vignette
-    boxplot.args = list(color = "black", outlier.shape = NA, alpha = argAlpha),
-    violin.args = list(color = "black", alpha = argAlpha),
-    point.args = list(alpha = argAlpha),
+    violin.args = list(color = "black", alpha = vioOpacity),
+    boxplot.args = list(color = "black", outlier.shape = NA, alpha = boxOpacity),
+    point.args = list(alpha = pointOpacity),
 
     # Positioning
     rain.side = "r",  # Necessary to specify for neat positioning to work, even though it is the default
+    violin.args.pos = list(width = 0.7, position = ggplot2::position_nudge(x = 0.075)),
+    boxplot.args.pos = list(width = 0.075, position = ggpp::position_dodgenudge(x = 0, width = 0.15)),
     point.args.pos = list(
       position = ggpp::position_jitternudge(
-        nudge.from = "original.y",
+        nudge.from = "jittered",
         x = -0.14,  # Nudge
-        width = .065,  # Jitter
+        width = .065,  # xJitter
+        height = 0,  # yJitter, particularly interesting for likert data
         seed = 1  # Reproducible jitter
       )
     ),
-    boxplot.args.pos = list(width = 0.0625, position = ggplot2::position_nudge(x = 0)),
-    violin.args.pos = list(width = 0.7, position = ggplot2::position_nudge(x = 0.07)),
+
+    cov = geomRainCov,
+
+    likert = FALSE  # TRUE does not work because of ggpp:position_jitternudge() - instead jitternudge height argument
 
   )  # End geom_rain()
 
-  # Theme
-  legendPosition <- if (options$covariate == "") "none" else "right"
-  setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = legendPosition)
-
-  covNoFillLegend <- if (options$covariate != "") ggplot2::guides(fill = "none") else NULL
-
-  xTitle <- if (options$factorAxis == "") "Total" else options$factorAxis
-  axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
-
-  yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
-  yLimits <- range(c(yBreaks, variableVector))
-  yPretty <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
-
-  inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
-
-  plot <- plot + jaspGraphs::geom_rangeframe() + setUpTheme + covNoFillLegend + axisTitles + yPretty + inwardTicks
-
   # Colors
   paletteFill <- options$paletteFill
+  palettePoints <- options$palettePoints
+
   fillScale <- jaspGraphs::scale_JASPfill_discrete(paletteFill)
+
   colorScale <- if (options$covariate == "") {
     jaspGraphs::scale_JASPcolor_discrete(paletteFill)
   } else {
     # jaspGraphs::scale_JASPcolor_continuous(options$palettePoints)
     if (is.numeric(covariateVector)) {
-      jaspGraphs::scale_JASPcolor_continuous(options$palettePoints, name = options$covariate)  # Name sets legend title
+      jaspGraphs::scale_JASPcolor_continuous(palettePoints, name = options$covariate)  # Name sets legend title
     } else {
-      jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)  # Name sets legend title
+      jaspGraphs::scale_JASPcolor_discrete(palettePoints, name = options$covariate)  # Name sets legend title
     }
   }
+
   plot <- plot + fillScale + colorScale
+
+
+  # Theme
+  setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
+
+  xTitle <- if (options$factorAxis == "") "Total" else options$factorAxis
+  axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
+
+  yAxis <- if (options$customLimits == FALSE) {
+    yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
+    yLimits <- range(c(yBreaks, variableVector))
+    ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
+  } else {
+    yLimits <- c(options$lowerLimit, options$upperLimit)
+    ggplot2::scale_y_continuous(limits = yLimits, n.breaks = options$customBreaks)
+  }
+
+  inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
+
+  plot <- plot + jaspGraphs::geom_rangeframe() + setUpTheme + axisTitles + yAxis + inwardTicks
 
   # Horizontal
   coordFlip <- if (options$horizontal) ggplot2::coord_flip() else NULL
@@ -181,17 +221,3 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   inputPlot[["plotObject"]] <- plot
 }  # End .rainFillPlot()
 
-
-# .rainSplit() ----
-# Splits observations into groups depending on factor option
-# if no factor option, all same group
-.rainSplit <- function(dataset, options, variableVector) {
-
-  if (options$factorAxis == "") {
-    group <- factor(rep("Total", length(variableVector)))
-  } else {
-    group <- as.factor(dataset[[options$factorAxis]])
-  }
-
-  return(group)
-}  # End .rainSplit()
