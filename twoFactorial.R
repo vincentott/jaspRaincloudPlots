@@ -8,21 +8,65 @@ simplePenguins <- penguins[complete.cases(penguins), ]
 # simplePenguins <- subset(simplePenguins, species != "Chinstrap")
 simplePenguins$year <- as.factor(simplePenguins$year)
 
-ggplot(
-  data = simplePenguins,
-  aes(
-    y = bill_length_mm,  # Dependent variable
-    x = species, #simplePenguins$year,
-    fill = species, #simplePenguins$species
-    color = species
-  )
-) + geom_rain(
-  rain.side = NULL,
-  alpha = .5,
-) + theme_classic()
+# Only variable
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = 1, fill = NULL, color = NULL)) +
+  geom_rain(cov = NULL, alpha = .5) + theme_classic()
 
-# ggplot(iris.long[iris.long$time %in% c('t1', 't2'),], aes(time, Sepal.Width, fill = Species)) +
-#   geom_rain(alpha = .5) +
-#   theme_classic() +
-#   scale_fill_manual(values=c("dodgerblue", "darkorange")) +
-#   guides(fill = 'none', color = 'none')
+# # Only variable, colorAnyway
+# ggplot(data = simplePenguins, aes(y = bill_length_mm, x = 1, fill = NULL, color = NULL)) +
+#   geom_rain(alpha = .5, cov = NULL, fill = "green", color = NA) + theme_classic()
+
+# Axis
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = island, fill = NULL, color = NULL)) +
+  geom_rain(alpha = .5, cov = NULL,) + theme_classic()
+
+# Axis, colorAnyway
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = island, fill = island, color = island)) +
+  geom_rain(alpha = .5, cov = NULL) + theme_classic()
+
+# Fill
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = 1, fill = island, color = island)) +
+  geom_rain(alpha = .5, cov = NULL) + theme_classic()
+
+# Axis, Fill
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = island, fill = species, color = species)) +
+  geom_rain(alpha = .5, cov = NULL) + theme_classic()
+
+# ---
+
+# covariate
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = 1, fill = NULL, color = NULL)) +
+  geom_rain(alpha = .5, cov = "flipper_length_mm") + theme_classic()
+
+# covariate + axis
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = island, fill = NULL, color = NULL)) +
+  geom_rain(alpha = .5, cov = "flipper_length_mm") + theme_classic()
+
+# # covariate + axis, coloredAnyway is probably like only variable colorAnyway not possible? see above?
+#
+#
+
+# 6 covariate + axis + fill
+ggplot(data = simplePenguins, aes(y = bill_length_mm, x = island, fill = species, color = NULL)) +
+  geom_rain(alpha = .5, cov = "flipper_length_mm") + theme_classic()
+
+# switch to penguins
+ggplot(data = palmerpenguins::penguins, aes(y = bill_length_mm, x = island, fill = species, color = NULL)) +
+  geom_rain(alpha = .5, cov = "flipper_length_mm") + theme_classic()
+
+
+# ---
+
+ggplot(data = palmerpenguins::penguins, aes(y = bill_length_mm, x = island, fill = species, color = species)) +
+  geom_rain(alpha = .5, cov = NULL) + theme_classic()
+
+ggplot(data = palmerpenguins::penguins, aes(y = bill_length_mm, x = island, fill = species, color = NULL)) +
+  geom_rain(alpha = .5, cov = "flipper_length_mm") + theme_classic()
+
+ggplot(data = palmerpenguins::penguins, aes(y = bill_length_mm, x = island, fill = species, color = NULL)) +
+  geom_rain(alpha = .5, cov = "flipper_length_mm", violin.args = list(color = "blue")) + theme_classic()
+
+
+
+
+

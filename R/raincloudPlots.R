@@ -59,11 +59,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspResults[["containerSimplePlots"]]$dependOn(
       c(
         "factorAxis", "factorFill", "covariate",
-        "horizontal",
+
+        "paletteFill",
+        "colorAnyway",
+        "vioOpacity",
+        "boxOpacity",
+        "pointOpacity", "palettePoints",
+
         "customLimits", "lowerLimit", "customBreaks", "upperLimit",
-        "paletteFill", "colorAnyway",
-        "vioOpacity", "boxOpacity", "pointOpacity",
-        "palettePoints"
+
+        "horizontal"
       )
     )
   }
@@ -106,16 +111,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector)
 
   # Ggplot with aes()
-  aesX <- if(options$factorAxis == "") 1 else axisVector
-  aesFill <- if(options$factorFill != "") {
-    fillVector
-  } else if (options$colorAnyway) {
-    aesX
-  } else {
-    NULL
-  }
-
-  aesColor <- if(options$covariate == "") NULL else covariateVector
+  aesX <- axisVector
+  aesFill <- if(options$factorFill != "") fillVector else if (options$colorAnyway) aesX else NULL
+  aesColor <- if(options$covariate != "") covariateVector else if (options$colorAnyway) aesX else aesFill
 
   plot <- ggplot2::ggplot(
     data = df,
@@ -131,17 +129,34 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   vioOpacity <- options$vioOpacity
   boxOpacity <- options$boxOpacity
   pointOpacity <- options$pointOpacity
+  geomRainCov <- if (options$covariate == "") NULL else "covariateVector"  # Cov argument in geom_rain() must be string
 
-  geomRainCov <- if (options$covariate == "") {
-    NULL
-  } else {
-    "covariateVector"  # Cov argument in geom_rain() must be string
-  }
+  # # # The following was an attempt at editing the vio & box edges - it is on hold for now
+  vioArgs <- list(alpha = vioOpacity, color = "black")
+  # if (options$vioEdges == "" || options$vioEdges == "as palette") {
+  #   NULL
+  # } else if (options$vioEdges == "black") {
+  #   vioArgs$color <- "black"
+  # } else if (options$vioEdges == "none") {
+  #   vioArgs$color <- NA
+  # } else {
+  #   print("Something went wrong with the violin plot edges.")
+  # }
+  boxArgs <- list(outlier.shape = NA, alpha = boxOpacity, color = "black")
+  # if (options$boxEdges == "" || options$boxEdges == "as palette") {
+  #   NULL
+  # } else if (options$boxEdges == "black") {
+  #   boxArgs$color <- "black"
+  # } else if (options$boxEdges == "none") {
+  #   boxArgs$color <- NA
+  # } else {
+  #   print("Something went wrong with the boxplot edges.")
+  # }
 
   plot <- plot + ggrain::geom_rain(
 
-    violin.args = list(color = "black", alpha = vioOpacity),
-    boxplot.args = list(color = "black", outlier.shape = NA, alpha = boxOpacity),
+    violin.args = vioArgs,
+    boxplot.args = boxArgs,
     point.args = list(alpha = pointOpacity),
 
     # Positioning
@@ -165,24 +180,37 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )  # End geom_rain()
 
   # Colors
-  paletteFill <- options$paletteFill
-  palettePoints <- options$palettePoints
-
-  fillScale <- jaspGraphs::scale_JASPfill_discrete(paletteFill)
-
-  colorScale <- if (options$covariate == "") {
-    jaspGraphs::scale_JASPcolor_discrete(paletteFill)
-  } else {
-    # jaspGraphs::scale_JASPcolor_continuous(options$palettePoints)
-    if (is.numeric(covariateVector)) {
-      jaspGraphs::scale_JASPcolor_continuous(palettePoints, name = options$covariate)  # Name sets legend title
+  paletteFill <- if (options$factorFill != "") {
+    if (is.factor(fillVector)) {
+      jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
     } else {
-      jaspGraphs::scale_JASPcolor_discrete(palettePoints, name = options$covariate)  # Name sets legend title
+      jaspGraphs::scale_JASPfill_continuous(options$paletteFill, name = options$factorFill)
     }
+  } else if (options$colorAnyway) {
+    jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
+  } else {
+    NULL
   }
-
-  plot <- plot + fillScale + colorScale
-
+  paletteColor <- if (options$covariate != "") {
+    if (is.factor(covariateVector)) {
+      jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)
+    } else {
+      jaspGraphs::scale_JASPcolor_continuous(options$palettePoints, name = options$covariate)
+    }
+  } else {
+    if (options$factorFill != "") {
+      if (is.factor(fillVector)) {
+        jaspGraphs::scale_JASPcolor_discrete(options$paletteFill, name = options$factorFill)
+      } else {
+        jaspGraphs::scale_JASPcolor_continuous(options$paletteFill, name = options$factorFill)
+      }
+    } else if (options$colorAnyway) {
+      jaspGraphs::scale_JASPcolor_discrete(options$paletteFill, name = options$factorFill)
+    } else {
+      NULL
+    }
+  }  # End paletteColor
+  plot <- plot + paletteFill + paletteColor
 
   # Theme
   setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
