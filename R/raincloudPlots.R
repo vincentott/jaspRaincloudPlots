@@ -16,6 +16,7 @@
 #
 
 
+
 # Main function: raincloudPlots() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
 
@@ -24,6 +25,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   .rainCreatePlots(jaspResults, dataset, options, ready)
 
 }  # End raincloudPlots()
+
 
 
 # .rainReadData() ----
@@ -37,7 +39,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
     factorAxis <- if (options$factorAxis == "") c() else options$factorAxis
     factorFill <- if (options$factorFill == "") c() else options$factorFill
-    covariate <- if (options$covariate == "") c() else options$covariate
+    covariate  <- if (options$covariate == "")  c() else options$covariate
 
     output <- .readDataSetToEnd(
       columns.as.numeric = options$variables,
@@ -48,6 +50,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   return(output)
 } # End .rainReadData()
+
 
 
 # .rainCreatePlots() ----
@@ -71,7 +74,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "horizontal"
       )
     )
-  }
+  }  # End create container
 
   # Access through container object
   container <- jaspResults[["containerSimplePlots"]]
@@ -100,36 +103,29 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 }  # End .rainCreatePlots()
 
 
+
 # .rainFillPlot() ----
 .rainFillPlot <- function(inputPlot, dataset, options, inputVariable) {
 
   # Transform to data.frame() - required for ggplot
-  variableVector <- dataset[[inputVariable]]
-  axisVector <- if (options$factorAxis == "") rep("Total", length(variableVector)) else dataset[[options$factorAxis]]
-  fillVector <- if (options$factorFill == "") rep(NA, length(variableVector)) else dataset[[options$factorFill]]
-  covariateVector <- if (options$covariate == "") rep(NA, length(variableVector)) else dataset[[options$covariate]]
+  variableVector  <- dataset[[inputVariable]]
+  axisVector      <- if (options$factorAxis == "") rep("Total", length(variableVector)) else dataset[[options$factorAxis]]
+  fillVector      <- if (options$factorFill == "") rep(NA,      length(variableVector)) else dataset[[options$factorFill]]
+  covariateVector <- if (options$covariate == "")  rep(NA,      length(variableVector)) else dataset[[options$covariate]]
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector)
 
   # Ggplot with aes()
   aesX <- axisVector
-  aesFill <- if(options$factorFill != "") fillVector else if (options$colorAnyway) aesX else NULL
-  aesColor <- if(options$covariate != "") covariateVector else if (options$colorAnyway) aesX else aesFill
+  aesFill  <- if(options$factorFill != "") fillVector      else if (options$colorAnyway) aesX else NULL
+  aesColor <- if(options$covariate != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
 
-  plot <- ggplot2::ggplot(
-    data = df,
-    ggplot2::aes(
-      y = variableVector,
-      x = aesX,
-      fill = aesFill,
-      color = aesColor
-    )
-  )
+  plot <- ggplot2::ggplot(data = df, ggplot2::aes(y = variableVector, x = aesX, fill = aesFill, color = aesColor))
 
   # Geom_rain()
-  vioOpacity <- options$vioOpacity
-  boxOpacity <- options$boxOpacity
+  vioOpacity   <- options$vioOpacity
+  boxOpacity   <- options$boxOpacity
   pointOpacity <- options$pointOpacity
-  geomRainCov <- if (options$covariate == "") NULL else "covariateVector"  # Cov argument in geom_rain() must be string
+  geomRainCov  <- if (options$covariate == "") NULL else "covariateVector"  # Cov argument in geom_rain() must be string
 
   # # # The following was an attempt at editing the vio & box edges - it is on hold for now
   vioArgs <- list(alpha = vioOpacity, color = "black")
@@ -248,4 +244,5 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plot
 }  # End .rainFillPlot()
+
 
