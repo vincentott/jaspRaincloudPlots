@@ -69,8 +69,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "boxOpacity",
         "pointOpacity", "palettePoints",
 
-        "customLimits", "lowerLimit", "customBreaks", "upperLimit",
-
         "horizontal"
       )
     )
@@ -211,17 +209,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Theme
   setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
 
-  xTitle <- if (options$factorAxis == "") "Total" else options$factorAxis
+  xTitle     <- if (options$factorAxis == "") "Total" else options$factorAxis
   axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
 
-  yAxis <- if (options$customLimits == FALSE) {
-    yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
-    yLimits <- range(c(yBreaks, variableVector))
-    ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
-  } else {
-    yLimits <- c(options$lowerLimit, options$upperLimit)
-    ggplot2::scale_y_continuous(limits = yLimits, n.breaks = options$customBreaks)
-  }
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
+  yLimits <- range(c(yBreaks, variableVector))
+  yAxis   <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
 
   inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
 

@@ -158,29 +158,6 @@ Form
 	Section
 	{
 		title: qsTr("Element Fine-tuning")
-
-		CheckBox
-	{
-		name: "customLimits"
-		label: qsTr("Custom variable axis:")
-		childrenOnSameRow: true
-		DoubleField
-		{
-			name: "lowerLimit"
-			label: qsTr("Start:")
-			negativeValues: true
-		}
-		IntegerField
-		{
-			name: "customBreaks"
-			label: qsTr("Number of breaks:")
-		}
-		DoubleField
-		{
-			name: "upperLimit"
-			label: qsTr("End:")
-		}
-	}
 	}
 
 	Section
