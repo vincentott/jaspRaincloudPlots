@@ -82,55 +82,58 @@ Form
 		{
 			name: 					"paletteFill"
 			label:					qsTr("Color palette")
-			Layout.columnSpan: 3
+			Layout.columnSpan: 1
 
 		}
 
 		CheckBox
 		{
 			name: 					"colorAnyway"
-			label:					qsTr("Apply color palette even without Color input")
+			label:					qsTr("Apply color to Axis")
 			id: 					colorAnyway
 			enabled: 				factorFill.count === 0
-			Layout.columnSpan: 3
+			Layout.columnSpan: 2
 		}
 
 		PercentField
 		{
 			name: 					"vioOpacity"
 			label:					qsTr("       Violin opacity")
-			enabled: 				factorFill.count === 1 || colorAnyway.checked
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"vioEdges"
-			label:					qsTr("       Violin edge")
-			enabled: 				factorFill.count === 1 || colorAnyway.checked
+			label:					qsTr("       Violin outline")
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			values:	[
-				   	{ label: qsTr("as palette"), value: "as palette" },
 				   	{ label: qsTr("black"), value: "black" },
 				   	{ label: qsTr("none"), value: "none" },
 			       	]
-			Layout.columnSpan: 2
+			Layout.columnSpan: 1
+		}
+
+		HelpButton
+		{
+			toolTip:				qsTr("0% opacity & no edges hide Violin or Box")
 		}
 
 		PercentField
 		{
 			name: 					"boxOpacity"
 			label:					qsTr("       Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
-			enabled: 				factorFill.count === 1 || colorAnyway.checked
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"boxEdges"
-			label:					qsTr("       Box edge   ")  // Additional spaces for neat line up in GUI with vioEdge
-			enabled: 				factorFill.count === 1 || colorAnyway.checked
+			label:					qsTr("       Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			values:	[
-				   	{ label: qsTr("as palette"), value: "as palette" },
 				   	{ label: qsTr("black"), value: "black" },
 				   	{ label: qsTr("none"), value: "none" },
 				   	]
@@ -140,14 +143,20 @@ Form
 		PercentField
 		{
 			name: 					"pointOpacity"
-			label:					qsTr("Point opacity")
+			label:					qsTr("       Point opacity")
 		}
 
 		ColorPalette
 		{
 			name:					"palettePoints"
-			label:					qsTr("Point palette")
+			label:					qsTr("       Point palette")
 			enabled: 				covariate.count === 1
+			Layout.columnSpan: 1
+		}
+
+		HelpButton
+		{
+			toolTip:				qsTr("0% opacity to hide Points")
 		}
 
 	}
@@ -155,6 +164,88 @@ Form
 	Section
 	{
 		title: 						qsTr("Element Fine-tuning")
+		columns: 1
+
+		Group
+		{
+			title:					qsTr("Violin")
+			columns: 3
+
+			DoubleField
+			{
+				name:				"vioWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.7
+			}
+
+			DoubleField
+			{
+				name:				"vioNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		0.075
+				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"vioSmoothing"
+				label:				qsTr("Smoothing")
+				defaultValue:		1
+				min:				0
+				max:				1
+			}
+		}
+
+		Group
+		{
+			title:					qsTr("Box")
+			columns: 3
+
+			DoubleField
+			{
+				name:				"boxWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.075
+			}
+
+			DoubleField
+			{
+				name:				"boxNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		0
+				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"boxDodge"
+				label:				qsTr("Dodge")
+				defaultValue:		0.15
+			}
+		}
+
+		Group
+		{
+			title:					qsTr("Points")
+			columns: 2
+
+			DoubleField
+			{
+				name:				"pointWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.065
+			}
+
+			DoubleField
+			{
+				name:				"pointNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		-0.14
+				negativeValues:		true
+			}
+		}
+
+
 	}
 
 	Section

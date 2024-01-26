@@ -7,7 +7,7 @@ View(penguins)
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$factorAxis <- "species"
-options$paletteFill <- "colorblind"
+# options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 

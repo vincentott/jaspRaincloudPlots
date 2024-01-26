@@ -69,6 +69,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
           "boxOpacity", "boxEdges",
         "pointOpacity", "palettePoints",
 
+        "vioWidth", "vioNudge", "vioSmoothing",
+        "boxWidth", "boxNudge", "boxDodge",
+        "pointWidth", "pointNudge",
+
         "horizontal"
       )
     )
@@ -123,7 +127,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   boxOpacity   <- options$boxOpacity
   pointOpacity <- options$pointOpacity
 
-  vioArgs       <- list(alpha = vioOpacity)
+  vioArgs       <- list(alpha = vioOpacity, adjust = options$vioSmoothing)
   vioArgs$color <- .rainEdgeColor(options$vioEdges)
   boxArgs       <- list(outlier.shape = NA, alpha = boxOpacity)
   boxArgs$color <- .rainEdgeColor(options$boxEdges)
@@ -138,16 +142,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
     # Positioning
     rain.side        = "r",  # Necessary to specify for neat positioning to work, even though it is the default
-    violin.args.pos  = list(width = 0.7,   position = ggplot2::position_nudge(  x = 0.075          )),
-    boxplot.args.pos = list(width = 0.075, position = ggpp::position_dodgenudge(x = 0, width = 0.15)),
+    violin.args.pos  = list(width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge          )),
+    boxplot.args.pos = list(width = options$boxWidth, position = ggpp::position_dodgenudge(x = options$boxNudge, width = options$boxDodge)),
     point.args.pos   = list(
 
       position = ggpp::position_jitternudge(
         nudge.from = "jittered",
-        x          = -0.14,   # Nudge
-        width      =  0.065,  # xJitter
-        height     =  0.0,    # yJitter, particularly interesting for likert data
-        seed       =  1.0     # Reproducible jitter
+        width      = options$pointWidth,  # xJitter
+        x          = options$pointNudge,  # Nudge
+        height     = 0.0,                 # yJitter, particularly interesting for likert data
+        seed       = 1.0                  # Reproducible jitter
       )
 
     ),  # End point.args.pos
@@ -230,8 +234,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # .rainEdgeColor() ----
 .rainEdgeColor <- function(input) {
 
-  if      (input == "as palette") return(NULL)
-  else if (input == "black")      return("black")
+  if (input == "black")      return("black")
   else if (input == "none")       return(NA)
   else print("error with edges")
 
