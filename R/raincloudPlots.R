@@ -65,8 +65,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
         "paletteFill",
         "colorAnyway",
-        "vioOpacity",
-        "boxOpacity",
+          "vioOpacity", "vioEdges",
+          "boxOpacity", "boxEdges",
         "pointOpacity", "palettePoints",
 
         "horizontal"
@@ -107,45 +107,28 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Transform to data.frame() - required for ggplot
   variableVector  <- dataset[[inputVariable]]
-  axisVector      <- if (options$factorAxis == "") rep("Total", length(variableVector)) else dataset[[options$factorAxis]]
-  fillVector      <- if (options$factorFill == "") rep(NA,      length(variableVector)) else dataset[[options$factorFill]]
-  covariateVector <- if (options$covariate == "")  rep(NA,      length(variableVector)) else dataset[[options$covariate]]
+  axisVector      <- if (options$factorAxis == "")  rep("Total", length(variableVector)) else dataset[[options$factorAxis]]
+  fillVector      <- if (options$factorFill == "")  rep(NA,      length(variableVector)) else dataset[[options$factorFill]]
+  covariateVector <- if (options$covariate  == "")  rep(NA,      length(variableVector)) else dataset[[options$covariate]]
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector)
 
   # Ggplot with aes()
-  aesX <- axisVector
-  aesFill  <- if(options$factorFill != "") fillVector      else if (options$colorAnyway) aesX else NULL
-  aesColor <- if(options$covariate != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
-
+  aesX     <- axisVector
+  aesFill  <- if(options$factorFill != "")  fillVector      else if (options$colorAnyway) aesX else NULL
+  aesColor <- if(options$covariate  != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
   plot <- ggplot2::ggplot(data = df, ggplot2::aes(y = variableVector, x = aesX, fill = aesFill, color = aesColor))
 
   # Geom_rain()
   vioOpacity   <- options$vioOpacity
   boxOpacity   <- options$boxOpacity
   pointOpacity <- options$pointOpacity
-  geomRainCov  <- if (options$covariate == "") NULL else "covariateVector"  # Cov argument in geom_rain() must be string
 
-  # # # The following was an attempt at editing the vio & box edges - it is on hold for now
-  vioArgs <- list(alpha = vioOpacity, color = "black")
-  # if (options$vioEdges == "" || options$vioEdges == "as palette") {
-  #   NULL
-  # } else if (options$vioEdges == "black") {
-  #   vioArgs$color <- "black"
-  # } else if (options$vioEdges == "none") {
-  #   vioArgs$color <- NA
-  # } else {
-  #   print("Something went wrong with the violin plot edges.")
-  # }
-  boxArgs <- list(outlier.shape = NA, alpha = boxOpacity, color = "black")
-  # if (options$boxEdges == "" || options$boxEdges == "as palette") {
-  #   NULL
-  # } else if (options$boxEdges == "black") {
-  #   boxArgs$color <- "black"
-  # } else if (options$boxEdges == "none") {
-  #   boxArgs$color <- NA
-  # } else {
-  #   print("Something went wrong with the boxplot edges.")
-  # }
+  vioArgs       <- list(alpha = vioOpacity)
+  vioArgs$color <- .rainEdgeColor(options$vioEdges)
+  boxArgs       <- list(outlier.shape = NA, alpha = boxOpacity)
+  boxArgs$color <- .rainEdgeColor(options$boxEdges)
+
+  covArg <- if (options$covariate == "") NULL else "covariateVector"  # Must be string
 
   plot <- plot + ggrain::geom_rain(
 
@@ -154,22 +137,24 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     point.args = list(alpha = pointOpacity),
 
     # Positioning
-    rain.side = "r",  # Necessary to specify for neat positioning to work, even though it is the default
-    violin.args.pos = list(width = 0.7, position = ggplot2::position_nudge(x = 0.075)),
+    rain.side        = "r",  # Necessary to specify for neat positioning to work, even though it is the default
+    violin.args.pos  = list(width = 0.7,   position = ggplot2::position_nudge(  x = 0.075          )),
     boxplot.args.pos = list(width = 0.075, position = ggpp::position_dodgenudge(x = 0, width = 0.15)),
-    point.args.pos = list(
+    point.args.pos   = list(
+
       position = ggpp::position_jitternudge(
         nudge.from = "jittered",
-        x = -0.14,  # Nudge
-        width = .065,  # xJitter
-        height = 0,  # yJitter, particularly interesting for likert data
-        seed = 1  # Reproducible jitter
+        x          = -0.14,   # Nudge
+        width      =  0.065,  # xJitter
+        height     =  0.0,    # yJitter, particularly interesting for likert data
+        seed       =  1.0     # Reproducible jitter
       )
-    ),
 
-    cov = geomRainCov,
+    ),  # End point.args.pos
 
-    likert = FALSE  # TRUE does not work because of ggpp:position_jitternudge() - instead jitternudge height argument
+    cov = covArg,
+
+    likert = FALSE  # TRUE does not work because of ggpp:position_jitternudge() - jitternudge height argument instead
 
   )  # End geom_rain()
 
@@ -185,6 +170,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
     NULL
   }
+
   paletteColor <- if (options$covariate != "") {
     if (is.factor(covariateVector)) {
       jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)
@@ -204,19 +190,20 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       NULL
     }
   }  # End paletteColor
+
   plot <- plot + paletteFill + paletteColor
 
   # Theme
-  setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
+  setUpTheme   <- jaspGraphs::themeJaspRaw(legend.position = "right")
 
-  xTitle     <- if (options$factorAxis == "") "Total" else options$factorAxis
-  axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
+  xTitle       <- if (options$factorAxis == "") "Total" else options$factorAxis
+  axisTitles   <- ggplot2::labs(x = xTitle, y = inputVariable)
 
-  yBreaks <- jaspGraphs::getPrettyAxisBreaks(variableVector)
-  yLimits <- range(c(yBreaks, variableVector))
-  yAxis   <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
+  yBreaks      <- jaspGraphs::getPrettyAxisBreaks(variableVector)
+  yLimits      <- range(c(yBreaks, variableVector))
+  yAxis        <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
 
-  inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
+  inwardTicks  <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
 
   plot <- plot + jaspGraphs::geom_rangeframe() + setUpTheme + axisTitles + yAxis + inwardTicks
 
@@ -237,5 +224,17 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plot
 }  # End .rainFillPlot()
+
+
+
+# .rainEdgeColor() ----
+.rainEdgeColor <- function(input) {
+
+  if      (input == "as palette") return(NULL)
+  else if (input == "black")      return("black")
+  else if (input == "none")       return(NA)
+  else print("error with edges")
+
+}
 
 
