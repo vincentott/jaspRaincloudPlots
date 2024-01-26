@@ -108,11 +108,11 @@ Form
 			name: 					"vioEdges"
 			label:					qsTr("       Violin edge")
 			enabled: 				factorFill.count === 1 || colorAnyway.checked
-			values:					[
-				   					{ label: qsTr("as palette"), value: "as palette" },
-				   					{ label: qsTr("black"), value: "black" },
-				   					{ label: qsTr("none"), value: "none" },
-			       					]
+			values:	[
+				   	{ label: qsTr("as palette"), value: "as palette" },
+				   	{ label: qsTr("black"), value: "black" },
+				   	{ label: qsTr("none"), value: "none" },
+			       	]
 			Layout.columnSpan: 2
 		}
 
@@ -129,11 +129,11 @@ Form
 			name: 					"boxEdges"
 			label:					qsTr("       Box edge   ")  // Additional spaces for neat line up in GUI with vioEdge
 			enabled: 				factorFill.count === 1 || colorAnyway.checked
-			values:					[
-				   					{ label: qsTr("as palette"), value: "as palette" },
-				   					{ label: qsTr("black"), value: "black" },
-				   					{ label: qsTr("none"), value: "none" },
-				   					]
+			values:	[
+				   	{ label: qsTr("as palette"), value: "as palette" },
+				   	{ label: qsTr("black"), value: "black" },
+				   	{ label: qsTr("none"), value: "none" },
+				   	]
 			Layout.columnSpan: 2
 		}
 
