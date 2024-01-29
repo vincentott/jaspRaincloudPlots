@@ -31,169 +31,234 @@ Form
 		AvailableVariablesList	{ name: "allVariablesListOne" }
 		AssignedVariablesList
 		{ 
-			name: "variables"
-			id: variables
-			title: qsTr("Dependent Variables")
-			suggestedColumns: ["scale"]
+			name: 					"variables"
+			title: 					qsTr("Dependent Variables")
+			id: 					variables
+			suggestedColumns: 		["scale"]
 		}
 		AssignedVariablesList
 		{
-			name: "factorAxis"
-			title: qsTr("Axis")
-			id: factorAxis;
-			singleVariable: true
-			suggestedColumns: ["nominal", "ordinal"]
+			name: 					"factorAxis"
+			title:					qsTr("Axis")
+			id: 					factorAxis;
+			suggestedColumns: 		["nominal", "ordinal"]
+			singleVariable: 		true
 		}
 		AssignedVariablesList
 		{
-			name: "factorFill"
-			title: qsTr("Color")
-			id: factorFill
-			singleVariable: true
-			suggestedColumns: ["nominal", "ordinal"]
-		}
-
-		AssignedVariablesList
-		{
-			name: "covariate"
-			title: qsTr("Points")
-			id: covariate
-			singleVariable: true
-			suggestedColumns: ["nominal", "ordinal", "scale"] 
+			name: 					"factorFill"
+			title:					qsTr("Color")
+			id: 					factorFill
+			suggestedColumns: 		["nominal", "ordinal"]
+			singleVariable: 		true
 		}
 
 		AssignedVariablesList
 		{
-			name: "id"
-			title: qsTr("ID (feature requires data in Long format)")
-			id: id
-			singleVariable: true
-			suggestedColumns: ["nominal", "ordinal", "scale"]
+			name: 					"covariate"
+			title:					qsTr("Points")
+			id: 					covariate
+			suggestedColumns: 		["nominal", "ordinal", "scale"]
+			singleVariable: 		true
+		}
+
+		AssignedVariablesList
+		{
+			name: 					"id"
+			title:					qsTr("ID (feature requires data in Long format)")
+			id: 					id
+			suggestedColumns: 		["nominal", "ordinal", "scale"]
+			singleVariable: 		true
 		}
 
 	}
 
 	Section
 	{
-		title: qsTr("Colors and Opacity")
+		title: 						qsTr("Colors and Opacity")
 		columns: 3
 
 		ColorPalette
 		{
-			name: "paletteFill"
-			label: qsTr("Color palette")
-			//enabled: factorFill.count === 1 || colorAnyway.checked
-			Layout.columnSpan: 3
+			name: 					"paletteFill"
+			label:					qsTr("Color palette")
+			Layout.columnSpan: 1
 
 		}
 
 		CheckBox
 		{
-			name: "colorAnyway"
-			id: colorAnyway
-			label: qsTr("Apply color palette even without Color input")
-			enabled: factorFill.count === 0
-			Layout.columnSpan: 3
-		}
-
-		PercentField
-		{
-			name: "vioOpacity"
-			label: qsTr("       Violin opacity")
-			enabled: factorFill.count === 1 || colorAnyway.checked
-			Layout.columnSpan: 3
-		}
-
-/* 		DropDown
-		{
-			name: "vioEdges"
-			label: qsTr("       Violin edge")
-			enabled: factorFill.count === 1 || colorAnyway.checked
-			values:
-			[
-				{ label: qsTr("as palette"), value: "as palette" },
-				{ label: qsTr("black"), value: "black" },
-				{ label: qsTr("none"), value: "none" },
-			]
+			name: 					"colorAnyway"
+			label:					qsTr("Apply color to Axis")
+			id: 					colorAnyway
+			checked:				factorFill.count === 0
+			enabled: 				factorFill.count === 0
 			Layout.columnSpan: 2
-		} */
-
-		PercentField
-		{
-			name: "boxOpacity"
-			label: qsTr("       Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
-			enabled: factorFill.count === 1 || colorAnyway.checked
-			Layout.columnSpan: 3
 		}
 
-/* 		DropDown
+		PercentField
 		{
-			name: "boxEdges"
-			label: qsTr("       Box edge   ")  // Additional spaces for neat line up in GUI with vioEdge
-			enabled: factorFill.count === 1 || colorAnyway.checked
-			values:
-			[
-				{ label: qsTr("as palette"), value: "as palette" },
-				{ label: qsTr("black"), value: "black" },
-				{ label: qsTr("none"), value: "none" },
-			]
-			Layout.columnSpan: 2
-		} */
+			name: 					"vioOpacity"
+			label:					qsTr("       Violin opacity")
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
+			Layout.columnSpan: 1
+		}
+
+		DropDown
+		{
+			name: 					"vioEdges"
+			label:					qsTr("       Violin outline")
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
+			values:	[
+				   	{ label: qsTr("black"), value: "black" },
+				   	{ label: qsTr("none"), value: "none" },
+			       	]
+			Layout.columnSpan: 1
+		}
+
+		HelpButton
+		{
+			toolTip:				qsTr("0% opacity & no edges to hide Violin or Box")
+		}
 
 		PercentField
 		{
-			name: "pointOpacity"
-			label: qsTr("Point opacity")
+			name: 					"boxOpacity"
+			label:					qsTr("       Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
+			Layout.columnSpan: 1
+		}
+
+		DropDown
+		{
+			name: 					"boxEdges"
+			label:					qsTr("       Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
+			//enabled: 				factorFill.count === 1 || colorAnyway.checked
+			values:	[
+				   	{ label: qsTr("black"), value: "black" },
+				   	{ label: qsTr("none"), value: "none" },
+				   	]
+			Layout.columnSpan: 2
+		}
+
+		PercentField
+		{
+			name: 					"pointOpacity"
+			label:					qsTr("       Point opacity")
 		}
 
 		ColorPalette
 		{
-			name: "palettePoints"
-			label: qsTr("Point palette")
-			enabled: covariate.count === 1
+			name:					"palettePoints"
+			label:					qsTr("       Point palette")
+			enabled: 				covariate.count === 1
+			Layout.columnSpan: 1
+		}
+
+		HelpButton
+		{
+			toolTip:				qsTr("0% opacity to hide Points")
 		}
 
 	}
 
 	Section
 	{
-		title: qsTr("Element Fine-tuning")
+		title: 						qsTr("Element Fine-tuning")
+		columns: 1
 
-		CheckBox
-	{
-		name: "customLimits"
-		label: qsTr("Custom variable axis:")
-		childrenOnSameRow: true
-		DoubleField
+		Group
 		{
-			name: "lowerLimit"
-			label: qsTr("Start:")
-			negativeValues: true
+			title:					qsTr("Violin")
+			columns: 3
+
+			DoubleField
+			{
+				name:				"vioWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.7
+			}
+
+			DoubleField
+			{
+				name:				"vioNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		0.075
+				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"vioSmoothing"
+				label:				qsTr("Smoothing")
+				defaultValue:		1
+				min:				0
+				max:				1
+			}
 		}
-		IntegerField
+
+		Group
 		{
-			name: "customBreaks"
-			label: qsTr("Number of breaks:")
+			title:					qsTr("Box")
+			columns: 3
+
+			DoubleField
+			{
+				name:				"boxWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.075
+			}
+
+			DoubleField
+			{
+				name:				"boxNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		0
+				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"boxDodge"
+				label:				qsTr("Dodge")
+				defaultValue:		0.15
+			}
 		}
-		DoubleField
+
+		Group
 		{
-			name: "upperLimit"
-			label: qsTr("End:")
+			title:					qsTr("Points")
+			columns: 2
+
+			DoubleField
+			{
+				name:				"pointWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.065
+			}
+
+			DoubleField
+			{
+				name:				"pointNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		-0.14
+				negativeValues:		true
+			}
 		}
-	}
+
+
 	}
 
 	Section
 	{
-		title: qsTr("Settings for ID feature")
+		title: 						qsTr("Settings for ID feature")
 	}
 
 		CheckBox
 	{
-		name: "horizontal"
-		label: qsTr("Horizontal plot")
+		name: 						"horizontal"
+		label:						qsTr("Horizontal plot")
 		checked: false
-		//enabled: factorAxis.count === 0 || factorFill.count === 0
 	}
 
 }
