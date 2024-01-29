@@ -156,8 +156,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     line.args    = lineArgs,
 
     # Positioning
-    rain.side        = "r",  # Necessary for neat positioning
-    violin.args.pos  = list(width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge          )),
+    rain.side        = NULL,  # Necessary for neat positioning
+    violin.args.pos  = list(width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge), side  = "r"),
     boxplot.args.pos = list(width = options$boxWidth, position = ggpp::position_dodgenudge(x = options$boxNudge, width = options$boxDodge)),
     point.args.pos   = pointsPos,
     line.args.pos    = pointsPos,
