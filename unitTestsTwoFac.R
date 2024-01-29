@@ -8,7 +8,7 @@ options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
-results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Factor Axis + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")

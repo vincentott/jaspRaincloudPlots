@@ -64,11 +64,12 @@ Form
 
 		AssignedVariablesList
 		{
-			name: 					"id"
-			title:					qsTr("ID (feature requires data in Long format)")
-			id: 					id
+			name: 					"subject"
+			title:					qsTr("Subject     (requires long data & Axis input)")  // Extra spaces for alignment
+			id: 					subject
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
+			enabled:				factorAxis.count === 1
 		}
 
 	}
@@ -100,7 +101,6 @@ Form
 		{
 			name: 					"vioOpacity"
 			label:					qsTr("       Violin opacity")
-			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			Layout.columnSpan: 1
 		}
 
@@ -108,24 +108,22 @@ Form
 		{
 			name: 					"vioEdges"
 			label:					qsTr("       Violin outline")
-			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			values:	[
 				   	{ label: qsTr("black"), value: "black" },
-				   	{ label: qsTr("none"), value: "none" },
+				   	{ label: qsTr("none"),  value: "none" },
 			       	]
 			Layout.columnSpan: 1
 		}
 
 		HelpButton
 		{
-			toolTip:				qsTr("0% opacity & no edges to hide Violin or Box")
+			toolTip:				qsTr("0% opacity & no outline to hide Violin or Box")
 		}
 
 		PercentField
 		{
 			name: 					"boxOpacity"
 			label:					qsTr("       Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
-			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			Layout.columnSpan: 1
 		}
 
@@ -133,10 +131,9 @@ Form
 		{
 			name: 					"boxEdges"
 			label:					qsTr("       Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
-			//enabled: 				factorFill.count === 1 || colorAnyway.checked
 			values:	[
 				   	{ label: qsTr("black"), value: "black" },
-				   	{ label: qsTr("none"), value: "none" },
+				   	{ label: qsTr("none"),  value: "none" },
 				   	]
 			Layout.columnSpan: 2
 		}
@@ -152,6 +149,7 @@ Form
 			name:					"palettePoints"
 			label:					qsTr("       Point palette")
 			enabled: 				covariate.count === 1
+			indexDefaultValue:		3  // viridis works good for both discrete and continous
 			Layout.columnSpan: 1
 		}
 
@@ -247,11 +245,6 @@ Form
 		}
 
 
-	}
-
-	Section
-	{
-		title: 						qsTr("Settings for ID feature")
 	}
 
 		CheckBox
