@@ -91,6 +91,7 @@ Form
 			name: 					"colorAnyway"
 			label:					qsTr("Apply color to Axis")
 			id: 					colorAnyway
+			checked:				factorFill.count === 0
 			enabled: 				factorFill.count === 0
 			Layout.columnSpan: 2
 		}
@@ -117,7 +118,7 @@ Form
 
 		HelpButton
 		{
-			toolTip:				qsTr("0% opacity & no edges hide Violin or Box")
+			toolTip:				qsTr("0% opacity & no edges to hide Violin or Box")
 		}
 
 		PercentField
