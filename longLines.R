@@ -65,3 +65,21 @@ longPlot
 # TimeOfDay: Morning; Chronotype: Evening
 # TimeOfDay: Evening; Chronotype: Evening
 
+
+
+# ChatGPT ----
+# Assuming df is your dataframe with factors Factor1 and Factor2
+df <- data.frame(
+  Factor1 = factor(c("Morning", "Evening", "Morning", "Evening")),
+  Factor2 = factor(c("Morning", "Morning", "Evening", "Evening")),
+  EX = c(10, 15, 20, 25)
+)
+
+# Create a combined factor using interaction
+combined_factor <- interaction(df$Factor1, df$Factor2, drop = FALSE)
+
+# Count the unique combinations
+num_combinations <- length(levels(combined_factor))
+
+# Print the result
+print(num_combinations)

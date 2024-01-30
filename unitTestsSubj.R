@@ -8,9 +8,10 @@ larksOwls$Chronotype <- factor(larksOwls$Chronotype, levels = c("Morning", "Even
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "MWCount"
 options$factorAxis <- "TimeOfDay"
+options$factorFill <- "Chronotype"
 options$subject <- "Subject"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 options$linesSubject <- TRUE
-debugonce(jaspRaincloudPlots:::.rainFillPlot)
+# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)
