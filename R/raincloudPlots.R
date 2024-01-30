@@ -99,7 +99,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = 450)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
-    .rainFillPlot(variablePlot, dataset, options, variable)
+    .rainFillPlot(variablePlot, dataset, options, variable, jaspResults)  # REMOVE jaspResults AGAIN ONCE CLOUD COUNT WORKS!!!!!!!!!!!!!!!!!
 
     container[[variable]] <- variablePlot
   }  # End for loop
@@ -109,15 +109,27 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainFillPlot() ----
-.rainFillPlot <- function(inputPlot, dataset, options, inputVariable) {
+.rainFillPlot <- function(inputPlot, dataset, options, inputVariable, jaspResults) {
 
   # Transform to data.frame() - required for ggplot
   variableVector  <- dataset[[inputVariable]]
-  axisVector      <- if (options$factorAxis == "")  rep("Total", length(variableVector)) else dataset[[options$factorAxis]]
-  fillVector      <- if (options$factorFill == "")  rep(NA,      length(variableVector)) else dataset[[options$factorFill]]
-  covariateVector <- if (options$covariate  == "")  rep(NA,      length(variableVector)) else dataset[[options$covariate]]
-  subjectVector   <- if (options$subject    == "")  rep(NA,      length(variableVector)) else dataset[[options$subject]]
+  axisVector      <- if (options$factorAxis == "")  as.factor(rep("Total", length(variableVector))) else dataset[[options$factorAxis]]
+  fillVector      <- if (options$factorFill == "")  as.factor(rep("none",  length(variableVector))) else dataset[[options$factorFill]]
+  covariateVector <- if (options$covariate  == "")            rep(NA,      length(variableVector))  else dataset[[options$covariate]]
+  subjectVector   <- if (options$subject    == "")            rep(NA,      length(variableVector))  else dataset[[options$subject]]
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector, subjectVector)
+
+  # Count Clouds in the sky
+  countDf <- df[c("axisVector", "fillVector")]
+  # Calculate present factor combinations
+  allCombs <- expand.grid(axisVector = levels(countDf$axisVector), fillVector = levels(countDf$fillVector))
+  presentCombs <- merge(allCombs, countDf, by = c("axisVector", "fillVector"))
+  presentCombs <- unique(presentCombs)
+  presentCombs <- unique(nrow(presentCombs))
+  countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", presentCombs))
+  countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
+  jaspResults[["countText"]] <- countText
+
 
   # Ggplot() with aes()
   aesX     <- axisVector

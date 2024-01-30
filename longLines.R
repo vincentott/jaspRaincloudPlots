@@ -83,3 +83,66 @@ num_combinations <- length(levels(combined_factor))
 
 # Print the result
 print(num_combinations)
+
+
+# My attempt ----
+
+smallLarksOwls <- larksOwls[ , c("TimeOfDay", "Chronotype")]
+levels(smallLarksOwls$TimeOfDay)
+levels(smallLarksOwls$Chronotype)
+
+# -> this works, now we check out the two combinations of penguins
+
+
+
+# GPT ----
+
+# Example dataframe with two factors
+df <- data.frame(
+  Factor1 = factor(c("A", "A", "B", "B")),
+  Factor2 = factor(c("X", "Y", "X", "Z"))
+)
+
+# Levels for each factor
+levels_Factor1 <- levels(df$Factor1)
+levels_Factor2 <- levels(df$Factor2)
+
+# Generate all possible combinations
+all_combinations <- expand.grid(Factor1 = levels_Factor1, Factor2 = levels_Factor2)
+
+# Find common combinations
+common_combinations <- merge(all_combinations, df, by = c("Factor1", "Factor2"))
+
+# Print result
+print(common_combinations)
+
+# Reproduce for penguins
+library(palmerpenguins)
+data(package = "palmerpenguins")
+
+levels(penguins$island)
+levels(penguins$species)
+
+allCombs <- expand.grid(factorAxis = levels(penguins$island), factorFill = levels(penguins$species))
+presentCombs <- merge(allCombs, penguins, by = c("factorAxis", "factorFill"))
+presentCombs
+
+
+
+library(palmerpenguins)
+
+# Subset with only factorAxis & factorFill
+df <- penguins[c("island", "species")]
+df$factorAxis <- df$island
+df$factorFill <- as.factor(rep("none", nrow(df)))
+df <- df[c("factorAxis", "factorFill")]
+
+# Calculate present factor combinations
+allCombs <- expand.grid(factorAxis = levels(df$factorAxis), factorFill = levels(df$factorFill))
+presentCombs <- merge(allCombs, df, by = c("factorAxis", "factorFill"))
+presentCombs <- unique(presentCombs)
+
+# Print result
+print(presentCombs)
+print(nrow(presentCombs))
+
