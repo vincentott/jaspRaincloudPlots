@@ -119,19 +119,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   subjectVector   <- if (options$subject    == "")  rep(NA,      length(variableVector)) else dataset[[options$subject]]
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector, subjectVector)
 
-  # Ggplot with aes()
+  # Ggplot() with aes()
   aesX     <- axisVector
   aesFill  <- if(options$factorFill != "")  fillVector      else if (options$colorAnyway) aesX else NULL
   aesColor <- if(options$covariate  != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
   plot <- ggplot2::ggplot(data = df, ggplot2::aes(y = variableVector, x = aesX, fill = aesFill, color = aesColor))
 
-  # Geom_rain()
+  # Geom_rain() arguments
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
   vioArgs$color  <- .rainEdgeColor(options$vioEdges)
   boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
   boxArgs$color  <- .rainEdgeColor(options$boxEdges)
-
-  pointsPos      <- list(
+  pointPos      <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
@@ -140,14 +139,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       seed       = 1.0                  # Reproducible jitter
     )
   )
-
   covArg         <- if (options$covariate == "")                              NULL else "covariateVector"  # Must be string
-  idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subjectVector"
-                                                   # FactorAxis condition necessary
-                                                   # as JASP won´t remove present Subject input if user removes present Axis input
+  idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subjectVector"    # FactorAxis condition necessary as JASP won´t remove present Subject input if user removes present Axis input
   lineArgs       <- list(alpha = .33)
   if (options$factorFill   == "") lineArgs$color <- "black"
 
+  # Geom_rain() call
   plot <- plot + ggrain::geom_rain(
 
     violin.args  = vioArgs,
@@ -157,15 +154,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
     # Positioning
     rain.side        = NULL,  # Necessary for neat positioning
-    violin.args.pos  = list(width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge), side  = "r"),
-    boxplot.args.pos = list(width = options$boxWidth, position = ggpp::position_dodgenudge(x = options$boxNudge, width = options$boxDodge)),
-    point.args.pos   = pointsPos,
-    line.args.pos    = pointsPos,
+    violin.args.pos  = list(
+      width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge), side  = c("r")
+    ),
+    boxplot.args.pos = list(
+      width = options$boxWidth, position = ggpp::position_dodgenudge(x = options$boxNudge, width = options$boxDodge)
+    ),
+    point.args.pos   = pointPos,
+    line.args.pos    = pointPos,
 
     cov         = covArg,
     id.long.var = idArg,
-
-    likert = FALSE  # TRUE does not work because of ggpp:position_jitternudge() - jitternudge height argument instead
+    likert      = FALSE  # TRUE does not work because of ggpp:position_jitternudge() in pointPos - jitternudge height argument instead
 
   )  # End geom_rain()
 
@@ -180,7 +180,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
   } else {
     NULL
-  }
+  }  # End paletteFill
 
   paletteColor <- if (options$covariate != "") {
     if (is.factor(covariateVector)) {
