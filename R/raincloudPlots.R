@@ -119,17 +119,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   subjectVector   <- if (options$subject    == "")            rep(NA,      length(variableVector))  else dataset[[options$subject]]
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector, subjectVector)
 
-  # Count Clouds in the sky
-  countDf <- df[c("axisVector", "fillVector")]
-  # Calculate present factor combinations
-  allCombs <- expand.grid(axisVector = levels(countDf$axisVector), fillVector = levels(countDf$fillVector))
-  presentCombs <- merge(allCombs, countDf, by = c("axisVector", "fillVector"))
-  presentCombs <- unique(presentCombs)
-  presentCombs <- unique(nrow(presentCombs))
-  countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", presentCombs))
+  # Extract factor combinations
+  onlyFactors <- df[c("axisVector", "fillVector")]
+  facCombis   <- expand.grid(axisVector = levels(onlyFactors$axisVector), fillVector = levels(onlyFactors$fillVector))
+  facCombis <- merge(facCombis, onlyFactors, by = c("axisVector", "fillVector"))
+  facCombis <- unique(facCombis)
+  numberClouds <- nrow(facCombis)
+
+  countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", numberClouds))
   countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
   jaspResults[["countText"]] <- countText
-
 
   # Ggplot() with aes()
   aesX     <- axisVector
@@ -137,12 +136,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   aesColor <- if(options$covariate  != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
   plot <- ggplot2::ggplot(data = df, ggplot2::aes(y = variableVector, x = aesX, fill = aesFill, color = aesColor))
 
+
+
   # Geom_rain() arguments
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
   vioArgs$color  <- .rainEdgeColor(options$vioEdges)
   boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
   boxArgs$color  <- .rainEdgeColor(options$boxEdges)
-  pointPos      <- list(
+  pointPos       <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
