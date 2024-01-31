@@ -163,12 +163,32 @@ Form
 	Section
 	{
 		title: 						qsTr("Element Fine-tuning")
-		columns: 1
+		columns: 3
+
+		CheckBox
+		{
+			name:					"customSides"
+			label:					qsTr("Custom orientation:")
+			Layout.columnSpan: 		2
+			childrenOnSameRow:		true
+
+			TextField
+			{
+				name:				"sidesInput"
+				label:				qsTr("")
+				placeholderText:	"Enter 'L' or 'R' for each Axis level."
+			}
+		}
+		HelpButton
+		{
+			toolTip:				qsTr("Per default, all violins are right of the boxes.\nAn example input for an Axis with 2 levels/ticks would be 'LR'.\nThis gives flanking clouds and works well with Subject input.\nTry 'LRR' with 3 Axis levels and Subject input.")
+		}
 
 		Group
 		{
 			title:					qsTr("Violin")
 			columns: 3
+			Layout.columnSpan: 		3
 
 			DoubleField
 			{
@@ -199,6 +219,7 @@ Form
 		{
 			title:					qsTr("Box")
 			columns: 3
+			Layout.columnSpan: 		3
 
 			DoubleField
 			{
@@ -227,6 +248,7 @@ Form
 		{
 			title:					qsTr("Points")
 			columns: 2
+			Layout.columnSpan: 		3
 
 			DoubleField
 			{

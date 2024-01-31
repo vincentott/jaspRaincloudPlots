@@ -70,6 +70,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
           "boxOpacity", "boxEdges",
           "pointOpacity", "palettePoints",
 
+        "customSides", "sidesInput",
         "vioWidth", "vioNudge", "vioSmoothing",
         "boxWidth", "boxNudge", "boxDodge",
         "pointWidth", "pointNudge",
@@ -170,6 +171,20 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
   jaspResults[["countText"]] <- countText
 
+  # Maybe put the below into own function
+  rightSides <- rep("r", numberClouds)
+  vioSides <- if (!options$customSides) {
+    rightSides
+  } else if (!grepl("^[LR]+$", options$sidesInput)) {  # May only contain 'L' or 'R'
+    rightSides
+  } else {
+    if (length(options$sidesInput) != nlevels(df$axisVector)) {
+      rightSides
+    } else {
+      .rainCustomSides(options$sidesInput, facCombis)
+    }
+  }
+
   # Color and Opacity
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
   vioArgs$color  <- .rainEdgeColor(options$vioEdges)
@@ -181,7 +196,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Positioning
   vioPos <- list(
-    width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge), side  = c("r")
+    width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge), side  = vioSides
   )
   boxPos <- list(
     width = options$boxWidth, position = ggpp::position_dodgenudge(x = options$boxNudge,  width = options$boxDodge)
@@ -251,6 +266,31 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plot
 }  # End .rainFillPlot()
+
+
+
+# .rainCustomSides() ----
+.rainCustomSides <- function(sidesInput, facCombis) {
+
+  output      <- c()
+  sidesVector <- strsplit(tolower(sidesInput), "")[[1]]  # Lowercase and stringsplit sidesInput
+  axisVector  <- facCombis$axisVector
+
+  previousLevel <- axisVector[1]
+  sidesIndex    <- 1
+
+  for (level in axisVector) {
+    if (level == previousLevel) {
+      output <- c(output, sidesVector[sidesIndex])
+    } else {
+      sidesIndex <- sidesIndex + 1
+      output <- c(output, sidesVector[sidesIndex])
+      previousLevel <- level
+    }
+  }
+
+  return(output)
+}
 
 
 
