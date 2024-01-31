@@ -145,3 +145,12 @@ presentCombs <- unique(presentCombs)
 # Print result
 print(presentCombs)
 print(nrow(presentCombs))
+
+
+
+for (i in 1:5) print(i)
+
+
+myVector <- c(1:5)
+myVector[2] * -1
+myVector

@@ -55,6 +55,20 @@ options$palettePoints <- "viridis"
 options$colorAnyway <- FALSE  # colorAnyway must be disabled in this case; done in .qml file
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
+# Custom Sides ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$factorAxis <- "species"
+options$paletteFill <- "colorblind"
+options$colorAnyway <- TRUE
+options$customSides <- TRUE
+options$sidesInput <- "LLR"
+debugonce(jaspRaincloudPlots:::.rainFillPlot)
+results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
+
+
+
+
 
 # Storage ----
 # debugonce(jaspRaincloudPlots:::.rainReadData)

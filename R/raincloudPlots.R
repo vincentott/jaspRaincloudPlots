@@ -19,11 +19,9 @@
 
 # Main function: raincloudPlots() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
-
   ready <- (length(options$variables) > 0)
   dataset <- .rainReadData(dataset, options)
   .rainCreatePlots(jaspResults, dataset, options, ready)
-
 }  # End raincloudPlots()
 
 
@@ -36,6 +34,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if(!is.null(dataset)) {
     output <- dataset
   } else {
+
+
+    # axisVector      <- if (options$factorAxis == "")  as.factor(rep("Total", length(variableVector))) else dataset[[options$factorAxis]]
+    # read in all the variables that are given by jasp
+    # and then check what was not given, and then assign the default like in .rainFillPlot() the stuff that joris wants removed
+
 
     factorAxis <- if (options$factorAxis == "") c() else options$factorAxis
     factorFill <- if (options$factorFill == "") c() else options$factorFill
@@ -116,14 +120,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   variableVector  <- dataset[[inputVariable]]
   axisVector      <- if (options$factorAxis == "")  as.factor(rep("Total", length(variableVector))) else dataset[[options$factorAxis]]
   fillVector      <- if (options$factorFill == "")  as.factor(rep("none",  length(variableVector))) else dataset[[options$factorFill]]
-  covariateVector <- if (options$covariate  == "")            rep(NA,      length(variableVector))  else dataset[[options$covariate]]
+  covariateVector <- if (options$covariate  == "")  as.factor(rep(NA,      length(variableVector))) else dataset[[options$covariate]]
   subjectVector   <- if (options$subject    == "")            rep(NA,      length(variableVector))  else dataset[[options$subject]]
+
   df <- data.frame(variableVector, axisVector, fillVector, covariateVector, subjectVector)
 
   # Ggplot() with aes()
   aesX     <- axisVector
   aesFill  <- if(options$factorFill != "")  fillVector      else if (options$colorAnyway) aesX else NULL
   aesColor <- if(options$covariate  != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
+
   plot <- ggplot2::ggplot(data = df, ggplot2::aes(y = variableVector, x = aesX, fill = aesFill, color = aesColor))
 
   # Colors
@@ -134,7 +140,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
     NULL
   }  # End paletteFill
-
   paletteColor <- if (options$covariate != "") {
     if (is.factor(covariateVector)) {
       jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)
@@ -167,23 +172,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   facCombis    <- unique(facCombis)
   numberClouds <- nrow(facCombis)
 
+
   countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", numberClouds))
   countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
   jaspResults[["countText"]] <- countText
 
-  # Maybe put the below into own function
-  rightSides <- rep("r", numberClouds)
-  vioSides <- if (!options$customSides) {
-    rightSides
-  } else if (!grepl("^[LR]+$", options$sidesInput)) {  # May only contain 'L' or 'R'
-    rightSides
-  } else {
-    if (length(options$sidesInput) != nlevels(df$axisVector)) {
-      rightSides
-    } else {
-      .rainCustomSides(options$sidesInput, facCombis)
-    }
-  }
+
 
   # Color and Opacity
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
@@ -194,18 +188,38 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   lineArgs       <- list(alpha = .33)
   if (options$factorFill   == "") lineArgs$color <- "black"
 
+  # Determine Violin Sides
+  rightSides <- rep("r", numberClouds)
+  vioSides <- if (!options$customSides) {
+    rightSides
+  } else if (!grepl("^[LR]+$", options$sidesInput)) {  # May only contain 'L' or 'R'
+    rightSides
+  } else {
+    lengthSidesInput <- length(strsplit(options$sidesInput, "")[[1]])
+    if (lengthSidesInput != nlevels(df$axisVector)) {
+      rightSides
+    } else {
+      .rainCustomSides(options$sidesInput, facCombis)
+    }
+  }
+
   # Positioning
-  vioPos <- list(
-    width = options$vioWidth, position = ggplot2::position_nudge(  x = options$vioNudge), side  = vioSides
-  )
-  boxPos <- list(
-    width = options$boxWidth, position = ggpp::position_dodgenudge(x = options$boxNudge,  width = options$boxDodge)
-  )
-  pointPos       <- list(
+  vioNudge  <- .rainNudge(options$vioNudge,   vioSides)  # Nudging based on sides
+  vioPosVec <- c()
+  for (i in vioNudge) vioPosVec <- c(vioPosVec, rep(i, 512))  # Each density curve consists of 512 points by default
+  vioArgsPos <- list(width = options$vioWidth, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides)
+
+  boxPosVec <- .rainNudge(options$boxNudge,   vioSides)
+  boxArgsPos <- list(width = options$boxWidth, position = ggpp::position_dodgenudge(x = boxPosVec, width = options$boxDodge))
+
+  pointNudge  <- .rainNudge(options$pointNudge, vioSides)
+  pointPosVec <- c()
+  for (i in pointNudge) pointPosVec <- c(pointPosVec, rep(i, 222))  # This number must be the number of points per cloud / I have to count number of rows for each combi in facCombi before unique(facCombi)
+  pointArgsPos <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
-      x          = options$pointNudge,  # Nudge
+      x          = pointPosVec,         # Nudge
       height     = 0.0,                 # yJitter, particularly interesting for likert data
       seed       = 1.0                  # Reproducible jitter
     )
@@ -221,7 +235,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
 
     rain.side = NULL,  # Necessary for neat positioning
-    violin.args.pos = vioPos, boxplot.args.pos = boxPos, point.args.pos = pointPos, line.args.pos = pointPos,
+    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos,
+    point.args.pos = pointArgsPos, line.args.pos = pointArgsPos,  # Lines depend fully on points, so same positioning
 
     cov         = covArg,
     id.long.var = idArg,
@@ -290,6 +305,15 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   return(output)
+}
+
+
+
+# .rainNudge() ----
+.rainNudge <- function(nudgeInput, vioSides) {
+  nudgeVector <- rep(nudgeInput, length(vioSides))
+  for (i in 1:length(vioSides)) if (vioSides[i] == "l") nudgeVector[i] <- nudgeVector[i] * -1
+  return(nudgeVector)
 }
 
 
