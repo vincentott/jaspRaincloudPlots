@@ -100,14 +100,14 @@ Form
 		PercentField
 		{
 			name: 					"vioOpacity"
-			label:					qsTr("       Violin opacity")
+			label:					qsTr("Violin opacity")
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"vioEdges"
-			label:					qsTr("       Violin outline")
+			label:					qsTr("Violin outline")
 			values:	[
 				   	{ label: qsTr("black"), value: "black" },
 				   	{ label: qsTr("none"),  value: "none" },
@@ -123,14 +123,14 @@ Form
 		PercentField
 		{
 			name: 					"boxOpacity"
-			label:					qsTr("       Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
+			label:					qsTr("Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"boxEdges"
-			label:					qsTr("       Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
+			label:					qsTr("Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
 			values:	[
 				   	{ label: qsTr("black"), value: "black" },
 				   	{ label: qsTr("none"),  value: "none" },
@@ -141,13 +141,13 @@ Form
 		PercentField
 		{
 			name: 					"pointOpacity"
-			label:					qsTr("       Point opacity")
+			label:					qsTr("Point opacity")
 		}
 
 		ColorPalette
 		{
 			name:					"palettePoints"
-			label:					qsTr("       Point palette")
+			label:					qsTr("Point palette")
 			enabled: 				covariate.count === 1
 			indexDefaultValue:		3  // viridis works good for both discrete and continous
 			Layout.columnSpan: 1

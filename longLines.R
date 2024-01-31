@@ -145,4 +145,3 @@ presentCombs <- unique(presentCombs)
 # Print result
 print(presentCombs)
 print(nrow(presentCombs))
-
