@@ -19,7 +19,7 @@
 
 # Main function: raincloudPlots() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
-  ready <- (length(options$variables) > 0)
+  ready   <- (length(options$variables) > 0)
   dataset <- .rainReadData(dataset, options)
   .rainCreatePlots(jaspResults, dataset, options, ready)
 }  # End raincloudPlots()
@@ -59,11 +59,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainCreateColumn() ----
-.rainCreateColumn <- function(inputOption, datasetInProgress) {
+.rainCreateColumn <- function(inputOption, inputDataset) {
   output <- if (inputOption == "") {
-    as.factor(rep("Total", nrow(datasetInProgress)))
+    as.factor(rep("Total", nrow(inputDataset)))
   } else {
-    datasetInProgress[[inputOption]]
+    inputDataset[[inputOption]]
   }
   return(output)
 }  # End .rainCreateColumn()
@@ -130,80 +130,44 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Ggplot() with aes()
   aesX     <- dataset$factorAxis
-  aesFill  <- if(options$factorFill != "")  dataset$factorFill else if (options$colorAnyway) aesX else NULL
-  aesColor <- if(options$covariate  != "")  dataset$covariate  else if (options$colorAnyway) aesX else aesFill
-
+  aesFill  <- if(options$factorFill != "") dataset$factorFill else if (options$colorAnyway) aesX else NULL
+  aesColor <- if(options$covariate  != "") dataset$covariate  else if (options$colorAnyway) aesX else aesFill
   plot <- ggplot2::ggplot(
     data = dataset, ggplot2::aes(y = dataset[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
   )
 
-  # Colors
-  paletteFill <- if (options$factorFill != "") {
-    jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
-  } else if (options$colorAnyway) {
-    jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
-  } else {
-    NULL
-  }  # End paletteFill
-  paletteColor <- if (options$covariate != "") {
-    if (is.factor(dataset$covariate)) {
-      jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)
-    } else {
-      jaspGraphs::scale_JASPcolor_continuous(options$palettePoints, name = options$covariate)
-    }
-  } else {
-    if (options$factorFill != "") {
-      jaspGraphs::scale_JASPcolor_discrete(options$paletteFill, name = options$factorFill)
-    } else if (options$colorAnyway) {
-      jaspGraphs::scale_JASPcolor_discrete(options$paletteFill, name = options$factorFill)
-    } else {
-      NULL
-    }
-  }  # End paletteColor
-
-  plot <- plot + paletteFill + paletteColor
-
-
+  # Palettes
+  palettes <- .rainSetPalettes(options, dataset)
+  plot <- plot + palettes$fill + palettes$color
 
   #
   # Geom_rain() arguments
   #
 
-  # Extract factor combinations
-  onlyFactors  <- dataset[c("factorAxis", "factorFill")]
-  facCombis    <- expand.grid(factorAxis = levels(onlyFactors$factorAxis), factorFill = levels(onlyFactors$factorFill))
-  facCombis    <- merge(facCombis, onlyFactors, by = c("factorAxis", "factorFill"))
+  # Info about factor combinations in the dataset
+  infoFactorCombinations <- .rainInfoFactorCombinations(dataset)
 
-  facCombis    <- unique(facCombis)
-  numberClouds <- nrow(facCombis)
-
-  countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", numberClouds))
+  # # # # # Delete this later
+  countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", infoFactorCombinations$numberOfClouds))
   countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
   jaspResults[["countText"]] <- countText
+  # # # # #
 
-  # Color and Opacity
+  # Opacity and outline color of violins & boxes
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
   vioArgs$color  <- .rainEdgeColor(options$vioEdges)
+
   boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
   boxArgs$color  <- .rainEdgeColor(options$boxEdges)
+
   pointArgs      <- list(alpha = options$pointOpacity)
+
   lineArgs       <- list(alpha = .33)
   if (options$factorFill   == "") lineArgs$color <- "black"
 
-  # Determine Violin Sides
-  rightSides <- rep("r", numberClouds)
-  vioSides <- if (!options$customSides) {
-    rightSides
-  } else if (!grepl("^[LR]+$", options$sidesInput)) {  # May only contain 'L' or 'R'
-    rightSides
-  } else {
-    lengthSidesInput <- length(strsplit(options$sidesInput, "")[[1]])
-    if (lengthSidesInput != nlevels(dataset$factorAxis)) {
-      rightSides
-    } else {
-      .rainCustomSides(options$sidesInput, facCombis)
-    }
-  }
+  # Determine sides of violins; either all R or according to custom input
+  vioSides <- .rainVioSides(options, dataset, infoFactorCombinations)
+
 
   # Positioning
   vioNudge  <- .rainNudge(options$vioNudge,   vioSides)  # Nudging based on sides
@@ -282,16 +246,83 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plot
+
 }  # End .rainFillPlot()
 
 
 
+# .rainSetPalettes() ----
+.rainSetPalettes <- function(options, dataset) {
+
+  paletteFill <- if (options$factorFill != "" || options$colorAnyway) {
+    jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
+  } else {
+    NULL
+  }
+
+  paletteColor <- if (options$covariate != "") {
+    if (is.factor(dataset$covariate)) {
+      jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)
+    } else {
+      jaspGraphs::scale_JASPcolor_continuous(options$palettePoints, name = options$covariate)
+    }
+  } else {
+    if (options$factorFill != "" || options$colorAnyway) {
+      jaspGraphs::scale_JASPcolor_discrete(options$paletteFill, name = options$factorFill)
+    } else {
+      NULL
+    }
+  }
+
+  return(list(fill = paletteFill, color = paletteColor))
+}  # End .rainSetPalettes()
+
+
+
+# .rainInfoFactorCombinations() ----
+.rainInfoFactorCombinations <- function(inputDataset) {
+  onlyFactors    <- inputDataset[c("factorAxis", "factorFill")]
+  possibleCombis <- expand.grid(factorAxis = levels(onlyFactors$factorAxis), factorFill = levels(onlyFactors$factorFill))
+  observedCombis <- merge(possibleCombis, onlyFactors, by = c("factorAxis", "factorFill"))
+  uniqueCombis   <- unique(observedCombis)
+  numberOfClouds <- nrow(uniqueCombis)
+  return(
+    list(numberOfClouds = numberOfClouds, uniqueCombis = uniqueCombis, observedCombis = observedCombis)
+  )
+}  # End .rainInfoFactorCombinations()
+
+
+
+# .rainVioSides() ----
+.rainVioSides <- function(options, dataset, infoFactorCombinations) {
+
+  defaultSides <- rep("r", infoFactorCombinations$numberOfClouds)  # Default
+
+  # If user wants customSides and has valid sidesInput, we allow customSides - else default
+  outputSides <- if (!options$customSides) {
+    defaultSides
+  } else if (!grepl("^[LR]+$", options$sidesInput)) {  # May only contain 'L' or 'R'
+    defaultSides
+  } else {
+    lengthSidesInput <- length(strsplit(options$sidesInput, "")[[1]])  # Same length as axis ticks
+    if (lengthSidesInput != nlevels(dataset$factorAxis)) {
+      defaultSides
+    } else {
+      .rainCustomSides(options$sidesInput, infoFactorCombinations$uniqueCombis)
+    }
+  }
+
+  return(outputSides)
+}  # End .rainVioSides()
+
+
+
 # .rainCustomSides() ----
-.rainCustomSides <- function(sidesInput, facCombis) {
+.rainCustomSides <- function(sidesInput, uniqueCombis) {
 
   output      <- c()
   sidesVector <- strsplit(tolower(sidesInput), "")[[1]]  # Lowercase and stringsplit sidesInput
-  axisVector  <- facCombis$factorAxis
+  axisVector  <- uniqueCombis$factorAxis
 
   previousLevel <- axisVector[1]
   sidesIndex    <- 1

@@ -34,7 +34,7 @@ Form
 			name: 					"variables"
 			title: 					qsTr("Dependent Variables")
 			id: 					variables
-			suggestedColumns: 		["scale"]
+			suggestedColumns: 		["ordinal", "scale"]
 		}
 		AssignedVariablesList
 		{
