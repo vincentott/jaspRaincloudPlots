@@ -87,9 +87,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "pointOpacity", "palettePoints",
 
         "customSides", "sidesInput",
-        "vioWidth", "vioNudge", "vioSmoothing",
-        "boxWidth", "boxNudge", "boxDodge",
-        "pointWidth", "pointNudge",
+        "vioNudge",   "vioWidth",   "vioSmoothing",
+        "boxNudge",   "boxWidth",   "boxDodge",
+        "pointNudge", "pointWidth",
 
         "horizontal"
 
@@ -140,10 +140,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   palettes <- .rainSetPalettes(options, dataset)
   plot <- plot + palettes$fill + palettes$color
 
-  #
-  # Geom_rain() arguments
-  #
-
   # Info about factor combinations in the dataset
   infoFactorCombinations <- .rainInfoFactorCombinations(dataset)
 
@@ -153,68 +149,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   jaspResults[["countText"]] <- countText
   # # # # #
 
-  # Opacity and outline color of violins & boxes
-  vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
-  vioArgs$color  <- .rainEdgeColor(options$vioEdges)
-
-  boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
-  boxArgs$color  <- .rainEdgeColor(options$boxEdges)
-
-  pointArgs      <- list(alpha = options$pointOpacity)
-
-  lineArgs       <- list(alpha = .33)
-  if (options$factorFill   == "") lineArgs$color <- "black"
-
-  # Determine sides of violins; either all R or according to custom input
-  vioSides <- .rainVioSides(options, dataset, infoFactorCombinations)
-
-
-  # Positioning
-  vioNudge  <- .rainNudge(options$vioNudge,   vioSides)  # Nudging based on sides
-  vioPosVec <- c()
-  for (i in vioNudge) vioPosVec <- c(vioPosVec, rep(i, 512))  # Each density curve consists of 512 points by default
-  vioArgsPos <- list(width = options$vioWidth, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides)
-
-  boxPosVec <- .rainNudge(options$boxNudge,   vioSides)
-  boxArgsPos <- list(width = options$boxWidth, position = ggpp::position_dodgenudge(x = boxPosVec, width = options$boxDodge))
-
-  pointNudge  <- .rainNudge(options$pointNudge, vioSides)
-  pointPosVec <- c()
-  for (i in pointNudge) pointPosVec <- c(pointPosVec, rep(i, 222))  # This number must be the number of points per cloud / I have to count number of rows for each combi in facCombi before unique(facCombi)
-  pointArgsPos <- list(
-    position = ggpp::position_jitternudge(
-      nudge.from = "jittered",
-      width      = options$pointWidth,  # xJitter
-      x          = pointPosVec,         # Nudge
-      height     = 0.0,                 # yJitter, particularly interesting for likert data
-      seed       = 1.0                  # Reproducible jitter
-    )
-  )
-
-  # Cov and id
-  covArg         <- if (options$covariate == "")                              NULL else "covariate"  # Must be string
-  idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subject"    # FactorAxis condition necessary as JASP won´t remove present Subject input if user removes present Axis input
-
-  # Call geom_rain()
-  plot <- plot + ggrain::geom_rain(
-
-    violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
-
-    rain.side = NULL,  # Necessary for neat positioning
-    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos,
-    point.args.pos = pointArgsPos, line.args.pos = pointArgsPos,  # Lines depend fully on points, so same positioning
-
-    cov         = covArg,
-    id.long.var = idArg,
-
-    likert      = FALSE  # TRUE does not work because of ggpp:position_jitternudge() in pointPos - jitternudge height argument instead
-
-  )  # End geom_rain()
-
-  #
-  # End geom_rain() section
-  #
-
+  # Workhorse function
+  plot <- plot + .rainGeomRain(options, dataset, infoFactorCombinations)
 
   # Theme
   setUpTheme   <- jaspGraphs::themeJaspRaw(legend.position = "right")
@@ -293,8 +229,75 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
+# .rainGeomRain() ----
+.rainGeomRain <- function(options, dataset, infoFactorCombinations) {
+
+  # Opacity and outline color of violins & boxes
+  vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
+  vioArgs$color  <- .rainEdgeColor(options$vioEdges)
+
+  boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
+  boxArgs$color  <- .rainEdgeColor(options$boxEdges)
+
+  pointArgs      <- list(alpha = options$pointOpacity)
+
+  lineArgs       <- list(alpha = .33)
+  if (options$factorFill   == "") lineArgs$color <- "black"
+
+  # Determine sides of violins; either all R or according to custom input
+  vioSides <- .rainVioSides(options, dataset, infoFactorCombinations)
+
+  # Positioning
+  vioNudge  <- .rainNudge(options$vioNudge, vioSides)  # Nudging based on sides
+  vioPosVec <- c()
+  for (i in vioNudge) vioPosVec <- c(vioPosVec, rep(i, 512))  # Each density curve consists of 512 points by default
+  vioArgsPos <- list(width = options$vioWidth, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides)
+
+  boxPosVec <- .rainNudge(options$boxNudge,   vioSides)
+  boxArgsPos <- list(width = options$boxWidth, position = ggpp::position_dodgenudge(x = boxPosVec, width = options$boxDodge))
+
+  pointNudge  <- options$pointNudge * -1  # Because of this, all nudges in the GUI can be positive by default
+  # Otherwise pointNudge would be displayed as -0.14 which did not look as tidy
+  pointNudge  <- .rainNudge(pointNudge, vioSides)
+  pointPosVec <- c()
+  for (i in pointNudge) pointPosVec <- c(pointPosVec, rep(i, 222))  # This number must be the number of points per cloud / I have to count number of rows for each combi in facCombi before unique(facCombi)
+  pointArgsPos <- list(
+    position = ggpp::position_jitternudge(
+      nudge.from = "jittered",
+      width      = options$pointWidth,  # xJitter
+      x          = pointPosVec,         # Nudge
+      height     = 0.0,                 # yJitter, particularly interesting for likert data
+      seed       = 1.0                  # Reproducible jitter
+    )
+  )
+
+  # Cov and id
+  covArg         <- if (options$covariate == "")                              NULL else "covariate"  # Must be string
+  idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subject"    # FactorAxis condition necessary as JASP won´t remove present Subject input if user removes present Axis input
+
+  # Call geom_rain()
+  output <- ggrain::geom_rain(
+
+    violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
+
+    rain.side = NULL,  # Necessary for neat positioning
+    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos,
+    point.args.pos = pointArgsPos, line.args.pos = pointArgsPos,  # Lines depend fully on points, so same positioning
+
+    cov         = covArg,
+    id.long.var = idArg,
+
+    likert      = FALSE  # TRUE does not work because of ggpp:position_jitternudge() in pointPos - jitternudge height argument instead
+
+  )
+
+  return(output)
+}  # End .rainGeomRain()
+
+
+
 # .rainVioSides() ----
-.rainVioSides <- function(options, dataset, infoFactorCombinations) {
+.rainVioSides <- function(options, dataset, infoFactorCombinations, inputPlot) {
 
   defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)  # Default
 

@@ -34,7 +34,7 @@ Form
 			name: 					"variables"
 			title: 					qsTr("Dependent Variables")
 			id: 					variables
-			suggestedColumns: 		["ordinal", "scale"]
+			suggestedColumns: 		["scale"]
 		}
 		AssignedVariablesList
 		{
@@ -192,17 +192,17 @@ Form
 
 			DoubleField
 			{
-				name:				"vioWidth"
-				label:				qsTr("Width")
-				defaultValue:		0.7
-			}
-
-			DoubleField
-			{
 				name:				"vioNudge"
 				label:				qsTr("Nudge")
 				defaultValue:		0.075
 				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"vioWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.7
 			}
 
 			DoubleField
@@ -223,17 +223,17 @@ Form
 
 			DoubleField
 			{
-				name:				"boxWidth"
-				label:				qsTr("Width")
-				defaultValue:		0.075
-			}
-
-			DoubleField
-			{
 				name:				"boxNudge"
 				label:				qsTr("Nudge")
 				defaultValue:		0
 				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"boxWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.075
 			}
 
 			DoubleField
@@ -252,18 +252,19 @@ Form
 
 			DoubleField
 			{
+				name:				"pointNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		0.14  // Is multiplied by -1 in the R script
+				negativeValues:		true
+			}
+
+			DoubleField
+			{
 				name:				"pointWidth"
 				label:				qsTr("Width")
 				defaultValue:		0.065
 			}
 
-			DoubleField
-			{
-				name:				"pointNudge"
-				label:				qsTr("Nudge")
-				defaultValue:		-0.14
-				negativeValues:		true
-			}
 		}
 
 
