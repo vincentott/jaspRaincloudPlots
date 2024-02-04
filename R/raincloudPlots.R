@@ -29,32 +29,44 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # .rainReadData() ----
 .rainReadData <- function(dataset, options) {
 
-  output = NULL
-
   if(!is.null(dataset)) {
     output <- dataset
   } else {
 
+    # Step 1: Read in all variables that are given by JASP
+    # When there is no input, nothing is read in
+    readFactorAxis <- if (options$factorAxis == "") c() else options$factorAxis
+    readFactorFill <- if (options$factorFill == "") c() else options$factorFill
+    readCovariate  <- if (options$covariate  == "") c() else options$covariate
+    readSubject    <- if (options$subject    == "") c() else options$subject
 
-    # axisVector      <- if (options$factorAxis == "")  as.factor(rep("Total", length(variableVector))) else dataset[[options$factorAxis]]
-    # read in all the variables that are given by jasp
-    # and then check what was not given, and then assign the default like in .rainFillPlot() the stuff that joris wants removed
+    datasetInProgress <- .readDataSetToEnd(
+      columns = c(options$variables, readFactorAxis, readFactorFill, readCovariate, readSubject)
+    )
 
+    # Step 2: Create columns with consistent names; if no input then assign default
+    datasetInProgress$factorAxis <- .rainCreateColumn(   options$factorAxis,   datasetInProgress)
+    datasetInProgress$factorFill <- .rainCreateColumn(   options$factorFill,   datasetInProgress)
+    datasetInProgress$covariate  <- .rainCreateColumn(   options$covariate,    datasetInProgress)
+    datasetInProgress$subject    <- .rainCreateColumn(   options$subject,      datasetInProgress)
 
-    factorAxis <- if (options$factorAxis == "") c() else options$factorAxis
-    factorFill <- if (options$factorFill == "") c() else options$factorFill
-    covariate  <- if (options$covariate  == "") c() else options$covariate
-    subject    <- if (options$subject    == "") c() else options$subject
-
-    output <- .readDataSetToEnd(
-      columns.as.numeric = options$variables,
-      columns.as.factor  = c(factorAxis, factorFill, subject),
-      columns            = covariate
-      )
+    output <- datasetInProgress
   }
 
   return(output)
 } # End .rainReadData()
+
+
+
+# .rainCreateColumn() ----
+.rainCreateColumn <- function(inputOption, datasetInProgress) {
+  output <- if (inputOption == "") {
+    as.factor(rep("Total", nrow(datasetInProgress)))
+  } else {
+    datasetInProgress[[inputOption]]
+  }
+  return(output)
+}  # End .rainCreateColumn()
 
 
 
@@ -70,9 +82,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
         "paletteFill",
         "colorAnyway",
-          "vioOpacity", "vioEdges",
-          "boxOpacity", "boxEdges",
-          "pointOpacity", "palettePoints",
+        "vioOpacity", "vioEdges",
+        "boxOpacity", "boxEdges",
+        "pointOpacity", "palettePoints",
 
         "customSides", "sidesInput",
         "vioWidth", "vioNudge", "vioSmoothing",
@@ -116,21 +128,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # .rainFillPlot() ----
 .rainFillPlot <- function(inputPlot, dataset, options, inputVariable, jaspResults) {
 
-  # Transform to data.frame() - required for ggplot
-  variableVector  <- dataset[[inputVariable]]
-  axisVector      <- if (options$factorAxis == "")  as.factor(rep("Total", length(variableVector))) else dataset[[options$factorAxis]]
-  fillVector      <- if (options$factorFill == "")  as.factor(rep("none",  length(variableVector))) else dataset[[options$factorFill]]
-  covariateVector <- if (options$covariate  == "")  as.factor(rep(NA,      length(variableVector))) else dataset[[options$covariate]]
-  subjectVector   <- if (options$subject    == "")            rep(NA,      length(variableVector))  else dataset[[options$subject]]
-
-  df <- data.frame(variableVector, axisVector, fillVector, covariateVector, subjectVector)
-
   # Ggplot() with aes()
-  aesX     <- axisVector
-  aesFill  <- if(options$factorFill != "")  fillVector      else if (options$colorAnyway) aesX else NULL
-  aesColor <- if(options$covariate  != "")  covariateVector else if (options$colorAnyway) aesX else aesFill
+  aesX     <- dataset$factorAxis
+  aesFill  <- if(options$factorFill != "")  dataset$factorFill else if (options$colorAnyway) aesX else NULL
+  aesColor <- if(options$covariate  != "")  dataset$covariate  else if (options$colorAnyway) aesX else aesFill
 
-  plot <- ggplot2::ggplot(data = df, ggplot2::aes(y = variableVector, x = aesX, fill = aesFill, color = aesColor))
+  plot <- ggplot2::ggplot(
+    data = dataset, ggplot2::aes(y = dataset[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
+  )
 
   # Colors
   paletteFill <- if (options$factorFill != "") {
@@ -141,7 +146,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }  # End paletteFill
   paletteColor <- if (options$covariate != "") {
-    if (is.factor(covariateVector)) {
+    if (is.factor(dataset$covariate)) {
       jaspGraphs::scale_JASPcolor_discrete(options$palettePoints, name = options$covariate)
     } else {
       jaspGraphs::scale_JASPcolor_continuous(options$palettePoints, name = options$covariate)
@@ -165,19 +170,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   #
 
   # Extract factor combinations
-  onlyFactors  <- df[c("axisVector", "fillVector")]
-  facCombis    <- expand.grid(axisVector = levels(onlyFactors$axisVector), fillVector = levels(onlyFactors$fillVector))
-  facCombis    <- merge(facCombis, onlyFactors, by = c("axisVector", "fillVector"))
+  onlyFactors  <- dataset[c("factorAxis", "factorFill")]
+  facCombis    <- expand.grid(factorAxis = levels(onlyFactors$factorAxis), factorFill = levels(onlyFactors$factorFill))
+  facCombis    <- merge(facCombis, onlyFactors, by = c("factorAxis", "factorFill"))
 
   facCombis    <- unique(facCombis)
   numberClouds <- nrow(facCombis)
 
-
   countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", numberClouds))
   countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
   jaspResults[["countText"]] <- countText
-
-
 
   # Color and Opacity
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
@@ -196,7 +198,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     rightSides
   } else {
     lengthSidesInput <- length(strsplit(options$sidesInput, "")[[1]])
-    if (lengthSidesInput != nlevels(df$axisVector)) {
+    if (lengthSidesInput != nlevels(dataset$factorAxis)) {
       rightSides
     } else {
       .rainCustomSides(options$sidesInput, facCombis)
@@ -226,8 +228,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Cov and id
-  covArg         <- if (options$covariate == "")                              NULL else "covariateVector"  # Must be string
-  idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subjectVector"    # FactorAxis condition necessary as JASP won´t remove present Subject input if user removes present Axis input
+  covArg         <- if (options$covariate == "")                              NULL else "covariate"  # Must be string
+  idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subject"    # FactorAxis condition necessary as JASP won´t remove present Subject input if user removes present Axis input
 
   # Call geom_rain()
   plot <- plot + ggrain::geom_rain(
@@ -256,8 +258,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   xTitle       <- if (options$factorAxis == "") "Total" else options$factorAxis
   axisTitles   <- ggplot2::labs(x = xTitle, y = inputVariable)
 
-  yBreaks      <- jaspGraphs::getPrettyAxisBreaks(variableVector)
-  yLimits      <- range(c(yBreaks, variableVector))
+  yBreaks      <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
+  yLimits      <- range(c(yBreaks, dataset[[inputVariable]]))
   yAxis        <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
 
   inwardTicks  <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
@@ -289,7 +291,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   output      <- c()
   sidesVector <- strsplit(tolower(sidesInput), "")[[1]]  # Lowercase and stringsplit sidesInput
-  axisVector  <- facCombis$axisVector
+  axisVector  <- facCombis$factorAxis
 
   previousLevel <- axisVector[1]
   sidesIndex    <- 1
@@ -320,11 +322,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainEdgeColor() ----
 .rainEdgeColor <- function(input) {
-
   if (input == "black")           return("black")
   else if (input == "none")       return(NA)
   else print("error with edges")
-
 }
 
 

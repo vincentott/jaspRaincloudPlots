@@ -8,9 +8,10 @@ options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
+# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# Factor Axis + color ----
+# Axis + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
@@ -18,7 +19,7 @@ options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
-# Factor Axis NO color ----
+# Axis NO color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
@@ -42,6 +43,7 @@ options$factorAxis <- "island"
 options$factorFill <- "species"
 options$paletteFill <- "viridis"
 options$colorAnyway <- FALSE  # colorAnyway must be disabled in this case; done in .qml file
+# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 # Two factors + covariate ----
@@ -62,10 +64,9 @@ options$factorAxis <- "species"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 options$customSides <- TRUE
-options$sidesInput <- "LLR"
-debugonce(jaspRaincloudPlots:::.rainFillPlot)
+options$sidesInput <- "LRR"
+# debugonce(jaspRaincloudPlots:::.rainReadData)
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
-
 
 
 
