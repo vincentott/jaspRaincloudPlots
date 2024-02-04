@@ -296,49 +296,39 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # .rainVioSides() ----
 .rainVioSides <- function(options, dataset, infoFactorCombinations) {
 
-  defaultSides <- rep("r", infoFactorCombinations$numberOfClouds)  # Default
+  defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)  # Default
 
-  # If user wants customSides and has valid sidesInput, we allow customSides - else default
-  outputSides <- if (!options$customSides) {
-    defaultSides
+  if (!options$customSides) {
+    outputSides <- defaultSides
+
   } else if (!grepl("^[LR]+$", options$sidesInput)) {  # May only contain 'L' or 'R'
-    defaultSides
+    outputSides <- defaultSides
+
+  # Number of customSides must match number of axis ticks
+  } else if ( length(strsplit(options$sidesInput, "")[[1]]) != nlevels(dataset$factorAxis)) {
+    outputSides <- defaultSides
+
   } else {
-    lengthSidesInput <- length(strsplit(options$sidesInput, "")[[1]])  # Same length as axis ticks
-    if (lengthSidesInput != nlevels(dataset$factorAxis)) {
-      defaultSides
-    } else {
-      .rainCustomSides(options$sidesInput, infoFactorCombinations$uniqueCombis)
+
+      outputSides   <- c()
+      sidesVector   <- strsplit(tolower(options$sidesInput), "")[[1]]  # Lowercase and stringsplit sidesInput
+      axisVector    <- infoFactorCombinations$uniqueCombis$factorAxis
+      previousLevel <- axisVector[1]
+      sidesIndex    <- 1
+
+      for (level in axisVector) {
+        if (level == previousLevel) {
+          outputSides <- c(outputSides, sidesVector[sidesIndex])
+        } else {
+          sidesIndex    <- sidesIndex + 1
+          outputSides   <- c(outputSides, sidesVector[sidesIndex])
+          previousLevel <- level
+        }
+      }
     }
-  }
 
   return(outputSides)
 }  # End .rainVioSides()
-
-
-
-# .rainCustomSides() ----
-.rainCustomSides <- function(sidesInput, uniqueCombis) {
-
-  output      <- c()
-  sidesVector <- strsplit(tolower(sidesInput), "")[[1]]  # Lowercase and stringsplit sidesInput
-  axisVector  <- uniqueCombis$factorAxis
-
-  previousLevel <- axisVector[1]
-  sidesIndex    <- 1
-
-  for (level in axisVector) {
-    if (level == previousLevel) {
-      output <- c(output, sidesVector[sidesIndex])
-    } else {
-      sidesIndex <- sidesIndex + 1
-      output <- c(output, sidesVector[sidesIndex])
-      previousLevel <- level
-    }
-  }
-
-  return(output)
-}
 
 
 
@@ -347,7 +337,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   nudgeVector <- rep(nudgeInput, length(vioSides))
   for (i in 1:length(vioSides)) if (vioSides[i] == "l") nudgeVector[i] <- nudgeVector[i] * -1
   return(nudgeVector)
-}
+}  # End .rainNudge()
 
 
 
@@ -356,6 +346,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (input == "black")           return("black")
   else if (input == "none")       return(NA)
   else print("error with edges")
-}
+}  # End .rainEdgeColor()
 
 

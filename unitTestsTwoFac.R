@@ -64,7 +64,7 @@ options$factorAxis <- "species"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 options$customSides <- TRUE
-options$sidesInput <- "LRR"
+options$sidesInput <- ""
 # debugonce(jaspRaincloudPlots:::.rainReadData)
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
