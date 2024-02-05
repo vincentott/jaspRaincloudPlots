@@ -144,11 +144,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Info about factor combinations in the dataset
   infoFactorCombinations <- .rainInfoFactorCombinations(dataset)
-  # # # # # Delete this later - and also delete jaspResults as input argument from .rainFillPlot()
-  countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", infoFactorCombinations$numberOfClouds))
-  countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
-  jaspResults[["countText"]] <- countText
-  # # # # #
+  # # # # # # Delete this later - and also delete jaspResults as input argument from .rainFillPlot()
+  # countText <- createJaspHtml(text = gettextf("There are %s clouds in the sky.", infoFactorCombinations$numberOfClouds))
+  # countText$dependOn(c("variables", "factorAxis", "factorFill", "colorAnyway"))
+  # jaspResults[["countText"]] <- countText
+  # # # # # #
 
   # Workhorse function, uses ggrain::geom_rain()
   plot <- plot + .rainGeomRain(options, dataset, infoFactorCombinations)
@@ -250,27 +250,27 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   vioSides <- .rainSetVioSides(options, dataset, infoFactorCombinations)  # Either all R or according to custom input
 
   # Violin position
-  vioNudge  <- .rainNudgeForEachCloud(options$vioNudge, vioSides)  # Nudging based on default/custom orientation
+  vioNudgeForEachCloud  <- .rainNudgeForEachCloud(options$vioNudge, vioSides)  # Nudging based on default/custom orientation
   vioPosVec <- c()
-  for (i in vioNudge) vioPosVec <- c(vioPosVec, rep(i, 512))  # Each density curve consists of 512 points by default
+  for (i in vioNudgeForEachCloud) vioPosVec <- c(vioPosVec, rep(i, 512))  # Each density curve consists of 512 points by default
   vioArgsPos <- list(width = options$vioWidth, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides)
 
   # Box position
-  boxPosVec <- .rainNudgeForEachCloud(options$boxNudge,   vioSides)
+  boxPosVec <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
   boxArgsPos <- list(
     width = options$boxWidth, position = ggpp::position_dodgenudge(x = boxPosVec, width = options$boxDodge)
   )
 
   # Point position
-  pointNudge     <- options$pointNudge * -1  # Because of this, all nudges in the GUI can be positive by default
-                                             # Otherwise pointNudge would be displayed as -0.14 which did not look as tidy
-  pointNudge     <- .rainNudgeForEachCloud(pointNudge, vioSides)
-  pointsPerCloud <- .rainPointsPerCloud(infoFactorCombinations)
-  pointPosVec    <- c()
-  for (i in 1:length(pointNudge)) {
-    pointPosVec <- c(pointPosVec, rep(pointNudge[i], pointsPerCloud[i]))
+  negativePointNudge     <- options$pointNudge * -1  # Because of this, all nudges in the GUI can be positive by default
+                                                     # Otherwise pointNudge would be displayed as -0.14 which did not look as tidy
+  pointNudgeForEachCloud <- .rainNudgeForEachCloud(negativePointNudge, vioSides)
+  pointsPerCloud         <- .rainPointsPerCloud(infoFactorCombinations)
+  pointPosVec            <- c()
+  for (i in 1:length(pointNudgeForEachCloud)) {
+    pointPosVec <- c(pointPosVec, rep(pointNudgeForEachCloud[i], pointsPerCloud[i]))  # unlike vioPosVec, there won´t always be 512 points
   }
-  pointArgsPos <- list(
+  pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
@@ -279,6 +279,21 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       seed       = 1.0                  # Reproducible jitter
     )
   )
+
+  # # Line Position
+  # # ADD COMMENT ABOUT THE RATIONALE OF THIS SECTION!!!!
+  # negativelineNudge <- options$pointNudge * -1  # See negativePointNudge
+  #
+  # lineArgsPos <- list(
+  #   position = ggpp::position_jitternudge(
+  #     nudge.from = "jittered",
+  #     width      = options$pointWidth,  # xJitter
+  #     x          = 0.14,                # Nudge
+  #     height     = 0.0,                 # yJitter, particularly interesting for likert data
+  #     seed       = 1.0                  # Reproducible jitter
+  #   )
+  # )
+
 
   # Cov and id
   covArg         <- if (options$covariate == "")                              NULL else "covariate"  # Must be string
@@ -295,7 +310,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
     rain.side = NULL,  # Necessary for neat positioning
     violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos,
-    point.args.pos  = pointArgsPos, line.args.pos = pointArgsPos,  # Lines depend fully on points, so same positioning
+    point.args.pos  = pointArgsPos, line.args.pos = pointArgsPos, # lineArgsPos
 
     cov         = covArg,
     id.long.var = idArg,

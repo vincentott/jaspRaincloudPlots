@@ -254,7 +254,8 @@ Form
 			{
 				name:				"pointNudge"
 				label:				qsTr("Nudge")
-				defaultValue:		0.14  // Is multiplied by -1 in the R script
+				defaultValue:		(subject.count === 0) ? 0.14 : 0 // Is multiplied by -1 in the R script
+				enabled:			(subject.count === 0) ? true : false
 				negativeValues:		true
 			}
 
@@ -278,3 +279,4 @@ Form
 	}
 
 }
+
