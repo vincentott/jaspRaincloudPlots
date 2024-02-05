@@ -297,8 +297,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     cov         = covArg,
     id.long.var = idArg,
 
-    likert      = FALSE  # TRUE does not work because of ggpp:position_jitternudge() in pointPos - jitternudge height argument instead
-
+    likert      = FALSE  # TRUE does not work because of ggpp:position_jitternudge() in pointPos
+                         # use jitternudge height argument instead
   )
 
   return(output)
