@@ -54,7 +54,7 @@ options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
 options$palettePoints <- "viridis"
-options$colorAnyway <- FALSE  # colorAnyway must be disabled in this case; done in .qml file
+options$colorAnyway <- FALSE  # colorAnyway must be disabled if factorFill input; done in .qml file
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 # Custom Sides ----
@@ -63,7 +63,7 @@ options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
 options$factorFill <- "species"
 options$paletteFill <- "colorblind"
-options$colorAnyway <- FALSE
+options$colorAnyway <- FALSE  # colorAnyway must be disabled if factorFill input; done in .qml file
 options$customSides <- TRUE
 options$sidesInput <- "LRR"
 # debugonce(jaspRaincloudPlots:::.rainPointsPerCloud)
