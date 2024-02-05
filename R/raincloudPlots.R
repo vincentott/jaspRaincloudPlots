@@ -150,7 +150,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   jaspResults[["countText"]] <- countText
   # # # # #
 
-  # Workhorse function
+  # Workhorse function, uses ggrain::geom_rain()
   plot <- plot + .rainGeomRain(options, dataset, infoFactorCombinations)
 
   # Theme
@@ -262,11 +262,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Point position
-  pointNudge  <- options$pointNudge * -1  # Because of this, all nudges in the GUI can be positive by default
-                                          # Otherwise pointNudge would be displayed as -0.14 which did not look as tidy
-  pointNudge  <- .rainNudgeForEachCloud(pointNudge, vioSides)
-  pointPosVec <- c()
-  for (i in pointNudge) pointPosVec <- c(pointPosVec, rep(i, 222))  # This number must be the number of points per cloud
+  pointNudge     <- options$pointNudge * -1  # Because of this, all nudges in the GUI can be positive by default
+                                             # Otherwise pointNudge would be displayed as -0.14 which did not look as tidy
+  pointNudge     <- .rainNudgeForEachCloud(pointNudge, vioSides)
+  pointsPerCloud <- .rainPointsPerCloud(infoFactorCombinations)
+  pointPosVec    <- c()
+  for (i in 1:length(pointNudge)) {
+    pointPosVec <- c(pointPosVec, rep(pointNudge[i], pointsPerCloud[i]))
+  }
   pointArgsPos <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
@@ -356,6 +359,28 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   for (i in 1:length(vioSides)) if (vioSides[i] == "l") nudgeVector[i] <- nudgeVector[i] * -1
   return(nudgeVector)
 }  # End .rainNudgeForEachCloud()
+
+
+
+# .rainPointsPerCloud() ----
+.rainPointsPerCloud <- function(infoFactorCombinations) {
+
+  output <- c()
+
+  combinationsVector <- paste0(
+    infoFactorCombinations$uniqueCombis$factorAxis, infoFactorCombinations$uniqueCombis$factorFill
+  )
+
+  observationsVector <- paste0(
+    infoFactorCombinations$observedCombis$factorAxis, infoFactorCombinations$observedCombis$factorFill
+  )
+
+  for (combination in combinationsVector) {
+    output <- c(output, sum(observationsVector == combination))
+  }
+
+  return(output)
+}  # End .rainPointsPerCloud()
 
 
 

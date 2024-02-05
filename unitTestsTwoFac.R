@@ -60,12 +60,13 @@ results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 # Custom Sides ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "species"
+options$factorAxis <- "island"
+options$factorFill <- "species"
 options$paletteFill <- "colorblind"
-options$colorAnyway <- TRUE
+options$colorAnyway <- FALSE
 options$customSides <- TRUE
 options$sidesInput <- "LRR"
-# debugonce(jaspRaincloudPlots:::.rainReadData)
+# debugonce(jaspRaincloudPlots:::.rainPointsPerCloud)
 results <- jaspTools::runAnalysis("raincloudPlots", penguins, options)
 
 
