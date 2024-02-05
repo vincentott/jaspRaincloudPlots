@@ -100,14 +100,14 @@ Form
 		PercentField
 		{
 			name: 					"vioOpacity"
-			label:					qsTr("       Violin opacity")
+			label:					qsTr("Violin opacity")
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"vioEdges"
-			label:					qsTr("       Violin outline")
+			label:					qsTr("Violin outline")
 			values:	[
 				   	{ label: qsTr("black"), value: "black" },
 				   	{ label: qsTr("none"),  value: "none" },
@@ -123,14 +123,14 @@ Form
 		PercentField
 		{
 			name: 					"boxOpacity"
-			label:					qsTr("       Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
+			label:					qsTr("Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"boxEdges"
-			label:					qsTr("       Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
+			label:					qsTr("Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
 			values:	[
 				   	{ label: qsTr("black"), value: "black" },
 				   	{ label: qsTr("none"),  value: "none" },
@@ -141,13 +141,13 @@ Form
 		PercentField
 		{
 			name: 					"pointOpacity"
-			label:					qsTr("       Point opacity")
+			label:					qsTr("Point opacity")
 		}
 
 		ColorPalette
 		{
 			name:					"palettePoints"
-			label:					qsTr("       Point palette")
+			label:					qsTr("Point palette")
 			enabled: 				covariate.count === 1
 			indexDefaultValue:		3  // viridis works good for both discrete and continous
 			Layout.columnSpan: 1
@@ -163,19 +163,32 @@ Form
 	Section
 	{
 		title: 						qsTr("Element Fine-tuning")
-		columns: 1
+		columns: 3
+
+		CheckBox
+		{
+			name:					"customSides"
+			label:					qsTr("Custom orientation:")
+			Layout.columnSpan: 		2
+			childrenOnSameRow:		true
+
+			TextField
+			{
+				name:				"sidesInput"
+				label:				qsTr("")
+				placeholderText:	"Enter 'L' or 'R' for each Axis level."
+			}
+		}
+		HelpButton
+		{
+			toolTip:				qsTr("Per default, all violins are right of the boxes.\nAn example input for an Axis with 2 levels/ticks would be 'LR'.\nThis gives flanking clouds and works well with Subject input.\nTry 'LRR' with 3 Axis levels and Subject input.\nIf there is no Axis input, enter 'L' so all violins are left of boxes.")
+		}
 
 		Group
 		{
 			title:					qsTr("Violin")
 			columns: 3
-
-			DoubleField
-			{
-				name:				"vioWidth"
-				label:				qsTr("Width")
-				defaultValue:		0.7
-			}
+			Layout.columnSpan: 		3
 
 			DoubleField
 			{
@@ -183,6 +196,13 @@ Form
 				label:				qsTr("Nudge")
 				defaultValue:		0.075
 				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"vioWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.7
 			}
 
 			DoubleField
@@ -199,13 +219,7 @@ Form
 		{
 			title:					qsTr("Box")
 			columns: 3
-
-			DoubleField
-			{
-				name:				"boxWidth"
-				label:				qsTr("Width")
-				defaultValue:		0.075
-			}
+			Layout.columnSpan: 		3
 
 			DoubleField
 			{
@@ -213,6 +227,13 @@ Form
 				label:				qsTr("Nudge")
 				defaultValue:		0
 				negativeValues:		true
+			}
+
+			DoubleField
+			{
+				name:				"boxWidth"
+				label:				qsTr("Width")
+				defaultValue:		0.075
 			}
 
 			DoubleField
@@ -227,6 +248,15 @@ Form
 		{
 			title:					qsTr("Points")
 			columns: 2
+			Layout.columnSpan: 		3
+
+			DoubleField
+			{
+				name:				"pointNudge"
+				label:				qsTr("Nudge")
+				defaultValue:		0.14  // Is multiplied by -1 in the R script
+				negativeValues:		true
+			}
 
 			DoubleField
 			{
@@ -235,13 +265,6 @@ Form
 				defaultValue:		0.065
 			}
 
-			DoubleField
-			{
-				name:				"pointNudge"
-				label:				qsTr("Nudge")
-				defaultValue:		-0.14
-				negativeValues:		true
-			}
 		}
 
 

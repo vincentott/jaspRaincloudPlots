@@ -13,5 +13,5 @@ options$subject <- "Subject"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 options$linesSubject <- TRUE
-# debugonce(jaspRaincloudPlots:::.rainFillPlot)
+# debugonce(jaspRaincloudPlots:::raincloudPlots)
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)
