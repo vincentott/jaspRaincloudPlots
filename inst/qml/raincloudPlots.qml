@@ -181,7 +181,7 @@ Form
 		}
 		HelpButton
 		{
-			toolTip:				qsTr("Per default, all violins are right of the boxes.\nAn example input for an Axis with 2 levels/ticks would be 'LR'.\nThis gives flanking clouds and works well with Subject input.\nTry 'LRR' with 3 Axis levels and Subject input.")
+			toolTip:				qsTr("Per default, all violins are right of the boxes.\nAn example input for an Axis with 2 levels/ticks would be 'LR'.\nThis gives flanking clouds and works well with Subject input.\nTry 'LRR' with 3 Axis levels and Subject input.\nIf there is no Axis input, enter 'L' so all violins are left of boxes.")
 		}
 
 		Group
