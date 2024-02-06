@@ -50,8 +50,10 @@ options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
 options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
-options$paletteFill <- "grandBudapest"
+options$paletteFill <- "sportsTeamsNBA"
 options$palettePoints <- "viridis"
+debugonce(jaspRaincloudPlots:::.rainEdgeColor)
+options$vioOpacity <- 100
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Custom Sides ----

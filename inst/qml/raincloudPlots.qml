@@ -109,9 +109,10 @@ Form
 			name: 					"vioEdges"
 			label:					qsTr("Violin outline")
 			values:	[
-				   	{ label: qsTr("black"), value: "black" },
-				   	{ label: qsTr("none"),  value: "none" },
-			       	]
+					{ label: qsTr("as palette"), value: "asPalette" },
+				   	{ label: qsTr("black"),      value: "black" },
+				   	{ label: qsTr("none"),       value: "none" },
+				   	]
 			Layout.columnSpan: 1
 		}
 
@@ -132,8 +133,9 @@ Form
 			name: 					"boxEdges"
 			label:					qsTr("Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
 			values:	[
-				   	{ label: qsTr("black"), value: "black" },
-				   	{ label: qsTr("none"),  value: "none" },
+					{ label: qsTr("as palette"), value: "asPalette" },
+				   	{ label: qsTr("black"),      value: "black" },
+				   	{ label: qsTr("none"),       value: "none" },
 				   	]
 			Layout.columnSpan: 2
 		}
