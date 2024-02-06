@@ -158,6 +158,14 @@ Form
 			toolTip:				qsTr("0% opacity to hide Points")
 		}
 
+		PercentField
+		{
+			name:					"lineOpacity"
+			label:					qsTr("Subject Line Opacity")
+			enabled:				subject.count === 1
+			defaultValue:			25
+		}
+
 	}
 
 	Section
@@ -168,7 +176,8 @@ Form
 		CheckBox
 		{
 			name:					"customSides"
-			label:					qsTr("Custom orientation:")
+			id:						customSides
+			label:					qsTr("Custom orientation for each cloud:")
 			Layout.columnSpan: 		2
 			childrenOnSameRow:		true
 
@@ -176,12 +185,12 @@ Form
 			{
 				name:				"sidesInput"
 				label:				qsTr("")
-				placeholderText:	"Enter 'L' or 'R' for each Axis level."
+				placeholderText:	"Enter 'L' or 'R' for each cloud."
 			}
 		}
 		HelpButton
 		{
-			toolTip:				qsTr("Per default, all violins are right of the boxes.\nAn example input for an Axis with 2 levels/ticks would be 'LR'.\nThis gives flanking clouds and works well with Subject input.\nTry 'LRR' with 3 Axis levels and Subject input.\nIf there is no Axis input, enter 'L' so all violins are left of boxes.")
+			toolTip:				qsTr("Per default, all violins are right of the boxes.\nFor each Axis level you can specify 'L' or 'R' for each Color level.\nFor example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, enter 'LLRR' for flanking clouds.\n\nIf you enter too little or too many letters or anything but 'L' or 'R',\nthe orientation reverts to default.\nIf the Custom orientation box is ticked, Points Nudge is fixed to 0.")
 		}
 
 		Group
@@ -194,7 +203,7 @@ Form
 			{
 				name:				"vioNudge"
 				label:				qsTr("Nudge")
-				defaultValue:		0.075
+				defaultValue:		!(customSides.checked) ? 0.075 : 0.215
 				negativeValues:		true
 			}
 
@@ -225,7 +234,7 @@ Form
 			{
 				name:				"boxNudge"
 				label:				qsTr("Nudge")
-				defaultValue:		0
+				defaultValue:		!(customSides.checked) ? 0 : 0.14
 				negativeValues:		true
 			}
 
@@ -254,8 +263,8 @@ Form
 			{
 				name:				"pointNudge"
 				label:				qsTr("Nudge")
-				defaultValue:		(subject.count === 0) ? 0.14 : 0 // Is multiplied by -1 in the R script
-				enabled:			(subject.count === 0) ? true : false
+				defaultValue:		!(customSides.checked) ? 0.14 : 0 // Is multiplied by -1 in the R script
+				enabled:			!(customSides.checked) ? true : false
 				negativeValues:		true
 			}
 
