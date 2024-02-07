@@ -52,7 +52,7 @@ options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
 options$palettePoints <- "viridis"
-# debugonce(jaspRaincloudPlots:::.rainEdgeColor)
+# debugonce(jaspRaincloudPlots:::.rainInfoFactorCombinations)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Custom Sides ----

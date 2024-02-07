@@ -1,7 +1,7 @@
 
 larksOwls <- read.csv("jaspLarksOwls.csv")
 larksOwls <- subset(larksOwls, Chronotype != "Intermediate")
-larksOwls$TimeOfDay <- factor(larksOwls$TimeOfDay, levels = c("Morning", "Evening"))  # re-order for better understanding
+larksOwls$TimeOfDay <- factor(larksOwls$TimeOfDay, levels = c("Morning", "Evening"))  # Re-order for better understanding
 larksOwls$Chronotype <- factor(larksOwls$Chronotype, levels = c("Morning", "Evening"))
 
 # 2x2 ----
@@ -13,5 +13,5 @@ options$paletteFill <- "colorblind"
 options$subject <- "Subject"
 options$customSides <- TRUE
 options$sidesInput <- "LLRR"
-# debugonce(jaspRaincloudPlots:::.rainFillPlot)
+# debugonce(jaspRaincloudPlots:::.rainInfoFactorCombinations)
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)

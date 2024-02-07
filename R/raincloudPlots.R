@@ -45,10 +45,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     )
 
     # Step 2: Create columns with consistent names; if no input then assign default
-    datasetInProgress$factorAxis <- .rainCreateColumn(   options$factorAxis,   datasetInProgress)
-    datasetInProgress$factorFill <- .rainCreateColumn(   options$factorFill,   datasetInProgress)
-    datasetInProgress$covariate  <- .rainCreateColumn(   options$covariate,    datasetInProgress)
-    datasetInProgress$subject    <- .rainCreateColumn(   options$subject,      datasetInProgress)
+    datasetInProgress$factorAxis <- .rainCreateColumn(datasetInProgress,  options$factorAxis )
+    datasetInProgress$factorFill <- .rainCreateColumn(datasetInProgress,  options$factorFill )
+    datasetInProgress$covariate  <- .rainCreateColumn(datasetInProgress,  options$covariate  )
+    datasetInProgress$subject    <- .rainCreateColumn(datasetInProgress,  options$subject    )
 
     output <- datasetInProgress
   }
@@ -59,7 +59,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainCreateColumn() ----
-.rainCreateColumn <- function(inputOption, inputDataset) {
+.rainCreateColumn <- function(inputDataset, inputOption) {
   output <- if (inputOption == "") {
     as.factor(rep("Total", nrow(inputDataset)))
   } else {
@@ -114,11 +114,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container$variable)) next
 
-    plotWidth <- if (options$factorFill != "" || options$covariate != "" || options$colorAnyway) 675 else 450
+    plotWidth    <- if (options$factorFill != "" || options$covariate != "" || options$colorAnyway) 675 else 450
     variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = 450)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
-    .rainFillPlot(variablePlot, dataset, options, variable)
+    .rainFillPlot(dataset, options, variable, variablePlot)
 
     container[[variable]] <- variablePlot
   }  # End for loop
@@ -129,36 +129,30 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainFillPlot() ----
 # Fills each inputPlot from .rainCreatePlots() with ggplot + palettes + geom_rain() + theme
-.rainFillPlot <- function(inputPlot, dataset, options, inputVariable) {
+.rainFillPlot <- function(dataset, options, inputVariable, inputPlot) {
 
   # Ggplot() with aes()
   aesX     <- dataset$factorAxis
   aesFill  <- if(options$factorFill != "") dataset$factorFill else if (options$colorAnyway) aesX else NULL
   aesColor <- if(options$covariate  != "") dataset$covariate  else if (options$colorAnyway) aesX else aesFill
   plotInProgress <- ggplot2::ggplot(
-    data = dataset, ggplot2::aes(y = dataset[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
+    data = dataset, ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
   )
 
   # Palettes
-  palettes <- .rainSetPalettes(options, dataset)
+  palettes       <- .rainSetPalettes(dataset, options)
   plotInProgress <- plotInProgress + palettes$fill + palettes$color
 
-  # Info about factor combinations in the dataset
-  infoFactorCombinations <- .rainInfoFactorCombinations(dataset)
-
   # Workhorse function, uses ggrain::geom_rain()
-  plotInProgress <- plotInProgress + .rainGeomRain(options, dataset, infoFactorCombinations, plotInProgress)
+  plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, plotInProgress)
 
   # Theme
   setUpTheme   <- jaspGraphs::themeJaspRaw(legend.position = "right")
-
   xTitle       <- if (options$factorAxis == "") "Total" else options$factorAxis
   axisTitles   <- ggplot2::labs(x = xTitle, y = inputVariable)
-
   yBreaks      <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
   yLimits      <- range(c(yBreaks, dataset[[inputVariable]]))
   yAxis        <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
-
   inwardTicks  <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
 
   plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme + axisTitles + yAxis + inwardTicks
@@ -179,13 +173,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plotInProgress
-
 }  # End .rainFillPlot()
 
 
 
 # .rainSetPalettes() ----
-.rainSetPalettes <- function(options, dataset) {
+.rainSetPalettes <- function(dataset, options) {
 
   paletteFill <- if (options$factorFill != "" || options$colorAnyway) {
     jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
@@ -212,63 +205,46 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
-# .rainInfoFactorCombinations() ----
-# Calculates info that is then used to determine geom orientation & color in .rainGeomRain()
-.rainInfoFactorCombinations <- function(inputDataset) {
-  onlyFactors    <- inputDataset[c("factorAxis", "factorFill")]
-
-  # In expand.grid() factorFill first because then structure will match order by which ggplot accesses the clouds
-  # for each level of Axis, we get the levels of Fill (as opposed to: for each level of Fill the levels of Axis)
-  possibleCombis <- expand.grid(factorFill = levels(onlyFactors$factorFill), factorAxis = levels(onlyFactors$factorAxis))
-
-  observedCombis <- merge(onlyFactors, possibleCombis, by = c("factorAxis", "factorFill"))
-  uniqueCombis   <- unique(observedCombis)
-  numberOfClouds <- nrow(uniqueCombis)
-  return(
-    list(numberOfClouds = numberOfClouds, uniqueCombis = uniqueCombis, possibleCombis = possibleCombis, observedCombis = observedCombis, onlyFactors = onlyFactors)
-  )
-}  # End .rainInfoFactorCombinations()
-
-
-
 # .rainGeomRain() ----
 # Call of ggrain:geom_rain() with prior set up of all input arguments
-.rainGeomRain <- function(options, dataset, infoFactorCombinations, plotInProgress) {
+.rainGeomRain <- function(dataset, options, plotInProgress) {
+
+  # Info about factor combinations in the dataset & their colors
+  infoFactorCombinations <- .rainInfoFactorCombinations(dataset, plotInProgress)
 
   # Opacity and outline color of violins & boxes
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
-  vioEdgeColor   <- .rainEdgeColor(options$vioEdges, plotInProgress, infoFactorCombinations, options)
-  perCloud512    <- rep(512, infoFactorCombinations$numberOfClouds)
+  vioEdgeColor   <- .rainEdgeColor(options, options$vioEdges, infoFactorCombinations)
+  perCloud512    <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
   vioArgs$color  <- rep(vioEdgeColor, perCloud512)
 
   boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
-  boxArgs$color  <- .rainEdgeColor(options$boxEdges, plotInProgress, infoFactorCombinations, options)
+  boxArgs$color  <- .rainEdgeColor(options, options$boxEdges, infoFactorCombinations)
 
   pointArgs      <- list(alpha = options$pointOpacity)
 
   lineArgs       <- list(alpha = options$lineOpacity)
   if (options$factorFill   == "") lineArgs$color <- "black"
 
-  # Positioning
-  vioSides <- .rainSetVioSides(options, dataset, infoFactorCombinations)  # Either all R or according to custom input
-
-  # Violin position
-  vioNudgeForEachCloud <- .rainNudgeForEachCloud(options$vioNudge, vioSides)  # Nudging based on default/custom orientation
+  # Violin positioning
+  vioSides <- .rainSetVioSides(options, dataset, infoFactorCombinations)  # Either all "r" or according to custom input
+  vioNudgeForEachCloud <- .rainNudgeForEachCloud(options$vioNudge, vioSides)  # Based on default/custom orientation
   vioPosVec <- c()
-  for (i in vioNudgeForEachCloud) vioPosVec <- c(vioPosVec, rep(i, 512))  # Each density curve consists of 512 points by default
+  for (i in vioNudgeForEachCloud) {
+    vioPosVec <- c(vioPosVec, rep(i, 512))  # Each violin consists of 512 points by default
+  }
   vioArgsPos <- list(
     width = options$vioWidth, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides
   )
 
-  # Box position
+  # Box positioning
   boxPosVec  <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
   boxArgsPos <- list(
     width = options$boxWidth, position = ggpp::position_dodgenudge(x = boxPosVec, width = options$boxDodge)
   )
 
-  # Point position
-  negativePointNudge     <- options$pointNudge * -1  # Because of this, all nudges in the GUI can be positive by default
-                                                     # Otherwise pointNudge would be displayed as -0.14 which did not look as tidy
+  # Point positioning
+  negativePointNudge     <- options$pointNudge * -1  # This way all nudges in the GUI are positive by default
   pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
@@ -282,37 +258,88 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Cov and id
   covArg         <- if (options$covariate == "")                              NULL else "covariate"  # Must be string
   idArg          <- if (options$subject   == "" || options$factorAxis == "")  NULL else "subject"
-                    # FactorAxis condition necessary because if user added Axis input, then adds Subject input
+                    # FactorAxis condition necessary because if user added Axis input, then adds Subject input,
                     # and then removes the Axis input again, JASP/GUI/qml will not remove Subject input
 
   # Call geom_rain()
   output <- ggrain::geom_rain(
-
     violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
 
     rain.side = NULL,  # Necessary for neat positioning
-    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos,
-    point.args.pos  = pointArgsPos, line.args.pos = pointArgsPos,  # Lines are fully dependent on points
-
+    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos, point.args.pos  = pointArgsPos,
+                                                                 line.args.pos   = pointArgsPos,  # Dependent on points
     cov         = covArg,
     id.long.var = idArg,
-
-    likert      = FALSE  # TRUE does not work because of ggpp:position_jitternudge() in pointPos
-                         # use jitternudge height argument instead
-  )
+    likert      = FALSE  # TRUE won´t work because of ggpp:position_jitternudge() in pointArgsPos
+  )                      # instead use height argument in ggpp:position_jitternudge()
 
   return(output)
 }  # End .rainGeomRain()
 
 
 
+# .rainInfoFactorCombinations() ----
+# Calculates info to determine colors & geom orientation
+.rainInfoFactorCombinations <- function(inputDataset, inputPlot) {
+  onlyFactors    <- inputDataset[c("factorAxis", "factorFill")]
+  # Extract used Fill colors from plot
+  # https://stackoverflow.com/questions/11774262/how-to-extract-the-fill-colours-from-a-ggplot-object
+  onlyFactors$color <- ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill
+
+  # In the following possibleCombis <- expand.grid() factorFill first because
+  # then structure will match order in which ggplot accesses the clouds:
+  # for each level of Axis, we get the levels of Fill (as opposed to: for each level of Fill the levels of Axis)
+  possibleCombis <- expand.grid(
+    factorFill = levels(onlyFactors$factorFill), factorAxis = levels(onlyFactors$factorAxis)
+  )
+
+  possibleCombis$rowId <- 1:nrow(possibleCombis)  # Id is necessary as merge will scramble order of possibleCombis
+  observedCombis <- merge(possibleCombis, onlyFactors)
+  uniqueCombis   <- unique(observedCombis)
+
+  uniqueCombis <- uniqueCombis[order(uniqueCombis$rowId), ] # Re-order rows according to possibleCombis
+
+  numberOfClouds <- nrow(uniqueCombis)
+  return(
+    list(numberOfClouds = numberOfClouds, colors = uniqueCombis$color)
+  )
+}  # End .rainInfoFactorCombinations()
+
+
+
+# .rainEdgeColor() ----
+# Sets the edges color of violins and boxes
+.rainEdgeColor <- function(options, inputEdge, infoFactorCombinations) {
+
+  output <- NULL
+
+  if (inputEdge == "black") {
+    output <- rep("black", infoFactorCombinations$numberOfClouds)
+  } else if (inputEdge == "none") {
+    output <- rep(NA, infoFactorCombinations$numberOfClouds)
+  } else if (inputEdge == "likePalette") {
+    if (options$factorFill != "" || options$colorAnyway) {
+      output <- infoFactorCombinations$colors
+    } else {
+      output <- rep("black", infoFactorCombinations$numberOfClouds)
+    }
+  } else {
+    print("error with edges")
+  }
+
+  return(output)
+}  # End .rainEdgeColor()
+
+
+
 # .rainSetVioSides() ----
 # Either default all right orientation or as sidesInput from user in GUI
 # Output is as long as there are rainclouds in the plot
-# because each needs own side specified in point.args.pos argument of ggrain:geom_rain() - see also .rainNudgeForEachCloud()
+# because each cloud needs own side specified in point.args.pos argument of ggrain:geom_rain()
+# see also .rainNudgeForEachCloud()
 .rainSetVioSides <- function(options, dataset, infoFactorCombinations) {
 
-  defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)  # Default
+  defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)
 
   if (!options$customSides) {
     outputSides <- defaultSides
@@ -334,48 +361,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainNudgeForEachCloud() ----
-# depending on default/custom orientation
-# For example, if there are two clouds and options$sidesInput is "LL" then vioNudge should be rep(options$vioNudge * -1, 2)
-.rainNudgeForEachCloud <- function(nudgeInput, vioSides) {
-  nudgeVector <- rep(nudgeInput, length(vioSides))
+# Depending on default/custom orientation
+# For example, if there are two clouds and options$sidesInput is "LL"
+# then vioNudge should be c(options$vioNudge * -1, options$vioNudge * -1)
+# because options$vioNudge is inverted (* -1) as violins are flipped to left (instead of default right).
+.rainNudgeForEachCloud <- function(inputNudge, vioSides) {
+  nudgeVector <- rep(inputNudge, length(vioSides))
   for (i in 1:length(vioSides)) if (vioSides[i] == "l") nudgeVector[i] <- nudgeVector[i] * -1
   return(nudgeVector)
 }  # End .rainNudgeForEachCloud()
-
-
-
-# .rainEdgeColor() ----
-# Sets the edges color of violins and boxes
-.rainEdgeColor <- function(inputEdge, inputPlot, infoFactorCombinations, options) {
-
-  output <- NULL
-
-  if (inputEdge == "black") {
-    output <- rep("black", infoFactorCombinations$numberOfClouds)
-  } else if (inputEdge == "none") {
-    output <- rep(NA, infoFactorCombinations$numberOfClouds)
-  } else if (inputEdge == "likePalette") {
-
-    if (options$factorFill != "" || options$colorAnyway) {
-
-      # Extract used Fill colors from plot
-      # https://stackoverflow.com/questions/11774262/how-to-extract-the-fill-colours-from-a-ggplot-object
-      onlyFactors <- infoFactorCombinations$onlyFactors
-      onlyFactors$color <- ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill
-
-      observedCombis <- merge(onlyFactors, infoFactorCombinations$possibleCombis, by = c("factorAxis", "factorFill"))
-      uniqueCombis   <- unique(observedCombis)
-
-      output <- uniqueCombis$color
-
-    } else {
-      output <- rep("black", infoFactorCombinations$numberOfClouds)
-    }
-
-  } else {
-    print("error with edges")
-  }
-  return(output)
-}  # End .rainEdgeColor()
 
 
