@@ -106,7 +106,7 @@ Form
 
 		DropDown
 		{
-			name: 					"vioEdges"
+			name: 					"vioOutline"
 			label:					qsTr("Violin outline")
 			values:	[
 					{ label: qsTr("like palette"), value: "likePalette" },
@@ -130,8 +130,8 @@ Form
 
 		DropDown
 		{
-			name: 					"boxEdges"
-			label:					qsTr("Box outline   ")  // Additional spaces for neat line up in GUI with vioEdge
+			name: 					"boxOutline"
+			label:					qsTr("Box outline   ")  // Additional spaces for neat line up in GUI with vioOutline
 			values:	[
 					{ label: qsTr("like palette"), value: "likePalette" },
 				   	{ label: qsTr("black"),        value: "black" },

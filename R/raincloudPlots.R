@@ -83,8 +83,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
         "paletteFill",
         "colorAnyway",
-        "vioOpacity", "vioEdges",
-        "boxOpacity", "boxEdges",
+        "vioOpacity", "vioOutline",
+        "boxOpacity", "boxOutline",
         "pointOpacity", "palettePoints",
         "lineOpacity",
 
@@ -214,12 +214,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Opacity and outline color of violins & boxes
   vioArgs        <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
-  vioEdgeColor   <- .rainEdgeColor(options, options$vioEdges, infoFactorCombinations)
+  vioOutlineColor   <- .rainOutlineColor(options, options$vioOutline, infoFactorCombinations)
   perCloud512    <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
-  vioArgs$color  <- rep(vioEdgeColor, perCloud512)
+  vioArgs$color  <- rep(vioOutlineColor, perCloud512)
 
   boxArgs        <- list(outlier.shape = NA, alpha = options$boxOpacity)
-  boxArgs$color  <- .rainEdgeColor(options, options$boxEdges, infoFactorCombinations)
+  boxArgs$color  <- .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
 
   pointArgs      <- list(alpha = options$pointOpacity)
 
@@ -307,28 +307,28 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
-# .rainEdgeColor() ----
-# Sets the edges color of violins and boxes
-.rainEdgeColor <- function(options, inputEdge, infoFactorCombinations) {
+# .rainOutlineColor() ----
+# Sets the Outline color of violins and boxes
+.rainOutlineColor <- function(options, inputOutline, infoFactorCombinations) {
 
   output <- NULL
 
-  if (inputEdge == "black") {
+  if (inputOutline == "black") {
     output <- rep("black", infoFactorCombinations$numberOfClouds)
-  } else if (inputEdge == "none") {
+  } else if (inputOutline == "none") {
     output <- rep(NA, infoFactorCombinations$numberOfClouds)
-  } else if (inputEdge == "likePalette") {
+  } else if (inputOutline == "likePalette") {
     if (options$factorFill != "" || options$colorAnyway) {
       output <- infoFactorCombinations$colors
     } else {
       output <- rep("black", infoFactorCombinations$numberOfClouds)
     }
   } else {
-    print("error with edges")
+    print("error with Outline")
   }
 
   return(output)
-}  # End .rainEdgeColor()
+}  # End .rainOutlineColor()
 
 
 
