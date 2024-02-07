@@ -240,7 +240,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Box positioning
   boxPosVec  <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
   boxArgsPos <- list(
-    width = options$boxWidth, position = ggpp::position_dodgenudge(x = boxPosVec, width = options$boxDodge)
+    width = options$boxWidth,
+    position = ggpp::position_dodgenudge(
+      x = boxPosVec, width = options$boxDodge,
+      preserve = "single"  # Ensures that all boxes have the same width
+    )
   )
 
   # Point positioning
@@ -266,8 +270,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
 
     rain.side = NULL,  # Necessary for neat positioning
-    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos, point.args.pos  = pointArgsPos,
-                                                                 line.args.pos   = pointArgsPos,  # Dependent on points
+    violin.args.pos = vioArgsPos, boxplot.args.pos = boxArgsPos,
+    point.args.pos  = pointArgsPos,
+    line.args.pos   = pointArgsPos,  # Dependent on points
+
     cov         = covArg,
     id.long.var = idArg,
     likert      = FALSE  # TRUE won´t work because of ggpp:position_jitternudge() in pointArgsPos
