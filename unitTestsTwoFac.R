@@ -52,8 +52,7 @@ options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "sportsTeamsNBA"
 options$palettePoints <- "viridis"
-debugonce(jaspRaincloudPlots:::.rainEdgeColor)
-options$vioOpacity <- 100
+# debugonce(jaspRaincloudPlots:::.rainEdgeColor)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Custom Sides ----
