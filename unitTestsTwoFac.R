@@ -50,7 +50,7 @@ options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
 options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
-options$paletteFill <- "sportsTeamsNBA"
+options$paletteFill <- "grandBudapest"
 options$palettePoints <- "viridis"
 # debugonce(jaspRaincloudPlots:::.rainEdgeColor)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
@@ -61,9 +61,9 @@ options$variables <- "body_mass_g"
 options$factorAxis <- "species"
 options$factorFill <- "sex"
 options$paletteFill <- "ggplot2"
-options$customSides <- TRUE
-options$sidesInput <- "LRLRLR"
-# debugonce(jaspRaincloudPlots:::.rainPointsPerCloud)
+# options$customSides <- TRUE
+# options$sidesInput <- "LRLRLR"
+# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
