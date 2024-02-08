@@ -90,7 +90,7 @@ Form
 		CheckBox
 		{
 			name: 					"colorAnyway"
-			label:					qsTr("Apply color to Axis")
+			label:					qsTr("Apply color palette to Axis")
 			id: 					colorAnyway
 			checked:				factorFill.count === 0
 			enabled: 				factorFill.count === 0
@@ -124,14 +124,14 @@ Form
 		PercentField
 		{
 			name: 					"boxOpacity"
-			label:					qsTr("Box opacity   ")  // Additional spaces for neat line up in GUI with vioOpacity
+			label:					qsTr("Box opacity")  // Additional spaces for neat line up in GUI with vioOpacity
 			Layout.columnSpan: 1
 		}
 
 		DropDown
 		{
 			name: 					"boxOutline"
-			label:					qsTr("Box outline   ")  // Additional spaces for neat line up in GUI with vioOutline
+			label:					qsTr("Box outline")  // Additional spaces for neat line up in GUI with vioOutline
 			values:	[
 					{ label: qsTr("like palette"), value: "likePalette" },
 				   	{ label: qsTr("black"),        value: "black" },
@@ -172,7 +172,7 @@ Form
 
 	Section
 	{
-		title: 						qsTr("Element Fine-tuning")
+		title: 						qsTr("Element Fine-Tuning")
 		columns: 3
 
 		CheckBox
@@ -259,7 +259,7 @@ Form
 		{
 			title:					qsTr("Points")
 			columns: 2
-			Layout.columnSpan: 		3
+			Layout.columnSpan: 		2
 
 			DoubleField
 			{
@@ -275,6 +275,13 @@ Form
 				name:				"pointWidth"
 				label:				qsTr("Width")
 				defaultValue:		0.065
+			}
+
+			CheckBox
+			{
+				Layout.columnSpan:  2
+				name:				"yJitter"
+				label:				qsTr("jitter very long label does this work?")
 			}
 
 		}

@@ -258,7 +258,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
       x          = negativePointNudge,  # Nudge
-      height     = NULL,                 # yJitter, particularly interesting for likert data
+      height     = 0,                 # yJitter, particularly interesting for likert data
       seed       = 1.0                  # Reproducible jitter
     )
   )
