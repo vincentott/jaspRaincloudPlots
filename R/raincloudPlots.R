@@ -248,13 +248,17 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Point positioning
-  negativePointNudge     <- options$pointNudge * -1  # This way all nudges in the GUI are positive by default
+  negativePointNudge <- if (!options$customSides) {
+    options$pointNudge * -1  # This way all nudges in the GUI are positive by default
+  } else {
+    0  # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
+  }
   pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
       x          = negativePointNudge,  # Nudge
-      height     = 0.0,                 # yJitter, particularly interesting for likert data
+      height     = NULL,                 # yJitter, particularly interesting for likert data
       seed       = 1.0                  # Reproducible jitter
     )
   )
@@ -290,7 +294,17 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   onlyFactors    <- inputDataset[c("factorAxis", "factorFill")]
   # Extract used Fill colors from plot
   # https://stackoverflow.com/questions/11774262/how-to-extract-the-fill-colours-from-a-ggplot-object
-  onlyFactors$color <- ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill
+  onlyFactors$color <- tryCatch(
+    {
+      ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill  # Requires factorFill or colorAnyway
+    },
+    error = function(e) {                                      # Thus error handling
+      return("black")
+    },
+    warning = function(w) {
+      return("black")
+    }
+  )
 
   # In the following possibleCombis <- expand.grid() factorFill first because
   # then structure will match order in which ggplot accesses the clouds:
