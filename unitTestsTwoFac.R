@@ -1,14 +1,9 @@
 
-library(palmerpenguins)
-data(package = "palmerpenguins")
-
-
 # No Factors + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
-# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # factorAxis + color ----
@@ -41,7 +36,6 @@ options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
 options$factorFill <- "species"
 options$paletteFill <- "viridis"
-# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors + covariate ----
@@ -51,15 +45,15 @@ options$factorAxis <- "island"
 options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
-options$palettePoints <- "viridis"
-# debugonce(jaspRaincloudPlots:::.rainInfoFactorCombinations)
+options$palettePoints <- "colorblind"
+# debugonce(jaspRaincloudPlots:::.rainOutlineColor)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Custom Sides ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "body_mass_g"
 options$factorAxis <- "species"
-options$factorFill <- "sex"
+# options$factorFill <- "sex"  # THIS HERE DOES NOT WORK
 options$paletteFill <- "ggplot2"
 # options$customSides <- TRUE
 # options$sidesInput <- "LRLRLR"

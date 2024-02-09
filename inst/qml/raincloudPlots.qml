@@ -76,15 +76,13 @@ Form
 
 	Section
 	{
-		title: 						qsTr("Colors and Opacity")
+		title: qsTr("Colors and Opacity")
 		columns: 3
 
 		ColorPalette
 		{
 			name: 					"paletteFill"
 			label:					qsTr("Color palette")
-			Layout.columnSpan: 1
-
 		}
 
 		CheckBox
@@ -94,86 +92,241 @@ Form
 			id: 					colorAnyway
 			checked:				factorFill.count === 0
 			enabled: 				factorFill.count === 0
-			Layout.columnSpan: 2
+			Layout.columnSpan: 		2
 		}
 
-		PercentField
+		Group  // First Column of the section: Opacities
 		{
-			name: 					"vioOpacity"
-			label:					qsTr("Violin opacity")
-			Layout.columnSpan: 1
-		}
+			PercentField
+			{
+				name: 					"vioOpacity"
+				label:					qsTr("Violin opacity")
+			}
 
-		DropDown
+			PercentField
+			{
+				name: 					"boxOpacity"
+				label:					qsTr("Box opacity")
+			}
+
+			PercentField
+			{
+				name: 					"pointOpacity"
+				label:					qsTr("Point opacity")
+			}
+
+			PercentField
+			{
+				name:					"lineOpacity"
+				label:					qsTr("Subject Line Opacity")
+				enabled:				subject.count === 1
+				defaultValue:			25
+			}
+		}  // End First Column
+
+		Group  // Second Column of the section: Outlines & Point palette
 		{
-			name: 					"vioOutline"
-			label:					qsTr("Violin outline")
-			values:	[
-					{ label: qsTr("like palette"), value: "likePalette" },
-				   	{ label: qsTr("black"),        value: "black" },
-				   	{ label: qsTr("none"),         value: "none" },
-				   	]
-			Layout.columnSpan: 1
-		}
+			columns: 2
 
-		HelpButton
+			Label
+			{
+				text: qsTr("Violin Outline")
+			}
+			DropDown
+			{
+				name: 					"vioOutline"
+				values:	[
+						{ label: qsTr("like palette"), value: "likePalette" },
+						{ label: qsTr("black"),        value: "black" },
+						{ label: qsTr("none"),         value: "none" },
+						]
+				Layout.columnSpan: 1
+			}
+
+			Label
+			{
+				text: qsTr("Box outline")
+			}
+			DropDown
+			{
+				name: 					"boxOutline"
+				values:	[
+						{ label: qsTr("like palette"), value: "likePalette" },
+					   	{ label: qsTr("black"),        value: "black" },
+					   	{ label: qsTr("none"),         value: "none" },
+					   	]
+				Layout.columnSpan: 1
+			}
+
+			Label
+			{
+				text: qsTr("Point palette")
+			}
+			ColorPalette
+			{
+				name:					"palettePoints"
+				label:					""  // No qsTr() as this will stay the same across languages
+				enabled: 				covariate.count === 1
+				// indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
+				Layout.columnSpan: 1
+			}
+		}  // End Second Column
+
+		Group  // Third Column of the section: HelpButtons
 		{
-			toolTip:				qsTr("0% opacity & no outline to hide Violin or Box")
-		}
+			HelpButton
+			{
+				toolTip: qsTr("0% opacity & no outline to hide Violin or Box")
+			}
 
-		PercentField
-		{
-			name: 					"boxOpacity"
-			label:					qsTr("Box opacity")  // Additional spaces for neat line up in GUI with vioOpacity
-			Layout.columnSpan: 1
-		}
+			Label
+			{
+				// Empty placeholder
+			}
 
-		DropDown
-		{
-			name: 					"boxOutline"
-			label:					qsTr("Box outline")  // Additional spaces for neat line up in GUI with vioOutline
-			values:	[
-					{ label: qsTr("like palette"), value: "likePalette" },
-				   	{ label: qsTr("black"),        value: "black" },
-				   	{ label: qsTr("none"),         value: "none" },
-				   	]
-			Layout.columnSpan: 2
-		}
+			HelpButton
+			{
+				toolTip: qsTr("0% opacity to hide Points")
+			}
+		}  // End Third Column
 
-		PercentField
-		{
-			name: 					"pointOpacity"
-			label:					qsTr("Point opacity")
-		}
+// ColorPalette
+// 			{
+// 				name:					"palettePoints"
+// 				label:					""  // No qsTr() as this will stay the same across languages
+// 				enabled: 				covariate.count === 1
+// 				indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
+// 				Layout.columnSpan: 1
+// 			}
 
-		ColorPalette
-		{
-			name:					"palettePoints"
-			label:					qsTr("Point palette")
-			enabled: 				covariate.count === 1
-			indexDefaultValue:		3  // viridis works good for both discrete and continous
-			Layout.columnSpan: 1
-		}
+	}  // End section Colors and Opacity
 
-		HelpButton
-		{
-			toolTip:				qsTr("0% opacity to hide Points")
-		}
-
-		PercentField
-		{
-			name:					"lineOpacity"
-			label:					qsTr("Subject Line Opacity")
-			enabled:				subject.count === 1
-			defaultValue:			25
-		}
-
-	}
 
 	Section
 	{
 		title: 						qsTr("Element Fine-Tuning")
 		columns: 3
+
+		// // Start Top Row Fine-Tuning Section ---------------------------------------------------------------------------
+		// Group  // First Column Fine-Tuning section
+		// {
+		// 	CheckBox
+		// 	{
+		// 		name:					"customSides"
+		// 		id:						customSides
+		// 		label:					qsTr("Custom orientation for each cloud:")
+		// 		childrenOnSameRow:      true
+
+		// 		TextField
+		// 		{
+		// 			name:				"sidesInput"
+		// 			label:				qsTr("")
+		// 			placeholderText:	"Enter 'L' or 'R' for each cloud."
+		// 		}
+		// 	}
+		// }
+
+		// Group  // Second Column Fine-Tuning section
+		// {
+		// 	Label
+		// 	{
+		// 		// Empty for neat line-up
+		// 	}
+		// }
+
+		// Group  // Third Column Fine-Tuning section
+		// {
+		// 	HelpButton
+		// 	{
+		// 		toolTip:	qsTr(
+		// 						"Per default, all violins are right of the boxes.\n" +
+		// 						"For each Axis level you can specify 'L' or 'R' for each Color level.\n" +
+		// 						"For example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, " +
+		// 						"enter 'LLRR' for flanking clouds.\n\n" +
+		// 						"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
+		// 						"the orientation reverts to default (all 'R').\n" +
+		// 						"If the Custom orientation box is ticked, Point Nudge is fixed to 0."
+		// 					)
+		// 	}
+		// }
+		// // End Top Row Fine-Tuning Section ---------------------------------------------------------------------------
+
+		// GridLayout
+		// {
+		// 	columns: 3
+		// 	Label
+		// 	{
+		// 		// Empty placeholder
+		// 	}
+		// 	Label
+		// 	{
+		// 		text: qsTr("Nudge")
+		// 	}
+		// 	Label
+		// 	{
+		// 		text: qsTr("Width")
+		// 	}
+
+		// 	// End first row of GridLayout
+
+		// 	Label
+		// 	{
+		// 		text: qsTr("Violin")
+		// 	}
+		// 	DoubleField
+		// 	{
+		// 		name:				"vioNudge"
+		// 		defaultValue:		!(customSides.checked) ? 0.075 : 0.215
+		// 		negativeValues:		true
+		// 	}
+		// 	DoubleField
+		// 	{
+		// 		name:				"vioWidth"
+		// 		defaultValue:		0.7
+		// 	}
+
+		// 	// End second row of GridLayout
+
+		// 	Label
+		// 	{
+		// 		text: qsTr("Box")
+		// 	}
+		// 	DoubleField
+		// 	{
+		// 		name:				"boxNudge"
+		// 		defaultValue:		!(customSides.checked) ? 0 : 0.14
+		// 		negativeValues:		true
+		// 	}
+		// 	DoubleField
+		// 	{
+		// 		name:				"boxWidth"
+		// 		defaultValue:		0.075
+		// 	}		
+
+		// 	// End third row of GridLayout
+
+		// 	Label
+		// 	{
+		// 		text: qsTr("Point")
+		// 	}
+		// 	DoubleField
+		// 	{
+		// 		name:				"pointNudge"
+		// 		defaultValue:		!(customSides.checked) ? 0.14 : 0 // Is multiplied by -1 in the R script
+		// 		enabled:			!(customSides.checked) ? true : false
+		// 		negativeValues:		true
+		// 	}
+		// 	DoubleField
+		// 	{
+		// 		name:				"pointWidth"
+		// 		defaultValue:		0.065
+		// 	}
+
+		// 	// End fourth row of GridLayout									
+
+		// }
+
+
 
 		CheckBox
 		{
@@ -286,15 +439,13 @@ Form
 
 		}
 
+	}  // End Section Element Fine-Tuning
 
-	}
-
-		CheckBox
+	CheckBox
 	{
 		name: 						"horizontal"
 		label:						qsTr("Horizontal plot")
 		checked: false
 	}
 
-}
-
+}  // End Form
