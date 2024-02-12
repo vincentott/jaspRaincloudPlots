@@ -65,7 +65,7 @@ Form
 		AssignedVariablesList
 		{
 			name: 					"subject"
-			title:					qsTr("Subject     (requires long data & Axis input)")  // Extra spaces for alignment
+			title:					qsTr("Subject (needs long data & Axis)")  // Extra spaces for alignment
 			id: 					subject
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
@@ -168,6 +168,7 @@ Form
 				label:					""  // No qsTr() as this will stay the same across languages
 				enabled: 				covariate.count === 1
 				// indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
+											   // Commented out until there is no parsing error in R unittests
 				Layout.columnSpan: 1
 			}
 		}  // End Second Column
@@ -190,15 +191,6 @@ Form
 			}
 		}  // End Third Column
 
-// ColorPalette
-// 			{
-// 				name:					"palettePoints"
-// 				label:					""  // No qsTr() as this will stay the same across languages
-// 				enabled: 				covariate.count === 1
-// 				indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
-// 				Layout.columnSpan: 1
-// 			}
-
 	}  // End section Colors and Opacity
 
 
@@ -207,235 +199,192 @@ Form
 		title: 						qsTr("Element Fine-Tuning")
 		columns: 3
 
-		// // Start Top Row Fine-Tuning Section ---------------------------------------------------------------------------
-		// Group  // First Column Fine-Tuning section
-		// {
-		// 	CheckBox
-		// 	{
-		// 		name:					"customSides"
-		// 		id:						customSides
-		// 		label:					qsTr("Custom orientation for each cloud:")
-		// 		childrenOnSameRow:      true
-
-		// 		TextField
-		// 		{
-		// 			name:				"sidesInput"
-		// 			label:				qsTr("")
-		// 			placeholderText:	"Enter 'L' or 'R' for each cloud."
-		// 		}
-		// 	}
-		// }
-
-		// Group  // Second Column Fine-Tuning section
-		// {
-		// 	Label
-		// 	{
-		// 		// Empty for neat line-up
-		// 	}
-		// }
-
-		// Group  // Third Column Fine-Tuning section
-		// {
-		// 	HelpButton
-		// 	{
-		// 		toolTip:	qsTr(
-		// 						"Per default, all violins are right of the boxes.\n" +
-		// 						"For each Axis level you can specify 'L' or 'R' for each Color level.\n" +
-		// 						"For example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, " +
-		// 						"enter 'LLRR' for flanking clouds.\n\n" +
-		// 						"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
-		// 						"the orientation reverts to default (all 'R').\n" +
-		// 						"If the Custom orientation box is ticked, Point Nudge is fixed to 0."
-		// 					)
-		// 	}
-		// }
-		// // End Top Row Fine-Tuning Section ---------------------------------------------------------------------------
-
-		// GridLayout
-		// {
-		// 	columns: 3
-		// 	Label
-		// 	{
-		// 		// Empty placeholder
-		// 	}
-		// 	Label
-		// 	{
-		// 		text: qsTr("Nudge")
-		// 	}
-		// 	Label
-		// 	{
-		// 		text: qsTr("Width")
-		// 	}
-
-		// 	// End first row of GridLayout
-
-		// 	Label
-		// 	{
-		// 		text: qsTr("Violin")
-		// 	}
-		// 	DoubleField
-		// 	{
-		// 		name:				"vioNudge"
-		// 		defaultValue:		!(customSides.checked) ? 0.075 : 0.215
-		// 		negativeValues:		true
-		// 	}
-		// 	DoubleField
-		// 	{
-		// 		name:				"vioWidth"
-		// 		defaultValue:		0.7
-		// 	}
-
-		// 	// End second row of GridLayout
-
-		// 	Label
-		// 	{
-		// 		text: qsTr("Box")
-		// 	}
-		// 	DoubleField
-		// 	{
-		// 		name:				"boxNudge"
-		// 		defaultValue:		!(customSides.checked) ? 0 : 0.14
-		// 		negativeValues:		true
-		// 	}
-		// 	DoubleField
-		// 	{
-		// 		name:				"boxWidth"
-		// 		defaultValue:		0.075
-		// 	}		
-
-		// 	// End third row of GridLayout
-
-		// 	Label
-		// 	{
-		// 		text: qsTr("Point")
-		// 	}
-		// 	DoubleField
-		// 	{
-		// 		name:				"pointNudge"
-		// 		defaultValue:		!(customSides.checked) ? 0.14 : 0 // Is multiplied by -1 in the R script
-		// 		enabled:			!(customSides.checked) ? true : false
-		// 		negativeValues:		true
-		// 	}
-		// 	DoubleField
-		// 	{
-		// 		name:				"pointWidth"
-		// 		defaultValue:		0.065
-		// 	}
-
-		// 	// End fourth row of GridLayout									
-
-		// }
-
-
-
-		CheckBox
+		// Start Top Row Fine-Tuning Section ---------------------------------------------------------------------------
+		Group  // First Column Fine-Tuning section
 		{
-			name:					"customSides"
-			id:						customSides
-			label:					qsTr("Custom orientation for each cloud:")
-			Layout.columnSpan: 		2
-			childrenOnSameRow:		true
-
-			TextField
+			CheckBox
 			{
-				name:				"sidesInput"
-				label:				qsTr("")
-				placeholderText:	"Enter 'L' or 'R' for each cloud."
+				name:					"customSides"
+				id:						customSides
+				label:					qsTr("Custom orientation for each cloud:")
+				childrenOnSameRow:      true
+
+				TextField
+				{
+					name:				"sidesInput"
+					label:				qsTr("")
+					placeholderText:	"Enter 'L' or 'R' for each cloud."
+				}
 			}
 		}
-		HelpButton
+
+		Group  // Second Column Fine-Tuning section
 		{
-			toolTip:				qsTr("Per default, all violins are right of the boxes.\nFor each Axis level you can specify 'L' or 'R' for each Color level.\nFor example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, enter 'LLRR' for flanking clouds.\n\nIf you enter too little or too many letters or anything but 'L' or 'R',\nthe orientation reverts to default.\nIf the Custom orientation box is ticked, Points Nudge is fixed to 0.")
+			Label
+			{
+				// Empty for neat line-up
+			}
 		}
 
-		Group
+		Group  // Third Column Fine-Tuning section
 		{
-			title:					qsTr("Violin")
-			columns: 3
-			Layout.columnSpan: 		3
+			HelpButton
+			{
+				toolTip:	qsTr(
+								"Per default, all violins are right of the boxes.\n" +
+								"For each Axis level you can specify 'L' or 'R' for each Color level.\n" +
+								"For example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, " +
+								"enter 'LLRR' for flanking clouds.\n\n" +
+								"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
+								"the orientation reverts to default (all 'R').\n" +
+								"If the Custom orientation box is ticked, Point Nudge is fixed to 0."
+							)
+			}
+		}
+		// End Top Row Fine-Tuning Section ---------------------------------------------------------------------------
 
+		GridLayout
+		{
+			rowSpacing: 5
+			columnSpacing: 15
+			columns: 7
+			Label
+			{
+				// Empty placeholder
+			}
+			Label
+			{
+				text: qsTr("Nudge")
+			}
+			Label
+			{
+				text: qsTr("Width")
+			}
+			Label
+			{
+				// Empty placeholder
+			}
+			Label
+			{
+				text: qsTr("Element-Specific")
+				Layout.columnSpan: 2
+
+			}
+			Label
+			{
+				// Empty placeholder
+			}
+
+			// End first row of GridLayout
+
+			Label
+			{
+				text: qsTr("Violin")
+			}
 			DoubleField
 			{
 				name:				"vioNudge"
-				label:				qsTr("Nudge")
 				defaultValue:		!(customSides.checked) ? 0.075 : 0.215
 				negativeValues:		true
 			}
-
 			DoubleField
 			{
 				name:				"vioWidth"
-				label:				qsTr("Width")
 				defaultValue:		0.7
 			}
-
+			Label
+			{
+				// Empty placeholder
+			}
+			Label
+			{
+				text: qsTr("Smoothing")
+			}
 			DoubleField
 			{
 				name:				"vioSmoothing"
-				label:				qsTr("Smoothing")
 				defaultValue:		1
 				min:				0
 				max:				1
 			}
-		}
+			Label
+			{
+				// Empty placeholder
+			}
 
-		Group
-		{
-			title:					qsTr("Box")
-			columns: 3
-			Layout.columnSpan: 		3
+			// End second row of GridLayout
 
+			Label
+			{
+				text: qsTr("Box")
+			}
 			DoubleField
 			{
 				name:				"boxNudge"
-				label:				qsTr("Nudge")
 				defaultValue:		!(customSides.checked) ? 0 : 0.14
 				negativeValues:		true
 			}
-
 			DoubleField
 			{
 				name:				"boxWidth"
-				label:				qsTr("Width")
 				defaultValue:		0.075
 			}
-
+			Label
+			{
+				// Empty placeholder
+			}
+			Label
+			{
+				text: qsTr("Dodge")
+			}
 			DoubleField
 			{
 				name:				"boxDodge"
-				label:				qsTr("Dodge")
 				defaultValue:		0.15
 			}
-		}
+			Label
+			{
+				// Empty placeholder
+			}
 
-		Group
-		{
-			title:					qsTr("Points")
-			columns: 2
-			Layout.columnSpan: 		2
+			// End third row of GridLayout
 
+			Label
+			{
+				text: qsTr("Point")
+			}
 			DoubleField
 			{
 				name:				"pointNudge"
-				label:				qsTr("Nudge")
 				defaultValue:		!(customSides.checked) ? 0.14 : 0 // Is multiplied by -1 in the R script
 				enabled:			!(customSides.checked) ? true : false
 				negativeValues:		true
 			}
-
 			DoubleField
 			{
 				name:				"pointWidth"
-				label:				qsTr("Width")
 				defaultValue:		0.065
 			}
-
+			Label
+			{
+				// Empty placeholder
+			}
+			Label
+			{
+				text: qsTr("y-Jitter")
+			}
 			CheckBox
 			{
-				Layout.columnSpan:  2
 				name:				"yJitter"
-				label:				qsTr("jitter very long label does this work?")
+				id:					yJitter
 			}
+			Label
+			{
+				text: qsTr("Distorted visualization!")
+				visible: yJitter.checked
+			}
+
+			// End fourth row of GridLayout
 
 		}
 

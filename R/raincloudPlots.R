@@ -75,9 +75,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 .rainCreatePlots <- function(jaspResults, dataset, options, ready) {
 
   # Create container in jaspResults
-  if (is.null(jaspResults[["containerSimplePlots"]])) {
-    jaspResults[["containerSimplePlots"]] <- createJaspContainer(title = gettext("Simple Plots"))
-    jaspResults[["containerSimplePlots"]]$dependOn(
+  if (is.null(jaspResults[["containerRainPlots"]])) {
+    jaspResults[["containerRainPlots"]] <- createJaspContainer(title = gettext("Raincloud Plots"))
+    jaspResults[["containerRainPlots"]]$dependOn(
       c(
         "factorAxis", "factorFill", "covariate", "subject",
 
@@ -91,7 +91,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "customSides", "sidesInput",
         "vioNudge",   "vioWidth",   "vioSmoothing",
         "boxNudge",   "boxWidth",   "boxDodge",
-        "pointNudge", "pointWidth",
+        "pointNudge", "pointWidth", "yJitter",
 
         "horizontal"
 
@@ -100,7 +100,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }  # End create container
 
   # Access through container object
-  container <- jaspResults[["containerSimplePlots"]]
+  container <- jaspResults[["containerRainPlots"]]
 
   # Placeholder plot, if no variables
   if (!ready) {
@@ -253,12 +253,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
     0  # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
   }
+  yJitter <- if (!options$yJitter) 0 else NULL
   pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
       x          = negativePointNudge,  # Nudge
-      height     = 0,                 # yJitter, particularly interesting for likert data
+      height     = yJitter,             # yJitter, particularly interesting for likert data
       seed       = 1.0                  # Reproducible jitter
     )
   )
