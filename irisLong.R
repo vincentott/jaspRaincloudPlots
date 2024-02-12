@@ -26,6 +26,16 @@ iris.long$time <- factor(iris.long$time, levels = c('t1', 't2', 't3'))
 irisLong <- iris.long
 
 
+# from vignette
+ggplot(iris.long[iris.long$time %in% c('t1', 't2'),], aes(time, Sepal.Width, fill = Species)) +
+  geom_rain(alpha = .5) +
+  theme_classic() +
+  scale_fill_manual(values=c("dodgerblue", "darkorange")) +
+  guides(fill = 'none', color = 'none')
+
+
+
+
 
 # Three time points and covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
@@ -36,6 +46,5 @@ options$paletteFill <- "ggplot2"
 # options$subject <- "id"
 # options$customSides <- TRUE
 # options$sidesInput <- "LLLRRR"
-debugonce(jaspRaincloudPlots:::.rainReadData)
+# debugonce(jaspRaincloudPlots:::.rainReadData)
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
-str(irisLong)
