@@ -74,6 +74,15 @@ Form
 
 	}
 
+			AssignedVariablesList
+		{
+			name: "myComponents"
+			label: "myComponents"
+			source: [{name: "factorAxis", use: "levels", combineTerms: JASP.Combination2Way}, {name: "factorFill", use: "levels", combineTerms: JASP.Combination2Way}]
+			rowComponent: CheckBox{name: "myBox"}
+		
+		}
+
 	Section
 	{
 		title: 						qsTr("Colors and Opacity")
