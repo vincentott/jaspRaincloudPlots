@@ -49,16 +49,27 @@ options$palettePoints <- "colorblind"
 # debugonce(jaspRaincloudPlots:::.rainOutlineColor)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# Custom Sides ----
+# x-Axis jitter is reproducible ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "flipper_length_mm"
+options$factorAxis <- "species"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# yJitter is reproducible ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "body_mass_g"
 options$factorAxis <- "species"
-# options$factorFill <- "sex"  # THIS HERE DOES NOT WORK
-options$paletteFill <- "ggplot2"
-# options$customSides <- TRUE
-# options$sidesInput <- "LRLRLR"
-# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# NAs with missing values
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$factorAxis <- "species"
+options$factorFill <- "sex"
+options$paletteFill <- "colorblind"
+debugonce(jaspRaincloudPlots:::.rainReadData)
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
 
 
 # Storage ----

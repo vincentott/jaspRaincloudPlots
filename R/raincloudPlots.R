@@ -50,6 +50,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     datasetInProgress$covariate  <- .rainCreateColumn(datasetInProgress,  options$covariate  )
     datasetInProgress$subject    <- .rainCreateColumn(datasetInProgress,  options$subject    )
 
+    # print("toastbrot:")
+    # print(nrow(datasetInProgress))
+
     output <- datasetInProgress
   }
 
@@ -131,6 +134,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # Fills each inputPlot from .rainCreatePlots() with ggplot + palettes + geom_rain() + theme
 .rainFillPlot <- function(dataset, options, inputVariable, inputPlot) {
 
+  # Omit NAs row-wise
+  exclusiveDataset   <- na.omit(dataset)
+  numberOfExclusions <- nrow(dataset) - nrow(exclusiveDataset)
+  dataset            <- exclusiveDataset
+  sampleSize         <- nrow(dataset)
+
   # Ggplot() with aes()
   aesX     <- dataset$factorAxis
   aesFill  <- if(options$factorFill != "") dataset$factorFill else if (options$colorAnyway) aesX else NULL
@@ -147,18 +156,29 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, plotInProgress)
 
   # Theme
-  setUpTheme   <- jaspGraphs::themeJaspRaw(legend.position = "right")
-  xTitle       <- if (options$factorAxis == "") "Total" else options$factorAxis
-  axisTitles   <- ggplot2::labs(x = xTitle, y = inputVariable)
-  yBreaks      <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
-  yLimits      <- range(c(yBreaks, dataset[[inputVariable]]))
-  yAxis        <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
-  inwardTicks  <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
+  setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
 
-  plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme + axisTitles + yAxis + inwardTicks
+  yBreaks <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
+  yLimits <- range(c(yBreaks, dataset[[inputVariable]]))
+  yAxis   <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
+
+  inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
+
+  xTitle     <- if (options$factorAxis == "") "Total" else options$factorAxis
+  axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
+
+  captionText     <- gettextf("N = %s. %s observations were excluded due to missing data.", sampleSize, numberOfExclusions)
+  addCaption      <- ggplot2::labs(caption = captionText)
+  captionPosition <- ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0))
+
+  plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme +
+    yAxis + inwardTicks +
+    axisTitles + addCaption + captionPosition
 
   # Horizontal
   coordFlip <- if (options$horizontal) ggplot2::coord_flip() else NULL
+  plotInProgress <- plotInProgress + coordFlip
+
   # Depending on horizontal: If no factor, blank text and ticks for one axis
   noFactorBlankAxis <- if (options$factorAxis == "") {
     if (!options$horizontal) {
@@ -169,7 +189,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
     NULL
   }
-  plotInProgress <- plotInProgress + coordFlip + noFactorBlankAxis
+  plotInProgress <- plotInProgress + noFactorBlankAxis
 
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plotInProgress
@@ -251,16 +271,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   negativePointNudge <- if (!options$customSides) {
     options$pointNudge * -1  # This way all nudges in the GUI are positive by default
   } else {
-    0  # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
+    0                        # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
   }
   yJitter <- if (!options$yJitter) 0 else NULL
+  # print(sessionInfo())
+  # set.seed(1)
   pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
       width      = options$pointWidth,  # xJitter
       x          = negativePointNudge,  # Nudge
-      height     = yJitter,             # yJitter, particularly interesting for likert data
-      seed       = 1.0                  # Reproducible jitter
+      height     = 0,                   # yJitter, particularly interesting for likert data
+      seed       = 1                    # Reproducible jitter
     )
   )
 
