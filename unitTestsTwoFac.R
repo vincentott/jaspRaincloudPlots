@@ -46,7 +46,6 @@ options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
 options$palettePoints <- "colorblind"
-# debugonce(jaspRaincloudPlots:::.rainOutlineColor)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # x-Axis jitter is reproducible ----
@@ -67,7 +66,7 @@ options$variables <- "bill_length_mm"
 options$factorAxis <- "species"
 options$factorFill <- "sex"
 options$paletteFill <- "colorblind"
-debugonce(jaspRaincloudPlots:::.rainReadData)
+# debugonce(jaspRaincloudPlots:::.rainReadData)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 

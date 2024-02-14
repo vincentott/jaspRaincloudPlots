@@ -35,23 +35,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
     # Step 1: Read in all variables that are given by JASP
     # When there is no input, nothing is read in
-    readFactorAxis <- if (options$factorAxis == "") c() else options$factorAxis
-    readFactorFill <- if (options$factorFill == "") c() else options$factorFill
-    readCovariate  <- if (options$covariate  == "") c() else options$covariate
-    readSubject    <- if (options$subject    == "") c() else options$subject
-
-    datasetInProgress <- .readDataSetToEnd(
-      columns = c(options$variables, readFactorAxis, readFactorFill, readCovariate, readSubject)
-    )
+    columnsVector <- c(options$variables)
+    if (options$factorAxis != "") columnsVector <- c(columnsVector, options$factorAxis)
+    if (options$factorFill != "") columnsVector <- c(columnsVector, options$factorFill)
+    if (options$covariate  != "") columnsVector <- c(columnsVector, options$covariate)
+    if (options$subject    != "") columnsVector <- c(columnsVector, options$subject)
+    datasetInProgress <- .readDataSetToEnd(columns = columnsVector)
 
     # Step 2: Create columns with consistent names; if no input then assign default
     datasetInProgress$factorAxis <- .rainCreateColumn(datasetInProgress,  options$factorAxis )
     datasetInProgress$factorFill <- .rainCreateColumn(datasetInProgress,  options$factorFill )
     datasetInProgress$covariate  <- .rainCreateColumn(datasetInProgress,  options$covariate  )
     datasetInProgress$subject    <- .rainCreateColumn(datasetInProgress,  options$subject    )
-
-    # print("toastbrot:")
-    # print(nrow(datasetInProgress))
 
     output <- datasetInProgress
   }
@@ -63,10 +58,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainCreateColumn() ----
 .rainCreateColumn <- function(inputDataset, inputOption) {
-  output <- if (inputOption == "") {
-    as.factor(rep("Total", nrow(inputDataset)))
-  } else {
+  output <- if (inputOption != "") {
     inputDataset[[inputOption]]
+  } else {
+      as.factor(rep("none", nrow(inputDataset)))
   }
   return(output)
 }  # End .rainCreateColumn()
@@ -96,7 +91,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "boxNudge",   "boxWidth",   "boxDodge",
         "pointNudge", "pointWidth", "yJitter",
 
-        "horizontal"
+        "showCaption", "horizontal"
 
       )
     )
@@ -118,7 +113,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     if (!is.null(container$variable)) next
 
     plotWidth    <- if (options$factorFill != "" || options$covariate != "" || options$colorAnyway) 675 else 450
-    variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = 450)
+    plotHeight   <- if (options$showCaption) 500 else 450
+    variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = plotHeight)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(dataset, options, variable, variablePlot)
@@ -139,6 +135,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   numberOfExclusions <- nrow(dataset) - nrow(exclusiveDataset)
   dataset            <- exclusiveDataset
   sampleSize         <- nrow(dataset)
+
+  # If horizontal: reverse factorFill levels so cloud & legend order match JASP Edit Data Label Editor
+  # if (options$horizontal) dataset$factorFill <- factor(dataset$factorFill, levels = rev(levels(dataset$factorFill)))
 
   # Ggplot() with aes()
   aesX     <- dataset$factorAxis
@@ -167,17 +166,20 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   xTitle     <- if (options$factorAxis == "") "Total" else options$factorAxis
   axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
 
-  captionText     <- gettextf("N = %s. %s observations were excluded due to missing data.", sampleSize, numberOfExclusions)
-  addCaption      <- ggplot2::labs(caption = captionText)
-  captionPosition <- ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0))
+  plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme + yAxis + inwardTicks + axisTitles
 
-  plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme +
-    yAxis + inwardTicks +
-    axisTitles + addCaption + captionPosition
+  # Caption
+  if (options$showCaption) {
+    caption         <- .rainCaption(options, sampleSize, numberOfExclusions)
+    addCaption      <- ggplot2::labs(caption = caption)
+    captionPosition <- ggplot2::theme(plot.caption = ggplot2::element_text(hjust = 0))  # Bottom left position
+    plotInProgress <- plotInProgress + addCaption + captionPosition
+  }
 
   # Horizontal
-  coordFlip <- if (options$horizontal) ggplot2::coord_flip() else NULL
-  plotInProgress <- plotInProgress + coordFlip
+  coordFlip  <- if (options$horizontal) ggplot2::coord_flip() else NULL
+  legendFlip <- if (options$horizontal) ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
+  plotInProgress <- plotInProgress + coordFlip + legendFlip
 
   # Depending on horizontal: If no factor, blank text and ticks for one axis
   noFactorBlankAxis <- if (options$factorAxis == "") {
@@ -263,7 +265,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     width = options$boxWidth,
     position = ggpp::position_dodgenudge(
       x = boxPosVec, width = options$boxDodge,
-      preserve = "single"  # Ensures that all boxes have the same width
+      preserve = "single"  # All boxes same width
     )
   )
 
@@ -274,8 +276,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     0                        # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
   }
   yJitter <- if (!options$yJitter) 0 else NULL
-  # print(sessionInfo())
-  # set.seed(1)
   pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
@@ -321,7 +321,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     {
       ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill  # Requires factorFill or colorAnyway
     },
-    error = function(e) {                                      # Thus error handling
+    error = function(e) {                                      # Thus error handling, but not used further
       return("black")
     },
     warning = function(w) {
@@ -415,3 +415,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 }  # End .rainNudgeForEachCloud()
 
 
+
+# .rainCaption() ----
+.rainCaption <- function(options, sampleSize, numberOfExclusions) {
+
+  sampleSize <- paste0("N", gettextf(" = %s", sampleSize))
+
+  exclusions <- if (numberOfExclusions > 0) {
+    gettextf("Not shown are %s observations due to missing data.", numberOfExclusions)
+  } else {
+    NULL
+  }
+
+  output <- paste0(sampleSize, "\n", exclusions)
+  return(output)
+}

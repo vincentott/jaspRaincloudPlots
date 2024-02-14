@@ -39,3 +39,4 @@ options$customSides <- TRUE
 options$sidesInput <- "LLLRRR"
 # debugonce(jaspRaincloudPlots:::.rainReadData)
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
+

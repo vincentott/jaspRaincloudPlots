@@ -284,7 +284,7 @@ Form
 			DoubleField
 			{
 				name:				"vioNudge"
-				defaultValue:		!(customSides.checked) ? 0.075 : 0.215
+				defaultValue:		!(customSides.checked) ? 0.09 : 0.24
 				negativeValues:		true
 			}
 			DoubleField
@@ -321,13 +321,13 @@ Form
 			DoubleField
 			{
 				name:				"boxNudge"
-				defaultValue:		!(customSides.checked) ? 0 : 0.14
+				defaultValue:		!(customSides.checked) ? 0 : 0.15
 				negativeValues:		true
 			}
 			DoubleField
 			{
 				name:				"boxWidth"
-				defaultValue:		0.075
+				defaultValue:		0.1
 			}
 			Label
 			{
@@ -356,7 +356,7 @@ Form
 			DoubleField
 			{
 				name:				"pointNudge"
-				defaultValue:		!(customSides.checked) ? 0.14 : 0 // Is multiplied by -1 in the R script
+				defaultValue:		!(customSides.checked) ? 0.15 : 0 // Is multiplied by -1 in the R script
 				enabled:			!(customSides.checked) ? true : false
 				negativeValues:		true
 			}
@@ -390,11 +390,24 @@ Form
 
 	}  // End Section Element Fine-Tuning
 
-	CheckBox
+	Section
 	{
-		name: 						"horizontal"
-		label:						qsTr("Horizontal plot")
-		checked: false
-	}
+		title: qsTr("Finishing Touch")
+
+		CheckBox
+		{
+			name: 						"horizontal"
+			label:						qsTr("Horizontal plot")
+			checked: false
+		}
+
+		CheckBox
+		{
+			name: "showCaption"
+			label: qsTr("Show Caption")
+			checked: true
+		}
+
+	}  // End Section Finishing Touch
 
 }  // End Form
