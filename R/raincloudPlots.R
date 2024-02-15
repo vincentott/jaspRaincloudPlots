@@ -456,6 +456,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
-  output <- paste0(sampleSize, "\n", exclusions, "\n", yJitter, "\n\n", errorVioSides)  # idk why, but needs double \n
+  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", yJitter, "\n\n", errorVioSides)
   return(output)
 }

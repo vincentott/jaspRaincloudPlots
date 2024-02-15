@@ -48,7 +48,7 @@ options$factorAxis <- "island"
 options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
-options$palettePoints <- "colorblind"
+options$palettePoints <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
