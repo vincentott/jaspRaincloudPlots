@@ -230,7 +230,7 @@ Form
 								"enter 'LLRR' for flanking clouds (Pre-Exp, Pre-Control, Post-Exp, Post-Control).\n\n" +
 								"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
 								"the orientation reverts to default (all 'R').\n" +
-								"If the Custom orientation box is ticked, Point Nudge is set to 0."
+								"If there is any input, Point Nudge is set to 0."
 							)
 			}
 		}

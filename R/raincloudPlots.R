@@ -451,7 +451,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   errorVioSides <- if (errorVioSides) {
-    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'.</span>")
+    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point Nudge set to 0.</span>")
   } else {
     NULL
   }

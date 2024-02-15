@@ -51,7 +51,6 @@ options$paletteFill <- "grandBudapest"
 options$palettePoints <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-
 # yJitter is reproducible ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "flipper_length_mm"
@@ -60,12 +59,23 @@ options$yJitter <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
-# NAs with missing values
+# Custom orientation ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$factorAxis <- "species"
 options$factorFill <- "sex"
-options$paletteFill <- "colorblind"
+options$paletteFill <- "ggplot2"
+options$customSides <- "LRLRLR"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
+# Invalid input: Custom orientation ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$factorAxis <- "species"
+options$factorFill <- "sex"
+options$paletteFill <- "ggplot2"
+options$customSides <- "LRLRL"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
