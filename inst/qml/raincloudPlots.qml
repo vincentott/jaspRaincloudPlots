@@ -74,134 +74,23 @@ Form
 
 	}
 
-	Section
-	{
-		title: qsTr("Colors and Opacity")
-		columns: 3
-
-		ColorPalette
-		{
-			name: 					"paletteFill"
-			label:					qsTr("Color palette")
-		}
-
-		CheckBox
-		{
-			name: 					"colorAnyway"
-			label:					qsTr("Apply color palette to Axis")
-			id: 					colorAnyway
-			checked:				factorFill.count === 0
-			enabled: 				factorFill.count === 0
-			Layout.columnSpan: 		2
-		}
-
-		Group  // First Column of the section: Opacities
-		{
-			PercentField
-			{
-				name: 					"vioOpacity"
-				label:					qsTr("Violin opacity")
-			}
-
-			PercentField
-			{
-				name: 					"boxOpacity"
-				label:					qsTr("Box opacity")
-			}
-
-			PercentField
-			{
-				name: 					"pointOpacity"
-				label:					qsTr("Point opacity")
-			}
-
-			PercentField
-			{
-				name:					"lineOpacity"
-				label:					qsTr("Subject Line Opacity")
-				enabled:				subject.count === 1
-				defaultValue:			25
-			}
-		}  // End First Column
-
-		Group  // Second Column of the section: Outlines & Point palette
-		{
-			columns: 2
-
-			Label
-			{
-				text: qsTr("Violin Outline")
-			}
-			DropDown
-			{
-				name: 					"vioOutline"
-				values:	[
-						{ label: qsTr("like palette"), value: "likePalette" },
-						{ label: qsTr("black"),        value: "black" },
-						{ label: qsTr("none"),         value: "none" },
-						]
-				Layout.columnSpan: 1
-			}
-
-			Label
-			{
-				text: qsTr("Box outline")
-			}
-			DropDown
-			{
-				name: 					"boxOutline"
-				values:	[
-						{ label: qsTr("like palette"), value: "likePalette" },
-					   	{ label: qsTr("black"),        value: "black" },
-					   	{ label: qsTr("none"),         value: "none" },
-					   	]
-				Layout.columnSpan: 1
-			}
-
-			Label
-			{
-				text: qsTr("Point palette")
-			}
-			ColorPalette
-			{
-				name:					"palettePoints"
-				label:					""  // No qsTr() as this will stay the same across languages
-				enabled: 				covariate.count === 1
-				// indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
-											   // Commented out until there is no parsing error in R unittests
-				Layout.columnSpan: 1
-			}
-		}  // End Second Column
-
-		Group  // Third Column of the section: HelpButtons
-		{
-			HelpButton
-			{
-				toolTip: qsTr("0% opacity & no outline to hide Violin or Box")
-			}
-
-			Label
-			{
-				// Empty placeholder
-			}
-
-			HelpButton
-			{
-				toolTip: qsTr("0% opacity to hide Points")
-			}
-		}  // End Third Column
-
-	}  // End section Colors and Opacity
 
 
 	Section
 	{
-		title: 						qsTr("Element Fine-Tuning")
+		title: 						qsTr("Positioning")
 		columns: 3
 
-		// Start Top Row Fine-Tuning Section ---------------------------------------------------------------------------
-		Group  // First Column Fine-Tuning section
+		// Start Top Row Positioning Section ---------------------------------------------------------------------------
+		Group  // First Column Positioning section
 		{
+			CheckBox
+			{
+				name: 						"horizontal"
+				label:						qsTr("Horizontal plot")
+				checked: false
+			}
+
 			TextField
 			{
 				name:					"customSides"
@@ -211,16 +100,24 @@ Form
 			}
 		}
 
-		Group  // Second Column Fine-Tuning section
+		Group  // Second Column Positioning section
 		{
+			Label
+			{
+				// Empty for neat line-up
+			}
 			Label
 			{
 				// Empty for neat line-up
 			}
 		}
 
-		Group  // Third Column Fine-Tuning section
+		Group  // Third Column Positioning section
 		{
+			Label
+			{
+				// Empty for neat line-up
+			}
 			HelpButton
 			{
 				toolTip:	qsTr(
@@ -234,7 +131,7 @@ Form
 							)
 			}
 		}
-		// End Top Row Fine-Tuning Section ---------------------------------------------------------------------------
+		// End Top Row Positioning Section ---------------------------------------------------------------------------
 
 		GridLayout
 		{
@@ -381,18 +278,135 @@ Form
 
 		}
 
-	}  // End Section Element Fine-Tuning
+	}  // End Section Positioning
+
+
 
 	Section
 	{
-		title: qsTr("Finishing Touch")
+		title: qsTr("Color and Opacity")
+		columns: 3
+
+		ColorPalette
+		{
+			name: 					"paletteFill"
+			label:					qsTr("Color palette")
+		}
 
 		CheckBox
 		{
-			name: 						"horizontal"
-			label:						qsTr("Horizontal plot")
-			checked: false
+			name: 					"colorAnyway"
+			label:					qsTr("Apply color palette to Axis")
+			id: 					colorAnyway
+			checked:				factorFill.count === 0
+			enabled: 				factorFill.count === 0
+			Layout.columnSpan: 		2
 		}
+
+		Group  // First Column of the section: Opacities
+		{
+			PercentField
+			{
+				name: 					"vioOpacity"
+				label:					qsTr("Violin opacity")
+			}
+
+			PercentField
+			{
+				name: 					"boxOpacity"
+				label:					qsTr("Box opacity")
+			}
+
+			PercentField
+			{
+				name: 					"pointOpacity"
+				label:					qsTr("Point opacity")
+			}
+
+			PercentField
+			{
+				name:					"lineOpacity"
+				label:					qsTr("Subject Line Opacity")
+				enabled:				subject.count === 1
+				defaultValue:			25
+			}
+		}  // End First Column
+
+		Group  // Second Column of the section: Outlines & Point palette
+		{
+			columns: 2
+
+			Label
+			{
+				text: qsTr("Violin Outline")
+			}
+			DropDown
+			{
+				name: 					"vioOutline"
+				values:	[
+						{ label: qsTr("like palette"), value: "likePalette" },
+						{ label: qsTr("black"),        value: "black" },
+						{ label: qsTr("none"),         value: "none" },
+						]
+				Layout.columnSpan: 1
+			}
+
+			Label
+			{
+				text: qsTr("Box outline")
+			}
+			DropDown
+			{
+				name: 					"boxOutline"
+				values:	[
+						{ label: qsTr("like palette"), value: "likePalette" },
+					   	{ label: qsTr("black"),        value: "black" },
+					   	{ label: qsTr("none"),         value: "none" },
+					   	]
+				Layout.columnSpan: 1
+			}
+
+			Label
+			{
+				text: qsTr("Point palette")
+			}
+			ColorPalette
+			{
+				name:					"palettePoints"
+				label:					""  // No qsTr() as this will stay the same across languages
+				enabled: 				covariate.count === 1
+				// indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
+											   // Commented out until there is no parsing error in R unittests
+				Layout.columnSpan: 1
+			}
+		}  // End Second Column
+
+		Group  // Third Column of the section: HelpButtons
+		{
+			HelpButton
+			{
+				toolTip: qsTr("0% opacity & no outline to hide Violin or Box")
+			}
+
+			Label
+			{
+				// Empty placeholder
+			}
+
+			HelpButton
+			{
+				toolTip: qsTr("0% opacity to hide Points")
+			}
+		}  // End Third Column
+
+	}  // End section Color and Opacity
+
+
+
+	Section
+	{
+		title: qsTr("Legend and Caption")
+		columns: 3
 
 		CheckBox
 		{
@@ -401,6 +415,6 @@ Form
 			checked: true
 		}
 
-	}  // End Section Finishing Touch
+	}  // End Section Legend and Caption
 
 }  // End Form
