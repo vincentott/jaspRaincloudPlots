@@ -88,7 +88,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
         "customSides", "sidesInput",
         "vioNudge",   "vioWidth",   "vioSmoothing",
-        "boxNudge",   "boxWidth",   "boxDodge",
+        "boxNudge",   "boxWidth",   "boxPadding",
         "pointNudge", "pointWidth", "yJitter",
 
         "showCaption", "horizontal"
@@ -178,7 +178,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Horizontal
   coordFlip  <- if (options$horizontal) ggplot2::coord_flip() else NULL
-  legendFlip <- if (options$horizontal) ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
+  legendFlip <- if (options$horizontal) ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))  # Instead of IF and TRUE I could also assign options$horizontal to the reverse argument
   plotInProgress <- plotInProgress + coordFlip + legendFlip
 
   # Depending on horizontal: If no factor, blank text and ticks for one axis
@@ -263,9 +263,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   boxPosVec  <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
   boxArgsPos <- list(
     width = options$boxWidth,
-    position = ggpp::position_dodgenudge(
-      x = boxPosVec, width = options$boxDodge,
-      preserve = "single"  # All boxes same width
+    position = ggpp::position_dodge2nudge(
+      x = boxPosVec, padding = options$boxPadding,
+      preserve = "single"  # All boxes same width and different amounts of boxes are centered around middle
     )
   )
 

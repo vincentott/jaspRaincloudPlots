@@ -327,7 +327,7 @@ Form
 			DoubleField
 			{
 				name:				"boxWidth"
-				defaultValue:		0.1
+				defaultValue:		(factorFill.count === 0) ? 0.1 : 0.2
 			}
 			Label
 			{
@@ -335,12 +335,12 @@ Form
 			}
 			Label
 			{
-				text: qsTr("Dodge")
+				text: qsTr("Padding")
 			}
 			DoubleField
 			{
-				name:				"boxDodge"
-				defaultValue:		0.15
+				name:				"boxPadding"
+				defaultValue:		(factorFill.count === 0) ? 0.1 : 0.2
 			}
 			Label
 			{
