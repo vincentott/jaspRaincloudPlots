@@ -1,12 +1,9 @@
 
-jaspBase:::setLegacyRng()
-
 # No Factors + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
-debugonce(jaspRaincloudPlots:::.rainGeomRain)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # factorAxis + color ----

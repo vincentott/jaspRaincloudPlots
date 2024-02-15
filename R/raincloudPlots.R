@@ -445,7 +445,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   yJitter <- if (options$yJitter) {
-    gettextf("Points are slightly jittered from their true values on the dependent variable.")
+    gettextf("Points are slightly jittered from their true values for the dependent variable.")
   } else {
     NULL
   }
