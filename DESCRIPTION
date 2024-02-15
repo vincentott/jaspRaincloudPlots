@@ -14,7 +14,8 @@ Imports:
   jaspGraphs,
   ggplot2,
   ggrain,
-  ggpp
+  ggpp,
+  ggtext
 Remotes:
   jasp-stats/jaspBase,
   jasp-stats/jaspGraphs

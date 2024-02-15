@@ -202,19 +202,12 @@ Form
 		// Start Top Row Fine-Tuning Section ---------------------------------------------------------------------------
 		Group  // First Column Fine-Tuning section
 		{
-			CheckBox
+			TextField
 			{
 				name:					"customSides"
 				id:						customSides
-				label:					qsTr("Custom orientation for each cloud:")
-				childrenOnSameRow:      true
-
-				TextField
-				{
-					name:				"sidesInput"
-					label:				qsTr("")
-					placeholderText:	"Enter 'L' or 'R' for each cloud."
-				}
+				label:				qsTr("Custom orientation for each cloud:")
+				placeholderText:	"Enter 'L' or 'R' for each cloud."
 			}
 		}
 
@@ -234,10 +227,10 @@ Form
 								"Per default, all violins are right of the boxes.\n" +
 								"For each Axis level you can specify 'L' or 'R' for each Color level.\n" +
 								"For example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, " +
-								"enter 'LLRR' for flanking clouds.\n\n" +
+								"enter 'LLRR' for flanking clouds (Pre-Exp, Pre-Control, Post-Exp, Post-Control).\n\n" +
 								"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
 								"the orientation reverts to default (all 'R').\n" +
-								"If the Custom orientation box is ticked, Point Nudge is fixed to 0."
+								"If the Custom orientation box is ticked, Point Nudge is set to 0."
 							)
 			}
 		}
@@ -284,7 +277,7 @@ Form
 			DoubleField
 			{
 				name:				"vioNudge"
-				defaultValue:		!(customSides.checked) ? 0.09 : 0.24
+				defaultValue:		(customSides.value === "") ? 0.09 : 0.24
 				negativeValues:		true
 			}
 			DoubleField
@@ -321,7 +314,7 @@ Form
 			DoubleField
 			{
 				name:				"boxNudge"
-				defaultValue:		!(customSides.checked) ? 0 : 0.15
+				defaultValue:		(customSides.value === "") ? 0 : 0.15
 				negativeValues:		true
 			}
 			DoubleField
@@ -356,8 +349,8 @@ Form
 			DoubleField
 			{
 				name:				"pointNudge"
-				defaultValue:		!(customSides.checked) ? 0.15 : 0 // Is multiplied by -1 in the R script
-				enabled:			!(customSides.checked) ? true : false
+				defaultValue:		(customSides.value === "") ? 0.15 : 0 // Is multiplied by -1 in the R script
+				enabled:			(customSides.value === "") ? true : false
 				negativeValues:		true
 			}
 			DoubleField
@@ -380,7 +373,7 @@ Form
 			}
 			Label
 			{
-				text: qsTr("Distorted visualization!")
+				text: qsTr("See caption!")
 				visible: yJitter.checked
 			}
 
