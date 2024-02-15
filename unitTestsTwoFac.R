@@ -46,6 +46,7 @@ options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
 options$palettePoints <- "viridis"
+# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # yJitter is reproducible ----

@@ -167,6 +167,21 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
 
+  # Horizontal plot?
+  if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()
+
+  # Depending on horizontal: If no factor, blank text and ticks for one axis
+  noFactorBlankAxis <- if (options$factorAxis == "") {
+    if (!options$horizontal) {
+      ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
+    } else {
+      ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
+    }
+  } else {
+    NULL
+  }
+  plotInProgress <- plotInProgress + noFactorBlankAxis
+
   # Theme
   setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
 
@@ -181,6 +196,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme + yAxis + inwardTicks + axisTitles
 
+  # Legend
+  guide <- ggplot2::guides(
+    fill = ggplot2::guide_legend(order = 1, reverse = options$horizontal),
+    color = ggplot2::guide_legend(order = 2)
+  )
+  plotInProgress <- plotInProgress + guide
+  # Remove once everything works as intended
+  # # legendFlip <- if (options$horizontal) ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
+  # # Instead of IF and TRUE I could also assign options$horizontal to the reverse argument
+
   # Caption
   if (options$showCaption) {
     caption         <- .rainCaption(options, sampleSize, numberOfExclusions, errorVioSides)
@@ -188,23 +213,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     captionPosition <- ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0))  # Bottom left position
     plotInProgress <- plotInProgress + addCaption + captionPosition
   }
-
-  # Horizontal
-  coordFlip  <- if (options$horizontal) ggplot2::coord_flip() else NULL
-  legendFlip <- if (options$horizontal) ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))  # Instead of IF and TRUE I could also assign options$horizontal to the reverse argument
-  plotInProgress <- plotInProgress + coordFlip + legendFlip
-
-  # Depending on horizontal: If no factor, blank text and ticks for one axis
-  noFactorBlankAxis <- if (options$factorAxis == "") {
-    if (!options$horizontal) {
-      ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
-    } else {
-      ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
-    }
-  } else {
-    NULL
-  }
-  plotInProgress <- plotInProgress + noFactorBlankAxis
 
   # Assign to inputPlot
   inputPlot[["plotObject"]] <- plotInProgress
@@ -250,10 +258,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   perCloud512     <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
   vioArgs$color   <- rep(vioOutlineColor, perCloud512)
 
-  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity)
+  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show_guide = FALSE)
   boxArgs$color <- .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
 
-  pointArgs <- list(alpha = options$pointOpacity)
+  showPointGuide <- if (options$covariate == "") FALSE else TRUE
+  pointArgs <- list(alpha = options$pointOpacity, show_guide = showPointGuide)
 
   lineArgs <- list(alpha = options$lineOpacity)
   if (options$factorFill   == "") lineArgs$color <- "black"
