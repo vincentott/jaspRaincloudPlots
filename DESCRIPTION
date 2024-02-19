@@ -2,7 +2,7 @@ Package: jaspRaincloudPlots
 Type: Package
 Title: Raincloud plot Module for JASP
 Version: 0.1
-Date: 2024-01-11
+Date: 2024-02-13
 Author: Vincent Ott, JASP Team
 Website: jasp-stats.org
 Maintainer: JASP Team <info@jasp-stats.org>
@@ -14,7 +14,8 @@ Imports:
   jaspGraphs,
   ggplot2,
   ggrain,
-  ggpp
+  ggpp,
+  ggtext
 Remotes:
   jasp-stats/jaspBase,
   jasp-stats/jaspGraphs
