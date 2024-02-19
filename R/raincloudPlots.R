@@ -197,14 +197,25 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme + yAxis + inwardTicks + axisTitles
 
   # Legend
-  guide <- ggplot2::guides(
-    fill = ggplot2::guide_legend(order = 1, reverse = options$horizontal),
-    color = ggplot2::guide_legend(order = 2)
-  )
+  guideFill <- if (options$factorAxis == ""  && options$factorFill == "") {
+    "none"  # If there is just a single cloud and colorAnyway, we do not need a legend
+  } else {
+    ggplot2::guide_legend(
+      order = 1, reverse = options$horizontal, override.aes = list(color = NA)  # NA removes points in boxes
+    )
+  }
+  guideColor <- if (options$covariate == "") {
+    NULL
+  } else {
+    if (is.factor(dataset$covariate)) {
+      ggplot2::guide_legend(override.aes = list(size = 6.5))
+    } else {
+      ggplot2::guide_colourbar()
+    }
+  }
+  guide <- ggplot2::guides(fill = guideFill, color = guideColor)
   plotInProgress <- plotInProgress + guide
-  # Remove once everything works as intended
-  # # legendFlip <- if (options$horizontal) ggplot2::guides(fill = ggplot2::guide_legend(reverse = TRUE))
-  # # Instead of IF and TRUE I could also assign options$horizontal to the reverse argument
+
 
   # Caption
   if (options$showCaption) {
@@ -223,8 +234,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # .rainSetPalettes() ----
 .rainSetPalettes <- function(dataset, options) {
 
+  fillTitle <- if (options$factorFill == "") options$factorAxis else options$factorFill
   paletteFill <- if (options$factorFill != "" || options$colorAnyway) {
-    jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = options$factorFill)
+    jaspGraphs::scale_JASPfill_discrete(options$paletteFill, name = fillTitle)
   } else {
     NULL
   }
@@ -253,6 +265,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 .rainGeomRain <- function(dataset, options, infoFactorCombinations, vioSides, plotInProgress) {
 
   # Opacity and outline color of violins & boxes
+  showVioGuide <- if (options$factorFill == "") TRUE else FALSE
   vioArgs         <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
   vioOutlineColor <- .rainOutlineColor(options, options$vioOutline, infoFactorCombinations)
   perCloud512     <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
@@ -264,7 +277,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   showPointGuide <- if (options$covariate == "") FALSE else TRUE
   pointArgs <- list(alpha = options$pointOpacity, show_guide = showPointGuide)
 
-  lineArgs <- list(alpha = options$lineOpacity)
+  lineArgs <- list(alpha = options$lineOpacity, show_guide = FALSE)
   if (options$factorFill   == "") lineArgs$color <- "black"
 
   # Violin positioning

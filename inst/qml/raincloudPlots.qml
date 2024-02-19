@@ -405,7 +405,7 @@ Form
 
 	Section
 	{
-		title: qsTr("Legend, Axes, and Caption")
+		title: qsTr("Axes, Legend, and Caption")
 		columns: 3
 
 		CheckBox
@@ -415,6 +415,6 @@ Form
 			checked: true
 		}
 
-	}  // End Section Legend and Caption
+	}  // End Section Axes, Legend, and Caption
 
 }  // End Form

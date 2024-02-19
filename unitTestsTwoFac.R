@@ -6,6 +6,12 @@ options$paletteFill <- "colorblind"
 options$colorAnyway <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
+# No Factors NO color ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
 # factorAxis + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
@@ -38,7 +44,7 @@ options$factorFill <- "species"
 options$paletteFill <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# Two factors + covariate ----
+# Two factors + Continuous covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
@@ -46,8 +52,19 @@ options$factorFill <- "species"
 options$covariate <- "bill_depth_mm"
 options$paletteFill <- "grandBudapest"
 options$palettePoints <- "viridis"
-# debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
+# Two factors + Discrete covariate ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$factorAxis <- "island"
+options$factorFill <- "species"
+options$covariate <- "sex"
+options$paletteFill <- "grandBudapest"
+options$palettePoints <- "viridis"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
 
 # yJitter is reproducible ----
 options <- jaspTools::analysisOptions("raincloudPlots")

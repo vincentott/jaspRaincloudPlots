@@ -64,7 +64,7 @@ irisLong <- iris.long
 
 
 
-# Three time points and covariate ----
+# Three time points ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "Sepal.Width"
 options$factorAxis <- "time"
@@ -82,6 +82,8 @@ options$variables <- "Sepal.Width"
 options$factorAxis <- "time"
 options$factorFill <- "Species"
 options$paletteFill <- "ggplot2"
+options$covariate <- "Sepal.Length"
+options$palettePoints <- "viridis"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
 options$yJitter <- TRUE
