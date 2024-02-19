@@ -167,6 +167,24 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
 
+  # Means + SDs
+  means <- ggplot2::stat_summary(
+    fun = mean,
+    ggplot2::aes(x = aesX, fill = aesFill, color = aesColor),
+    geom = "point",
+    shape = 18,
+    size = 7,
+    alpha = 1,
+    position = ggpp::position_dodge2nudge(
+      x = .rainNudgeForEachCloud(options$boxNudge, vioSides),  # Like boxPosVec
+      width = options$boxPadding,
+      #padding = options$boxPadding,  # Remove once everything works as intended
+      preserve = "single"
+    ),
+    show.legend = FALSE
+  )
+  plotInProgress <- plotInProgress + means
+
   # Horizontal plot?
   if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()
 
@@ -260,6 +278,45 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
+# .rainInfoFactorCombinations() ----
+# Calculates info to determine colors & geom orientation
+.rainInfoFactorCombinations <- function(inputDataset, inputPlot) {
+  onlyFactors    <- inputDataset[c("factorAxis", "factorFill")]
+  # Extract used Fill colors from plot
+  # https://stackoverflow.com/questions/11774262/how-to-extract-the-fill-colours-from-a-ggplot-object
+  onlyFactors$color <- tryCatch(
+    {
+      ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill  # Requires factorFill or colorAnyway
+    },
+    error = function(e) {                                      # Thus error handling, but not used further
+      return("black")
+    },
+    warning = function(w) {
+      return("black")
+    }
+  )
+
+  # In the following possibleCombis <- expand.grid() factorFill first because
+  # then structure will match order in which ggplot accesses the clouds:
+  # for each level of Axis, we get the levels of Fill (as opposed to: for each level of Fill the levels of Axis)
+  possibleCombis <- expand.grid(
+    factorFill = levels(onlyFactors$factorFill), factorAxis = levels(onlyFactors$factorAxis)
+  )
+
+  possibleCombis$rowId <- 1:nrow(possibleCombis)  # Id is necessary as merge will scramble order of possibleCombis
+  observedCombis <- merge(possibleCombis, onlyFactors)
+  uniqueCombis   <- unique(observedCombis)
+
+  uniqueCombis <- uniqueCombis[order(uniqueCombis$rowId), ] # Re-order rows according to possibleCombis
+
+  numberOfClouds <- nrow(uniqueCombis)
+  return(
+    list(numberOfClouds = numberOfClouds, colors = uniqueCombis$color)
+  )
+}  # End .rainInfoFactorCombinations()
+
+
+
 # .rainGeomRain() ----
 # Call of ggrain:geom_rain() with prior set up of all input arguments
 .rainGeomRain <- function(dataset, options, infoFactorCombinations, vioSides, plotInProgress) {
@@ -342,45 +399,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   return(output)
 }  # End .rainGeomRain()
-
-
-
-# .rainInfoFactorCombinations() ----
-# Calculates info to determine colors & geom orientation
-.rainInfoFactorCombinations <- function(inputDataset, inputPlot) {
-  onlyFactors    <- inputDataset[c("factorAxis", "factorFill")]
-  # Extract used Fill colors from plot
-  # https://stackoverflow.com/questions/11774262/how-to-extract-the-fill-colours-from-a-ggplot-object
-  onlyFactors$color <- tryCatch(
-    {
-      ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill  # Requires factorFill or colorAnyway
-    },
-    error = function(e) {                                      # Thus error handling, but not used further
-      return("black")
-    },
-    warning = function(w) {
-      return("black")
-    }
-  )
-
-  # In the following possibleCombis <- expand.grid() factorFill first because
-  # then structure will match order in which ggplot accesses the clouds:
-  # for each level of Axis, we get the levels of Fill (as opposed to: for each level of Fill the levels of Axis)
-  possibleCombis <- expand.grid(
-    factorFill = levels(onlyFactors$factorFill), factorAxis = levels(onlyFactors$factorAxis)
-  )
-
-  possibleCombis$rowId <- 1:nrow(possibleCombis)  # Id is necessary as merge will scramble order of possibleCombis
-  observedCombis <- merge(possibleCombis, onlyFactors)
-  uniqueCombis   <- unique(observedCombis)
-
-  uniqueCombis <- uniqueCombis[order(uniqueCombis$rowId), ] # Re-order rows according to possibleCombis
-
-  numberOfClouds <- nrow(uniqueCombis)
-  return(
-    list(numberOfClouds = numberOfClouds, colors = uniqueCombis$color)
-  )
-}  # End .rainInfoFactorCombinations()
 
 
 

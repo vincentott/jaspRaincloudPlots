@@ -417,4 +417,19 @@ Form
 
 	}  // End Section Axes, Legend, and Caption
 
+
+	Section
+	{
+		title: qsTr("Advanced: Means and Intervals")
+		columns: 3
+
+		CheckBox
+		{
+			name: "means"
+			label: qsTr("Show Means instead of Boxes")
+		}
+
+
+	}  // End Section Advanced: Means and Intervals
+
 }  // End Form
