@@ -170,21 +170,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Horizontal plot?
   if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()
 
-  # Depending on horizontal: If no factor, blank text and ticks for one axis
-  noFactorBlankAxis <- if (options$factorAxis == "") {
-    if (!options$horizontal) {
-      ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
-    } else {
-      ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
-    }
-  } else {
-    NULL
-  }
-  plotInProgress <- plotInProgress + noFactorBlankAxis
+  # Theme setup
+  plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw(legend.position = "right")
 
-  # Theme
-  setUpTheme <- jaspGraphs::themeJaspRaw(legend.position = "right")
-
+  # Axes
   yBreaks <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
   yLimits <- range(c(yBreaks, dataset[[inputVariable]]))
   yAxis   <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
@@ -194,7 +183,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   xTitle     <- if (options$factorAxis == "") "Total" else options$factorAxis
   axisTitles <- ggplot2::labs(x = xTitle, y = inputVariable)
 
-  plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + setUpTheme + yAxis + inwardTicks + axisTitles
+  noFactorBlankAxis <- if (options$factorAxis == "") {
+    if (!options$horizontal) {
+      ggplot2::theme(axis.text.x = ggplot2::element_blank(), axis.ticks.x = ggplot2::element_blank())
+    } else {
+      ggplot2::theme(axis.text.y = ggplot2::element_blank(), axis.ticks.y = ggplot2::element_blank())
+    }
+  } else {
+    NULL
+  }
+
+  plotInProgress <- plotInProgress + yAxis + inwardTicks + axisTitles + noFactorBlankAxis
+
 
   # Legend
   guideFill <- if (options$factorAxis == ""  && options$factorFill == "") {
@@ -467,7 +467,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   yJitter <- if (options$yJitter) {
-    gettextf("Points are slightly jittered from their true values for the dependent variable.")
+    gettextf("Points are slightly jittered from their true values.")
   } else {
     NULL
   }
