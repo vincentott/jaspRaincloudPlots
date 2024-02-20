@@ -86,12 +86,16 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "pointOpacity", "palettePoints",
         "lineOpacity",
 
+        "horizontal",
         "customSides",
         "vioNudge",   "vioWidth",   "vioSmoothing",
         "boxNudge",   "boxWidth",   "boxPadding",
         "pointNudge", "pointWidth", "yJitter",
 
-        "showCaption", "horizontal"
+        "showCaption",
+
+        "means",
+        "meanLines"
 
       )
     )
@@ -167,28 +171,40 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
 
-  # Means
-  means <- ggplot2::stat_summary(
-    fun = mean,
-    ggplot2::aes(x = aesX, fill = aesFill),  # No color argument in aes() as covariate will interfere with it
-    color = .rainOutlineColor(options, "likePalette", infoFactorCombinations),  # instead like Outlines
-    geom = "point",
-    shape = 18,
-    size = 7,
-    alpha = 1,
-    position = ggpp::position_dodge2nudge(
-      x = .rainNudgeForEachCloud(options$boxNudge, vioSides),  # Like boxPosVec
-      width = options$boxPadding,
-      #padding = options$boxPadding,  # Remove once everything works as intended
-      preserve = "single"
-    ),
-    show.legend = FALSE
+  # Means and Lines
+  meansPos <- ggpp::position_dodge2nudge(
+    x = .rainNudgeForEachCloud(options$boxNudge, vioSides),  # Like boxPosVec, see .rainGeomRain()
+    width = options$boxPadding,
+    preserve = "single"
   )
-  plotInProgress <- plotInProgress + means
-
-  # Mean Lines
-
-
+  means <- if (options$means) {
+    ggplot2::stat_summary(
+      fun = mean,
+      geom = "point",
+      ggplot2::aes(x = aesX, fill = aesFill),  # No color argument in aes() as covariate will interfere with it
+      color = .rainOutlineColor(options, "likePalette", infoFactorCombinations),  # instead like Outlines
+      position = meansPos,
+      shape = 18,
+      size = 6,
+      alpha = 1,
+      show.legend = FALSE
+    )
+  } else {
+    NULL
+  }
+  meanLines <- if (options$means && options$meanLines) {  # Needs options$means as qml wont uncheck options$meanLines
+    ggplot2::stat_summary(                                # if options$means is unchecked again
+      fun = mean,
+      geom = "line",
+      ggplot2::aes(group = 1),
+      color = "black",
+      position = meansPos,
+      alpha = 0.5
+    )
+  } else {
+    NULL
+  }
+  plotInProgress <- plotInProgress + means + meanLines
 
 
   # Horizontal plot?

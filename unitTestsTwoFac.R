@@ -94,6 +94,26 @@ options$customSides <- "LRLRL"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
+# Means ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$factorAxis <- "island"
+options$factorFill <- "species"
+options$paletteFill <- "grandBudapest"
+options$means <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
+# Means + Lines ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$factorAxis <- "island"
+options$paletteFill <- "grandBudapest"
+options$means <- TRUE
+options$meanLines <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
 
 # Storage ----
 # debugonce(jaspRaincloudPlots:::.rainReadData)

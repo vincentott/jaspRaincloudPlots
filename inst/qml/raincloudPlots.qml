@@ -437,7 +437,16 @@ Form
 		CheckBox
 		{
 			name: "means"
-			label: qsTr("Show Means instead of Boxes")
+			id: means
+			label: qsTr("Show Means")
+			Layout.columnSpan: 3
+
+			CheckBox
+			{
+				name: "meanLines"
+				label: qsTr("Connect Means with Lines (only works without Color input)")
+				enabled: means.checked && factorFill.count === 0
+			}
 		}
 
 
