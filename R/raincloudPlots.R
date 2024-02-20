@@ -167,10 +167,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
 
-  # Means + SDs
+  # Means
   means <- ggplot2::stat_summary(
     fun = mean,
-    ggplot2::aes(x = aesX, fill = aesFill, color = aesColor),
+    ggplot2::aes(x = aesX, fill = aesFill),  # No color argument in aes() as covariate will interfere with it
+    color = .rainOutlineColor(options, "likePalette", infoFactorCombinations),  # instead like Outlines
     geom = "point",
     shape = 18,
     size = 7,
@@ -184,6 +185,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     show.legend = FALSE
   )
   plotInProgress <- plotInProgress + means
+
+  # Mean Lines
+
+
+
 
   # Horizontal plot?
   if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()

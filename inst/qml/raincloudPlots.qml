@@ -164,13 +164,24 @@ Form
 			{
 				text: qsTr("Point palette")
 			}
-			ColorPalette
+			DropDown  // adapted from: jasp´s ColorPalette.qml
 			{
 				name:					"palettePoints"
 				label:					""  // No qsTr() as this will stay the same across languages
 				enabled: 				covariate.count === 1
-				// indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
-											   // Commented out until there is no parsing error in R unittests
+				values:
+				[
+					// { label: qsTr("Colorblind"),		value: "colorblind"		},  // Disabled to not match paletteFill
+
+					{ label: qsTr("Viridis"),			value: "viridis"		},  // useful for discrete & continuous
+					{ label: qsTr("Colorblind #2"),		value: "colorblind2"	},
+					{ label: qsTr("Colorblind #3"),		value: "colorblind3"	},
+					{ label: qsTr("ggplot2"),			value: "ggplot2"		},
+					{ label: qsTr("Gray"),				value: "gray"			},
+					{ label: qsTr("Blue"),				value: "blue"			},
+					{ label: qsTr("Sports teams: NBA"),	value: "sportsTeamsNBA"	},
+					{ label: qsTr("Grand Budapest"),	value: "grandBudapest"	}
+				]
 				Layout.columnSpan: 1
 			}
 		}  // End Second Column
