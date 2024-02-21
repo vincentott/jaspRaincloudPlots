@@ -77,25 +77,23 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspResults[["containerRainPlots"]] <- createJaspContainer(title = gettext("Raincloud Plots"))
     jaspResults[["containerRainPlots"]]$dependOn(
       c(
-        "factorAxis", "factorFill", "covariate", "subject",
+        "factorAxis", "factorFill", "covariate", "subject",  # VariablesForm
 
-        "paletteFill",
-        "colorAnyway",
-        "vioOpacity", "vioOutline",
-        "boxOpacity", "boxOutline",
-        "pointOpacity", "palettePoints",
+        "paletteFill", "colorAnyway",  # General Settings
+        "palettePoints",
+        "horizontal",
+
+        "vioNudge",     "boxNudge",   "pointNudge",  # Cloud Elements
+        "vioHeight",    "boxWidth",   "pointSpread",
+        "vioSmoothing", "boxPadding", "pointSize",
+        "vioOpacity",   "boxOpacity", "pointOpacity",
+        "vioOutline",   "boxOutline", "jitter",
         "lineOpacity",
 
-        "horizontal",
-        "customSides",
-        "vioNudge",   "vioWidth",   "vioSmoothing",
-        "boxNudge",   "boxWidth",   "boxPadding",
-        "pointNudge", "pointWidth", "yJitter",
+        "showCaption",  # Axes, Legend, Caption, Plot size
 
-        "showCaption",
-
-        "means",
-        "meanLines"
+        "customSides",  # Advanced
+        "means", "meanLines"
 
       )
     )
@@ -182,7 +180,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       fun = mean,
       geom = "point",
       ggplot2::aes(x = aesX, fill = aesFill),  # No color argument in aes() as covariate will interfere with it
-      color = .rainOutlineColor(options, "likePalette", infoFactorCombinations),  # instead like Outlines
+      color = .rainOutlineColor(options, "palette", infoFactorCombinations),  # instead like Outlines
       position = meansPos,
       shape = 18,
       size = 6,
@@ -192,7 +190,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
     NULL
   }
-  meanLines <- if (options$means && options$meanLines) {  # Needs options$means as qml wont uncheck options$meanLines
+  meanLines <- if (options$factorFill == "" && options$means && options$meanLines) {  # Needs options$means as qml wont uncheck options$meanLines
     ggplot2::stat_summary(                                # if options$means is unchecked again
       fun = mean,
       geom = "line",
@@ -241,7 +239,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     "none"  # If there is just a single cloud and colorAnyway, we do not need a legend
   } else {
     ggplot2::guide_legend(
-      order = 1, reverse = options$horizontal, override.aes = list(color = NA)  # NA removes points in boxes
+      order = 1, reverse = options$horizontal, override.aes = list(alpha = 0.5, color = NA)  # NA removes points in boxes
     )
   }
   guideColor <- if (options$covariate == "") {
@@ -354,7 +352,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   boxArgs$color <- .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
 
   showPointGuide <- if (options$covariate == "") FALSE else TRUE
-  pointArgs <- list(alpha = options$pointOpacity, show_guide = showPointGuide)
+  pointArgs <- list(alpha = options$pointOpacity, show_guide = showPointGuide, size = options$pointSize)
 
   lineArgs <- list(alpha = options$lineOpacity, show_guide = FALSE)
   if (options$factorFill   == "") lineArgs$color <- "black"
@@ -366,7 +364,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     vioPosVec <- c(vioPosVec, rep(i, 512))  # Each violin consists of 512 points by default
   }
   vioArgsPos <- list(
-    width = options$vioWidth, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides
+    width = options$vioHeight, position = ggplot2::position_nudge(x = vioPosVec), side = vioSides
   )
 
   # Box positioning
@@ -374,7 +372,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   boxArgsPos <- list(
     width = options$boxWidth,
     position = ggpp::position_dodge2nudge(
-      x = boxPosVec, padding = options$boxPadding,
+      x = boxPosVec, width = 0, padding = options$boxPadding,
       preserve = "single"  # All boxes same width and different amounts of boxes are centered around middle
     )
   )
@@ -385,13 +383,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
     0                        # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
   }
-  yJitter <- if (!options$yJitter) 0 else NULL
+  jitter <- if (!options$jitter) 0 else NULL
   pointArgsPos   <- list(
     position = ggpp::position_jitternudge(
       nudge.from = "jittered",
-      width      = options$pointWidth,  # xJitter
+      width      = options$pointSpread, # xJitter
       x          = negativePointNudge,  # Nudge
-      height     = yJitter,             # yJitter, particularly interesting for likert data
+      height     = jitter,              # Jitter, particularly interesting for likert data
       seed       = 1                    # Reproducible jitter
     )
   )
@@ -434,7 +432,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     output <- rep("black", infoFactorCombinations$numberOfClouds)
   } else if (inputOutline == "none") {
     output <- rep(NA, infoFactorCombinations$numberOfClouds)
-  } else if (inputOutline == "likePalette") {
+  } else if (inputOutline == "palette") {
     if (options$factorFill != "" || options$colorAnyway) {
       output <- infoFactorCombinations$colors
     } else {
@@ -506,7 +504,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
-  yJitter <- if (options$yJitter) {
+  jitter <- if (options$jitter) {
     gettextf("Points are slightly jittered from their true values.")
   } else {
     NULL
@@ -518,6 +516,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
-  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", yJitter, "\n\n", errorVioSides)
+  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", jitter, "\n\n", errorVioSides)
   return(output)
 }

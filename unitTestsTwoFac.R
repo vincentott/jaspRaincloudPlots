@@ -11,7 +11,6 @@ options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-
 # factorAxis + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
@@ -66,11 +65,11 @@ options$palettePoints <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
-# yJitter is reproducible ----
+# Jitter is reproducible ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "flipper_length_mm"
 options$factorAxis <- "species"
-options$yJitter <- TRUE
+options$jitter <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
@@ -108,7 +107,7 @@ results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, op
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 options$factorAxis <- "island"
-options$paletteFill <- "grandBudapest"
+options$colorAnyway <- FALSE
 options$means <- TRUE
 options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
