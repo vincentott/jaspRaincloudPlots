@@ -106,6 +106,25 @@ options$means <- TRUE
 options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
+# customAxisLimits ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$colorAnyway <- FALSE
+options$customAxisLimits <- TRUE
+options$lowerAxisLimit <- -10
+options$upperAxisLimit <- 65
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
+# Warning customAxisLimits ----
+options <- jaspTools::analysisOptions("raincloudPlots")
+options$variables <- "bill_length_mm"
+options$colorAnyway <- FALSE
+options$customAxisLimits <- TRUE
+options$lowerAxisLimit <- 0
+options$upperAxisLimit <- 50
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
 
 
 # Storage ----

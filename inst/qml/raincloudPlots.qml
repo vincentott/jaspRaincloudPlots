@@ -341,6 +341,39 @@ Form
 
 		CheckBox
 		{
+			name: "customAxisLimits"
+			label: qsTr("Custom limits for dependent variable axis:")
+			childrenOnSameRow: true
+
+			IntegerField
+			{
+				name: "lowerAxisLimit"
+				label: qsTr("from")
+				negativeValues: true
+				defaultValue: 0
+			}
+			IntegerField
+			{
+				name: "upperAxisLimit"
+				label: qsTr("to")
+				negativeValues: true
+				defaultValue: 1000
+			}
+			Layout.columnSpan: 2
+		}
+		HelpButton
+		{
+			toolTip:	qsTr(
+							"Limits may not be applied exactly.\n" +
+							"For further fine-tuning of the axis, click the title of the plot\n" +
+							"where it says the name of dependent variable.\n" +
+							"Then select 'Edit Image' in the drop down menu and\n" +
+							"then go to the headers 'x-axis' or 'y-axis'."
+						)
+		}
+
+		CheckBox
+		{
 			name: "showCaption"
 			id: showCaption
 			label: qsTr("Show Caption")

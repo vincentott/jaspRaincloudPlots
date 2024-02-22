@@ -90,6 +90,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "vioOutline",   "boxOutline", "jitter",
         "lineOpacity",
 
+        "customAxisLimits", "lowerAxisLimit", "upperAxisLimit",
+
         "showCaption",  # Axes, Legend, Caption, Plot size
         "widthPlot", "heightPlot",
 
@@ -115,7 +117,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container$variable)) next
 
-    variablePlot <- createJaspPlot(title = variable, width = options$widthPlot, height = options$heightPlot)
+    variablePlot <- createJaspPlot(title = variable, width = 500, height = 500)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(dataset, options, variable, variablePlot)
@@ -202,8 +204,21 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   plotInProgress <- plotInProgress + jaspGraphs::geom_rangeframe() + jaspGraphs::themeJaspRaw(legend.position = "right")
 
   # Axes
-  yBreaks <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
-  yLimits <- range(c(yBreaks, dataset[[inputVariable]]))
+  if (!options$customAxisLimits) {
+    yBreaks <- jaspGraphs::getPrettyAxisBreaks(dataset[[inputVariable]])
+    yLimits <- range(c(yBreaks, dataset[[inputVariable]]))
+    warningAxisLimits <- FALSE
+  } else {
+    yBreaks <- jaspGraphs::getPrettyAxisBreaks(c(options$lowerAxisLimit, options$upperAxisLimit))
+    yLimits <- range(yBreaks)
+    warningAxisLimits <- if (
+      min(yBreaks) > min(dataset[[inputVariable]]) || max(yBreaks) < max(dataset[[inputVariable]])
+    ) {
+      TRUE
+    } else {
+      FALSE
+    }
+  }
   yAxis   <- ggplot2::scale_y_continuous(breaks = yBreaks, limits = yLimits)
 
   inwardTicks <- ggplot2::theme(axis.ticks.length = ggplot2::unit(-0.25, "cm"))
@@ -247,7 +262,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Caption
   if (options$showCaption) {
-    caption         <- .rainCaption(options, sampleSize, numberOfExclusions, errorVioSides)
+    caption         <- .rainCaption(options, sampleSize, numberOfExclusions, warningAxisLimits, errorVioSides)
     addCaption      <- ggplot2::labs(caption = caption)
     captionPosition <- ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0))  # Bottom left position
     plotInProgress  <- plotInProgress + addCaption + captionPosition
@@ -486,7 +501,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainCaption() ----
 # CSS formatting is brought to life by ggtext::element_markdown(), see .rainFillPlot()
-.rainCaption <- function(options, sampleSize, numberOfExclusions, errorVioSides) {
+.rainCaption <- function(options, sampleSize, numberOfExclusions, warningAxisLimits, errorVioSides) {
 
   sampleSize <- gettextf("<i>N</i> = %s", sampleSize)
 
@@ -502,12 +517,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
+  warningAxisLimits <- if (warningAxisLimits) {
+    gettextf("<span style = 'color: darkorange'> Warning! Some data is not shown<br>because it lies outside of the interval set by the custom axis limits.</span>")
+  } else {
+    NULL
+  }
+
   errorVioSides <- if (errorVioSides) {
     gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point Nudge set to 0.</span>")
   } else {
     NULL
   }
 
-  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", jitter, "\n\n", errorVioSides)
+  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
   return(output)
 }
