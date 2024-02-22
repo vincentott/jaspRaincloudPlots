@@ -2,7 +2,7 @@
 # No Factors + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$paletteFill <- "colorblind"
+options$colorPalette <- "colorblind"
 options$colorAnyway <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
@@ -11,102 +11,96 @@ options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# factorAxis + color ----
+# primaryFactor + color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
-options$paletteFill <- "sportsTeamsNBA"
+options$primaryFactor <- "island"
+options$colorPalette <- "sportsTeamsNBA"
 options$colorAnyway <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# factorAxis NO color ----
+# primaryFactor NO color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
-options$paletteFill <- "colorblind"
+options$primaryFactor <- "island"
+options$colorPalette <- "colorblind"
 options$colorAnyway <- FALSE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# factorFill + horizontal ----
+# secondaryFactor + horizontal ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorFill <- "species"
-options$paletteFill <- "ggplot2"
+options$secondaryFactor <- "species"
+options$colorPalette <- "ggplot2"
 options$horizontal <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
-options$factorFill <- "species"
-options$paletteFill <- "viridis"
+options$primaryFactor <- "island"
+options$secondaryFactor <- "species"
+options$colorPalette <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors + Continuous covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
-options$factorFill <- "species"
+options$primaryFactor <- "island"
+options$secondaryFactor <- "species"
 options$covariate <- "bill_depth_mm"
-options$paletteFill <- "grandBudapest"
-options$palettePoints <- "viridis"
+options$colorPalette <- "grandBudapest"
+options$covariatePalette <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
 
 # Two factors + Discrete covariate ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
-options$factorFill <- "species"
+options$primaryFactor <- "island"
+options$secondaryFactor <- "species"
 options$covariate <- "sex"
-options$paletteFill <- "grandBudapest"
-options$palettePoints <- "viridis"
+options$colorPalette <- "grandBudapest"
+options$covariatePalette <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
 
 # Jitter is reproducible ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "flipper_length_mm"
-options$factorAxis <- "species"
+options$primaryFactor <- "species"
 options$jitter <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
 
 # Custom orientation ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "species"
-options$factorFill <- "sex"
-options$paletteFill <- "ggplot2"
+options$primaryFactor <- "species"
+options$secondaryFactor <- "sex"
+options$colorPalette <- "ggplot2"
 options$customSides <- "LRLRLR"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
 
 # Invalid input: Custom orientation ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "species"
-options$factorFill <- "sex"
-options$paletteFill <- "ggplot2"
+options$primaryFactor <- "species"
+options$secondaryFactor <- "sex"
+options$colorPalette <- "ggplot2"
 options$customSides <- "LRLRL"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
 
 # Means ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
-options$factorFill <- "species"
-options$paletteFill <- "grandBudapest"
+options$primaryFactor <- "island"
+options$secondaryFactor <- "species"
+options$colorPalette <- "grandBudapest"
 options$means <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-
-# Means + Lines ----
+# Means + Lines NO color ----
 options <- jaspTools::analysisOptions("raincloudPlots")
 options$variables <- "bill_length_mm"
-options$factorAxis <- "island"
+options$primaryFactor <- "island"
 options$colorAnyway <- FALSE
 options$means <- TRUE
 options$meanLines <- TRUE

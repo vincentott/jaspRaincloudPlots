@@ -38,17 +38,17 @@ Form
 		}
 		AssignedVariablesList
 		{
-			name: 					"factorAxis"
-			title:					qsTr("Axis")
-			id: 					factorAxis;
+			name: 					"primaryFactor"
+			title:					qsTr("Primary Factor")
+			id: 					primaryFactor;
 			suggestedColumns: 		["nominal", "ordinal"]
 			singleVariable: 		true
 		}
 		AssignedVariablesList
 		{
-			name: 					"factorFill"
-			title:					qsTr("Color")
-			id: 					factorFill
+			name: 					"secondaryFactor"
+			title:					qsTr("Secondary Factor")
+			id: 					secondaryFactor
 			suggestedColumns: 		["nominal", "ordinal"]
 			singleVariable: 		true
 		}
@@ -69,7 +69,7 @@ Form
 			id: 					subject
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
-			enabled:				factorAxis.count === 1
+			enabled:				primaryFactor.count === 1
 		}
 
 	}
@@ -92,19 +92,20 @@ Form
 			}
 			ColorPalette
 			{
-				name: 	"paletteFill"
+				name: 	"colorPalette"
 				label: ""
 			}
 
 			Label
 			{
 				text: qsTr("Covariate palette")
+				enabled: 	covariate.count === 1
 			}
 			ColorPalette
 			{
-				name: "palettePoints"
+				name: "covariatePalette"
 				label: "" // No qsTr() as this will stay the same across languages
-				enabled: 				covariate.count === 1
+				enabled: 	covariate.count === 1
 				indexDefaultValue: 3
 
 			}
@@ -115,8 +116,8 @@ Form
 			name: 					"colorAnyway"
 			label:					qsTr("Apply color palette")
 			id: 					colorAnyway
-			checked:				factorFill.count === 0
-			enabled: 				factorFill.count === 0
+			checked:				secondaryFactor.count === 0
+			enabled: 				secondaryFactor.count === 0
 			Layout.columnSpan: 		2
 		}
 
@@ -219,7 +220,7 @@ Form
 			DoubleField
 			{
 				name:				"boxWidth"
-				defaultValue:		(factorFill.count === 0) ? 0.1 : 0.2
+				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
 			}
 			Label
 			{
@@ -228,7 +229,7 @@ Form
 			DoubleField
 			{
 				name:				"boxPadding"
-				defaultValue:		(factorFill.count === 0) ? 0.1 : 0.2
+				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
 			}
 			Label
 			{
@@ -288,7 +289,7 @@ Form
 			DoubleField
 			{
 				name:				"pointSize"
-				defaultValue:		2
+				defaultValue:		2.5
 			}
 			Label	
 			{
@@ -324,7 +325,7 @@ Form
 		HelpButton
 		{
 			toolTip:	qsTr(
-							"To remove an element, set the opacity to 0.\n" +
+							"To remove an element, set the opacity to 0%.\n" +
 							"Further, for violin and box, set the outline to 'none'."
 						)
 		}
@@ -386,7 +387,7 @@ Form
 			{
 				name: "meanLines"
 				label: qsTr("Connect Means")
-				enabled: means.checked && factorFill.count === 0
+				enabled: means.checked && secondaryFactor.count === 0
 			}
 		}
 
