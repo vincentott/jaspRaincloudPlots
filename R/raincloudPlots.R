@@ -91,6 +91,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "lineOpacity",
 
         "showCaption",  # Axes, Legend, Caption, Plot size
+        "widthPlot", "heightPlot",
 
         "customSides",  # Advanced
         "means", "meanLines"
@@ -114,18 +115,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container$variable)) next
 
-    plotWidth <- if (
-      options$secondaryFactor != "" ||
-      options$covariate  != "" ||
-      options$colorAnyway      ||
-      options$showCaption
-    ) {
-      675
-    } else {
-      450
-    }
-    plotHeight   <- if (options$showCaption) 550 else 450
-    variablePlot <- createJaspPlot(title = variable, width = plotWidth, height = plotHeight)
+    variablePlot <- createJaspPlot(title = variable, width = options$widthPlot, height = options$heightPlot)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(dataset, options, variable, variablePlot)

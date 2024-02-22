@@ -342,8 +342,32 @@ Form
 		CheckBox
 		{
 			name: "showCaption"
+			id: showCaption
 			label: qsTr("Show Caption")
 			checked: true
+			Layout.columnSpan: 3
+		}
+
+		IntegerField
+		{
+			name: "widthPlot"
+			label: qsTr("Plot width")
+			defaultValue: if (
+				secondaryFactor.count === 1 ||
+				covariate.count       === 1 ||
+				(colorAnyway.checked && primaryFactor.count === 1) ||
+				showCaption.checked
+				) {
+					675
+				} else {
+					550
+				}
+		}
+		IntegerField
+		{
+			name: "heightPlot"
+			label: qsTr("Plot height")
+			defaultValue: (showCaption.checked) ? 550 : 450
 		}
 
 	}  // End section Axes, Legend, Caption, Plot size
@@ -351,8 +375,23 @@ Form
 
 	Section
 	{
-		title: qsTr("Advanced")
+		title: qsTr("Advanced Settings")
 		columns: 3
+
+		CheckBox
+		{
+			name: "means"
+			id: means
+			label: qsTr("Show Means")
+			Layout.columnSpan: 3
+
+			CheckBox
+			{
+				name: "meanLines"
+				label: qsTr("Connect Means")
+				enabled: means.checked && secondaryFactor.count === 0
+			}
+		}
 
 		TextField
 		{
@@ -376,21 +415,6 @@ Form
 						)
 		}
 
-		CheckBox
-		{
-			name: "means"
-			id: means
-			label: qsTr("Show Means")
-			Layout.columnSpan: 3
-
-			CheckBox
-			{
-				name: "meanLines"
-				label: qsTr("Connect Means")
-				enabled: means.checked && secondaryFactor.count === 0
-			}
-		}
-
-	}  // End section Advanced
+	}  // End section Advanced Settings
 
 }  // End Form
