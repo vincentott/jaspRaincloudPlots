@@ -439,9 +439,10 @@ Form
 		{
 			toolTip:	qsTr(
 							"Per default, all violins are right of the boxes.\n" +
-							"For each Axis level you can specify 'L' or 'R' for each Color level.\n" +
-							"For example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, " +
-							"enter 'LLRR' for flanking clouds (Pre-Exp, Pre-Control, Post-Exp, Post-Control).\n\n" +
+							"For each level of the Primary Factor,\n" +
+							"specify 'L' or 'R' for per level of the Secondary Factor.\n" +
+							"For example, with a 2 (Primary: A, B) x 2 (Secondary: x, y) design,\n" +
+							"enter 'LLRR' for flanking clouds (Ax, Ay, Bx, By).\n\n" +
 							"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
 							"the orientation reverts to default (all 'R').\n" +
 							"If there is any input, Point Nudge is set to 0."
