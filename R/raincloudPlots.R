@@ -143,37 +143,53 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   aesX     <- dataset$primaryFactor
   aesFill  <- if(options$secondaryFactor != "") dataset$secondaryFactor else if (options$colorAnyway) aesX else NULL
   aesColor <- if(options$covariate       != "") dataset$covariate       else if (options$colorAnyway) aesX else aesFill
-  plotInProgress <- ggplot2::ggplot(
-    data = dataset, mapping = ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
-  )
+  aesArg   <- ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
+  plotInProgress <- ggplot2::ggplot(data = dataset, mapping = aesArg)
 
   # Palettes
   palettes       <- .rainSetPalettes(dataset, options)
   plotInProgress <- plotInProgress + palettes$fill + palettes$color
 
-  # Preparation for .rainGeomRain()
+  # Preparation
   infoFactorCombinations <- .rainInfoFactorCombinations(dataset, plotInProgress)  # Also has color info
 
   getVioSides   <- .rainSetVioSides(options, dataset, infoFactorCombinations)  # Default "r" or like to custom input
   vioSides      <- getVioSides$sides
   errorVioSides <- getVioSides$error
 
-  # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
-  plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
-
-  # Means and Lines
-  meansPos <- ggpp::position_dodge2nudge(
+  # boxPlotPosition
+  boxPlotPosition <- ggpp::position_dodge2nudge(
     x        = .rainNudgeForEachCloud(options$boxNudge, vioSides),  # Like boxPosVec, see .rainGeomRain()
     width    = options$boxPadding,
     preserve = "single"
   )
+
+  # # Boxplot Whiskers
+  # boxWhiskers <- ggplot2::stat_boxplot(
+  #   data = dataset,
+  #   geom = "errorbar",
+  #   position = boxPlotPosition,
+  #   mapping = aesArg,
+  #   color = .rainOutlineColor(options, "palette", infoFactorCombinations),
+  #   width = options$boxWidth * 0.618  # https://en.wikipedia.org/wiki/Golden_ratio
+  # )
+  # boxHide <- ggplot2::geom_boxplot(
+  #   outlier.shape = NA, fatten = NULL, color = "white", fill = "white", coef = 0, width = options$boxWidth,
+  #   position = boxPlotPosition
+  # )
+  # plotInProgress <- plotInProgress + boxWhiskers + boxHide
+
+  # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
+  plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
+
+  # Means and Lines
   means <- if (options$means) {
     ggplot2::stat_summary(
       fun         = mean,
       geom        = "point",
       mapping     = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
       color       = .rainOutlineColor(options, "palette", infoFactorCombinations),  # Instead like Outlines
-      position    = meansPos,
+      position    = boxPlotPosition,
       shape       = 18,
       size        = 6,
       alpha       = 1,
@@ -188,7 +204,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       geom     = "line",
       mapping  = ggplot2::aes(group = 1),
       color    = "black",
-      position = meansPos,
+      position = boxPlotPosition,
       alpha    = 0.5
     )
   } else {
