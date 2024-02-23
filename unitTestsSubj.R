@@ -6,11 +6,11 @@ larksOwls$TimeOfDay <- factor(larksOwls$TimeOfDay, levels = c("Morning", "Evenin
 larksOwls$Chronotype <- factor(larksOwls$Chronotype, levels = c("Morning", "Evening"))
 
 # 2x2 ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "MWCount"
 options$primaryFactor <- "TimeOfDay"
 options$secondaryFactor <- "Chronotype"
-options$colorPalette <- "colorblind"
+options$colorAnyway <- FALSE
 options$subject <- "Subject"
 options$customSides <- "LLRR"
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)
@@ -63,10 +63,11 @@ irisLong <- iris.long
 
 
 # Three time points ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "Sepal.Width"
 options$primaryFactor <- "time"
 options$secondaryFactor <- "Species"
+options$colorAnyway <- FALSE
 options$colorPalette <- "ggplot2"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
@@ -75,13 +76,13 @@ results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
 
 
 # Three time points and covariate and jitter ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "Sepal.Width"
 options$primaryFactor <- "time"
 options$secondaryFactor <- "Species"
+options$colorAnyway <- FALSE
 options$colorPalette <- "ggplot2"
 options$covariate <- "Sepal.Length"
-options$covariatePalette <- "viridis"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
 options$jitter <- TRUE

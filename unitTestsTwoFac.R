@@ -1,113 +1,110 @@
 
 # No Factors + color ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
-options$colorPalette <- "colorblind"
-options$colorAnyway <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # No Factors NO color ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
-results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
-# primaryFactor + color ----
-options <- jaspTools::analysisOptions("raincloudPlots")
-options$variables <- "bill_length_mm"
-options$primaryFactor <- "island"
-options$colorPalette <- "sportsTeamsNBA"
-options$colorAnyway <- TRUE
-results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
-# primaryFactor NO color ----
-options <- jaspTools::analysisOptions("raincloudPlots")
-options$variables <- "bill_length_mm"
-options$primaryFactor <- "island"
-options$colorPalette <- "colorblind"
 options$colorAnyway <- FALSE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# secondaryFactor + horizontal ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+# primaryFactor + color ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$variables <- "bill_length_mm"
+options$primaryFactor <- "island"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# primaryFactor NO color ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$variables <- "bill_length_mm"
+options$primaryFactor <- "island"
+options$colorAnyway <- FALSE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# secondaryFactor + horizontal + colorPalette ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$secondaryFactor <- "species"
 options$colorPalette <- "ggplot2"
+options$colorAnyway <- FALSE  # otherwise overwrites colorPalette
 options$horizontal <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
-options$colorPalette <- "viridis"
+options$colorAnyway <- FALSE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors + Continuous covariate ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
+options$colorAnyway <- FALSE
 options$covariate <- "bill_depth_mm"
-options$colorPalette <- "grandBudapest"
-options$covariatePalette <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors + Discrete covariate ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
+options$colorAnyway <- FALSE
 options$covariate <- "sex"
-options$colorPalette <- "grandBudapest"
-options$covariatePalette <- "viridis"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Jitter is reproducible ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "flipper_length_mm"
 options$primaryFactor <- "species"
 options$jitter <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Custom orientation ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "species"
 options$secondaryFactor <- "sex"
-options$colorPalette <- "ggplot2"
+options$colorAnyway <- FALSE
 options$customSides <- "LRLRLR"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Invalid input: Custom orientation ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "species"
 options$secondaryFactor <- "sex"
-options$colorPalette <- "ggplot2"
+options$colorAnyway <- FALSE
 options$customSides <- "LRLRL"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Means ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
+options$colorAnyway <- FALSE
 options$colorPalette <- "grandBudapest"
 options$means <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Means + Lines NO color ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$colorAnyway <- FALSE
+options$colorPalette <- "grandBudapest"
 options$means <- TRUE
 options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # customAxisLimits ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$colorAnyway <- FALSE
 options$customAxisLimits <- TRUE
@@ -117,7 +114,7 @@ results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, op
 
 
 # Warning customAxisLimits ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$colorAnyway <- FALSE
 options$customAxisLimits <- TRUE

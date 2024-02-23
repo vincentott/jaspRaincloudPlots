@@ -116,8 +116,8 @@ Form
 			name: 					"colorAnyway"
 			label:					qsTr("Apply color palette")
 			id: 					colorAnyway
-			checked:				secondaryFactor.count === 0
 			enabled: 				secondaryFactor.count === 0
+			checked:				secondaryFactor.count === 0
 			Layout.columnSpan: 		2
 		}
 

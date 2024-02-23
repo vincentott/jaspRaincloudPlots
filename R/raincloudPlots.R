@@ -117,7 +117,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container$variable)) next
 
-    variablePlot <- createJaspPlot(title = variable, width = 500, height = 500)
+    variablePlot <- createJaspPlot(title = variable, width = options$widthPlot, height = options$heightPlot)
     variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
 
     .rainFillPlot(dataset, options, variable, variablePlot)
