@@ -160,24 +160,29 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # boxPlotPosition
   boxPlotPosition <- ggpp::position_dodge2nudge(
     x        = .rainNudgeForEachCloud(options$boxNudge, vioSides),  # Like boxPosVec, see .rainGeomRain()
-    width    = options$boxPadding,
+    width    = 0,
+    padding  = options$boxPadding,
     preserve = "single"
   )
 
-  # # Boxplot Whiskers
-  # boxWhiskers <- ggplot2::stat_boxplot(
-  #   data = dataset,
-  #   geom = "errorbar",
-  #   position = boxPlotPosition,
-  #   mapping = aesArg,
-  #   color = .rainOutlineColor(options, "palette", infoFactorCombinations),
-  #   width = options$boxWidth * 0.618  # https://en.wikipedia.org/wiki/Golden_ratio
-  # )
-  # boxHide <- ggplot2::geom_boxplot(
-  #   outlier.shape = NA, fatten = NULL, color = "white", fill = "white", coef = 0, width = options$boxWidth,
-  #   position = boxPlotPosition
-  # )
-  # plotInProgress <- plotInProgress + boxWhiskers + boxHide
+  # Boxplot Whiskers
+  boxWhiskers <- ggplot2::stat_boxplot(
+    data = dataset,
+    geom = "errorbar",
+    position = boxPlotPosition,
+    color = .rainOutlineColor(options, "palette", infoFactorCombinations),
+    width = options$boxWidth
+  )
+
+  boxHide <- ggplot2::geom_boxplot(
+    data = dataset,
+    mapping = ggplot2::aes(x = aesX, y = .data[[inputVariable]], fill = aesFill),
+    position = boxPlotPosition,
+    fill = "white",
+    width = options$boxWidth,
+    coef = 0, outlier.shape = NA, fatten = NULL, show.legend = FALSE
+  )
+  plotInProgress <- plotInProgress + boxWhiskers + boxHide
 
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
