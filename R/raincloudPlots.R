@@ -170,19 +170,20 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     data = dataset,
     geom = "errorbar",
     position = boxPlotPosition,
-    color = .rainOutlineColor(options, "palette", infoFactorCombinations),
+    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
     width = options$boxWidth
   )
 
   boxHide <- ggplot2::geom_boxplot(
     data = dataset,
-    mapping = ggplot2::aes(x = aesX, y = .data[[inputVariable]], fill = aesFill),
+    mapping = aesArg,
     position = boxPlotPosition,
     fill = "white",
     width = options$boxWidth,
     coef = 0, outlier.shape = NA, fatten = NULL, show.legend = FALSE
   )
-  plotInProgress <- plotInProgress + boxWhiskers + boxHide
+  plotInProgress <- plotInProgress + boxWhiskers
+  if (options$boxOutline != "none") plotInProgress <- plotInProgress + boxHide
 
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
