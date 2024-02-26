@@ -2,7 +2,6 @@
 # No Factors + color ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
-debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # No Factors NO color ----
@@ -110,10 +109,9 @@ results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, op
 # Means ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
-options$primaryFactor <- "island"
-options$secondaryFactor <- "species"
+options$primaryFactor <- "year"
+options$secondaryFactor <- "sex"
 options$colorAnyway <- FALSE
-options$colorPalette <- "grandBudapest"
 options$means <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 

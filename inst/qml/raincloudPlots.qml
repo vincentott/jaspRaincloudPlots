@@ -464,7 +464,7 @@ Form
 		{
 			name: "means"
 			id: means
-			label: qsTr("Show Means")
+			label: qsTr("Show Means (their spacing depends on boxWidth)")
 			Layout.columnSpan: 3
 
 			CheckBox

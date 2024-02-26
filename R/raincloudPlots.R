@@ -33,13 +33,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     output <- dataset
   } else {
 
-    # Step 1: Read in all variables that are given by JASP
-    # When there is no input, nothing is read in
+    # Step 1: Read in all variables that are given by JASP; if no input, then nothing is read in
     columnsVector <- c(options$variables)
-    if (options$primaryFactor   != "") columnsVector <- c(columnsVector, options$primaryFactor)
-    if (options$secondaryFactor != "") columnsVector <- c(columnsVector, options$secondaryFactor)
-    if (options$covariate       != "") columnsVector <- c(columnsVector, options$covariate)
-    if (options$subject         != "") columnsVector <- c(columnsVector, options$subject)
+    optionsVector <- c(options$primaryFactor, options$secondaryFactor, options$covariate, options$subject)
+    for (option in optionsVector) {
+      if (option != "") columnsVector <- c(columnsVector, option)
+    }
     datasetInProgress <- .readDataSetToEnd(columns = columnsVector)
 
     # Step 2: Create columns with consistent names; if no input then assign default
@@ -47,6 +46,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     datasetInProgress$secondaryFactor <- .rainCreateColumn(datasetInProgress,  options$secondaryFactor)
     datasetInProgress$covariate       <- .rainCreateColumn(datasetInProgress,  options$covariate)
     datasetInProgress$subject         <- .rainCreateColumn(datasetInProgress,  options$subject)
+
+    # Step 3: Make absolutely sure, that factors are factors
+    datasetInProgress$primaryFactor   <- as.factor(datasetInProgress$primaryFactor)
+    datasetInProgress$secondaryFactor <- as.factor(datasetInProgress$secondaryFactor)
 
     output <- datasetInProgress
   }
@@ -172,18 +175,24 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Whiskers for boxplots
-  boxData <- ggplot2::ggplot_build(plotInProgress)$data[[2]]
+  boxDataIndex <- if (options$subject == "") 2 else 3
+  boxData <- ggplot2::ggplot_build(plotInProgress)$data[[boxDataIndex]]
   getWhiskers <- .rainWhiskers(options, boxData, infoFactorCombinations, boxPosition)
   plotInProgress <- plotInProgress + getWhiskers$lowerWhiskers + getWhiskers$upperWhiskers
 
   # Means and Lines
+  meanPosition <- ggpp::position_dodge2nudge(
+    x = boxPosVec,
+    width = options$boxWidth,
+    preserve = "single"
+  )
   means <- if (options$means) {
     ggplot2::stat_summary(
       fun         = mean,
       geom        = "point",
       mapping     = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
       color       = .rainOutlineColor(options, "palette", infoFactorCombinations),  # Instead like Outlines
-      position    = boxPosition,
+      position    = meanPosition,
       shape       = 18,
       size        = 6,
       alpha       = 1,
@@ -198,7 +207,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       geom     = "line",
       mapping  = ggplot2::aes(group = 1),
       color    = "black",
-      position = boxPosition,
+      position = meanPosition,
       alpha    = 0.5
     )
   } else {
