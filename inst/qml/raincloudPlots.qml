@@ -163,16 +163,12 @@ Form
 					name:				"vioHeight"
 					defaultValue:		0.7
 				}
-				Label
-				{
-					text: qsTr("Smoothing")
-				}
-				PercentField
-				{
-					name:				"vioSmoothing"
-					fieldWidth: 40
-					defaultValue:		100
-				}
+
+				Label{text: "empty"; opacity: 0}
+				DoubleField{name: "placeholder1"; opacity: 0}
+				Label{text: "empty"; opacity: 0}
+				DoubleField{name: "placeholder2"; opacity: 0}
+
 				Label
 				{
 					text: qsTr("Opacity")
@@ -194,6 +190,29 @@ Form
 							{ label: qsTr("black"),        value: "black" },
 							{ label: qsTr("none"),         value: "none" },
 							]
+				}
+				Label
+				{
+					text: qsTr("Outline Width")
+				}
+				DoubleField
+				{
+					name:				"vioOutlineWidth"
+					defaultValue:		1
+				}
+
+				Label{text: "empty"; opacity: 0}
+				DoubleField{name: "placeholder3"; opacity: 0}
+
+				Label
+				{
+					text: qsTr("Smoothing")
+				}
+				PercentField
+				{
+					name:				"vioSmoothing"
+					fieldWidth: 40
+					defaultValue:		100
 				}
 		}  // End group Violin
 
@@ -231,6 +250,10 @@ Form
 				name:				"boxPadding"
 				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
 			}
+
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder4"; opacity: 0}
+
 			Label
 			{
 				text: qsTr("Opacity")
@@ -253,7 +276,15 @@ Form
 					   	{ label: qsTr("none"),         value: "none" },
 					   	]
 			}
-
+			Label
+			{
+				text: qsTr("Outline Width")
+			}
+			DoubleField
+			{
+				name:				"boxOutlineWidth"
+				defaultValue:		1
+			}
 		}  // End group Box
 
 
@@ -291,6 +322,10 @@ Form
 				name:				"pointSize"
 				defaultValue:		2.5
 			}
+
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder5"; opacity: 0}
+
 			Label	
 			{
 				text: qsTr("Opacity")
@@ -300,6 +335,14 @@ Form
 				name: 					"pointOpacity"
 				fieldWidth: 40
 			}
+
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder6"; opacity: 0}
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder7"; opacity: 0}
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder8"; opacity: 0}
+
 			Label	
 			{
 				text: qsTr("Jitter")
@@ -312,6 +355,12 @@ Form
 
 
 		}  // End group Point
+
+		Label
+		{
+			text: ""
+			Layout.columnSpan: 3
+		}
 
 		PercentField
 		{

@@ -136,7 +136,6 @@ options$lowerAxisLimit <- -10
 options$upperAxisLimit <- 65
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-
 # Warning customAxisLimits ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"

@@ -83,11 +83,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "covariatePalette",
         "horizontal",
 
-        "vioNudge",     "boxNudge",   "pointNudge",  # Cloud Elements
-        "vioHeight",    "boxWidth",   "pointSpread",
-        "vioSmoothing", "boxPadding", "pointSize",
-        "vioOpacity",   "boxOpacity", "pointOpacity",
-        "vioOutline",   "boxOutline", "jitter",
+        "vioNudge",        "boxNudge",        "pointNudge",  # Cloud Elements
+        "vioHeight",       "boxWidth",        "pointSpread",
+        "vioSmoothing",    "boxPadding",      "pointSize",
+        "vioOpacity",      "boxOpacity",      "pointOpacity",
+        "vioOutline",      "boxOutline",      "jitter",
+        "vioOutlineWidth", "boxOutlineWidth",
         "lineOpacity",
 
         "customAxisLimits", "lowerAxisLimit", "upperAxisLimit",
@@ -403,12 +404,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Arguments for the cloud elements: Violin, Box, Point, Subject lines
   showVioGuide    <- if (options$secondaryFactor == "") TRUE else FALSE
-  vioArgs         <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing)
+  vioArgs         <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing, lwd = options$vioOutlineWidth)
   vioOutlineColor <- .rainOutlineColor(options, options$vioOutline, infoFactorCombinations)
   perCloud512     <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
   vioArgs$color   <- rep(vioOutlineColor, perCloud512)
 
-  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show_guide = FALSE)
+  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show_guide = FALSE, lwd = options$boxOutlineWidth)
   boxArgs$color <- .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
 
   showPointGuide <- if (options$covariate == "") FALSE else TRUE
@@ -520,13 +521,15 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   lowerWhiskers <- ggplot2::stat_summary(
     fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. - (..y.. - lowerEnds), ymax = ..y.. - (..y.. - lowerEnds)),
-    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
+    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
+    lwd = options$boxOutlineWidth
   )
 
   upperWhiskers <- ggplot2::stat_summary(
     fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. + abs(..y.. - upperEnds), ymax = ..y.. + abs(..y.. - upperEnds)),
-    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
+    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
+    lwd = options$boxOutlineWidth
   )
 
   return(list(lowerWhiskers = lowerWhiskers, upperWhiskers = upperWhiskers))
