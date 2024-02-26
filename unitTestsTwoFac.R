@@ -32,11 +32,20 @@ options$colorAnyway <- FALSE  # otherwise overwrites colorPalette
 options$horizontal <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# Two factors ----
+# Two factors version 1 with black boxOutline ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
+options$colorAnyway <- FALSE
+options$boxOutline <- "black"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# Two factors version 2 ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$variables <- "bill_length_mm"
+options$primaryFactor <- "species"
+options$secondaryFactor <- "island"
 options$colorAnyway <- FALSE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 

@@ -143,7 +143,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   aesX     <- dataset$primaryFactor
   aesFill  <- if(options$secondaryFactor != "") dataset$secondaryFactor else if (options$colorAnyway) aesX else NULL
   aesColor <- if(options$covariate       != "") dataset$covariate       else if (options$colorAnyway) aesX else aesFill
-  aesArg   <- ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
+  aesArg <- ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
   plotInProgress <- ggplot2::ggplot(data = dataset, mapping = aesArg)
 
   # Palettes
@@ -157,36 +157,30 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   vioSides      <- getVioSides$sides
   errorVioSides <- getVioSides$error
 
-  # boxPlotPosition
-  boxPlotPosition <- ggpp::position_dodge2nudge(
-    x        = .rainNudgeForEachCloud(options$boxNudge, vioSides),  # Like boxPosVec, see .rainGeomRain()
+  boxPosVec   <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
+  boxPosition <- ggpp::position_dodge2nudge(  # boxPosition for whiskers, .rainGeomRain
+    x        = boxPosVec,
     width    = 0,
     padding  = options$boxPadding,
-    preserve = "single"
+    preserve = "single"  # All boxes same width and different amounts of boxes are centered around middle
   )
 
-  # Boxplot Whiskers
+  # boxWhiskers + boxHideWhiskerMiddle
   boxWhiskers <- ggplot2::stat_boxplot(
-    data = dataset,
-    geom = "errorbar",
-    position = boxPlotPosition,
-    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
-    width = options$boxWidth
+    geom = "errorbar", position = boxPosition, width = options$boxWidth, show.legend = FALSE,
+    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
   )
-
-  boxHide <- ggplot2::geom_boxplot(
-    data = dataset,
-    mapping = aesArg,
-    position = boxPlotPosition,
-    fill = "white",
-    width = options$boxWidth,
-    coef = 0, outlier.shape = NA, fatten = NULL, show.legend = FALSE
+  boxHideWhiskerMiddle <- ggplot2::geom_boxplot(
+    position = boxPosition, width = options$boxWidth,
+    coef = 0, outlier.shape = NA, fatten = NULL, show.legend = FALSE,
+    fill = "white"
   )
-  plotInProgress <- plotInProgress + boxWhiskers
-  if (options$boxOutline != "none") plotInProgress <- plotInProgress + boxHide
+  if (options$boxOutline != "none") plotInProgress <- plotInProgress + boxWhiskers + boxHideWhiskerMiddle
 
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
-  plotInProgress <- plotInProgress + .rainGeomRain(dataset, options, infoFactorCombinations, vioSides, plotInProgress)
+  plotInProgress <- plotInProgress + .rainGeomRain(
+    dataset, options, infoFactorCombinations, aesArg, vioSides, boxPosition, plotInProgress
+  )
 
   # Means and Lines
   means <- if (options$means) {
@@ -195,7 +189,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       geom        = "point",
       mapping     = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
       color       = .rainOutlineColor(options, "palette", infoFactorCombinations),  # Instead like Outlines
-      position    = boxPlotPosition,
+      position    = boxPosition,
       shape       = 18,
       size        = 6,
       alpha       = 1,
@@ -210,7 +204,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       geom     = "line",
       mapping  = ggplot2::aes(group = 1),
       color    = "black",
-      position = boxPlotPosition,
+      position = boxPosition,
       alpha    = 0.5
     )
   } else {
@@ -368,7 +362,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainGeomRain() ----
 # Call of ggrain:geom_rain() with prior set up of all input arguments
-.rainGeomRain <- function(dataset, options, infoFactorCombinations, vioSides, plotInProgress) {
+.rainGeomRain <- function(dataset, options, infoFactorCombinations, aesArg, vioSides, boxPosition, plotInProgress) {
 
   # Arguments for the cloud elements: Violin, Box, Point, Subject lines
   showVioGuide    <- if (options$secondaryFactor == "") TRUE else FALSE
@@ -400,10 +394,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   boxPosVec  <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
   boxArgsPos <- list(
     width = options$boxWidth,
-    position = ggpp::position_dodge2nudge(
-      x = boxPosVec, width = 0, padding = options$boxPadding,
-      preserve = "single"  # All boxes same width and different amounts of boxes are centered around middle
-    )
+    position = boxPosition
   )
 
   # Point positioning
@@ -431,6 +422,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Call geom_rain()
   output <- ggrain::geom_rain(
+
+    mapping = aesArg,
 
     violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
 
