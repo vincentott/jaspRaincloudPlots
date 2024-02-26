@@ -100,7 +100,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "widthPlot", "heightPlot",
 
         "customSides",  # Advanced
-        "means", "meanLines"
+        "means", "meanPosition", "meanLines"
 
       )
     )
@@ -181,39 +181,35 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   plotInProgress <- plotInProgress + getWhiskers$lowerWhiskers + getWhiskers$upperWhiskers
 
   # Means and Lines
-  meanPosition <- ggpp::position_dodge2nudge(
-    x = boxPosVec,
-    width = options$boxWidth,
-    preserve = "single"
-  )
+  meanPosition <- if (options$meanPosition == "likeBox") {
+    ggpp::position_dodge2nudge(x = boxPosVec, width = options$boxWidth, preserve = "single")
+  } else {
+    ggpp::position_dodge2nudge(x = 0, width = 0.00000000000001, preserve = "single")
+    # With the default "identity" as position, colors of meanLines would be scrambled
+    # and width = 0 messes up the position of the means (same for several position_ functions I tried)
+    # Thus, set very small width that the human eye will not notice.
+  }
   means <- if (options$means) {
     ggplot2::stat_summary(
-      fun         = mean,
-      geom        = "point",
-      mapping     = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
-      color       = .rainOutlineColor(options, "palette", infoFactorCombinations),  # Instead like Outlines
-      position    = meanPosition,
-      shape       = 18,
-      size        = 6,
-      alpha       = 1,
-      show.legend = FALSE
+      fun = mean, geom = "point",
+      mapping = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
+      color = .rainOutlineColor(options, "palette", infoFactorCombinations),  # Instead like Outlines
+      shape = 18, size = 6, alpha = 1, show.legend = FALSE, position = meanPosition
     )
   } else {
     NULL
   }
-  meanLines <- if (options$secondaryFactor == "" && options$means && options$meanLines) {  # Needs options$means as qml wont uncheck options$meanLines
+  meanLinesGroupMapping <- if (options$secondaryFactor == "") 1 else aesFill
+  meanLinesColor <- if (options$secondaryFactor == "") "black" else .rainOutlineColor(options, "palette", infoFactorCombinations)
+  meanLines <- if (options$means && options$meanLines) {  # Needs options$means as qml wont uncheck options$meanLines
     ggplot2::stat_summary(                                # if options$means is unchecked again
-      fun      = mean,
-      geom     = "line",
-      mapping  = ggplot2::aes(group = 1),
-      color    = "black",
-      position = meanPosition,
-      alpha    = 0.5
+      fun = mean, geom = "line", mapping = ggplot2::aes(group = meanLinesGroupMapping),
+      color = meanLinesColor, alpha = 0.5, position = meanPosition
     )
   } else {
     NULL
   }
-  plotInProgress <- plotInProgress + means + meanLines
+  plotInProgress <- plotInProgress + meanLines + means  # Means second so that lines dont reach into mean area
 
   # Horizontal plot?
   if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()

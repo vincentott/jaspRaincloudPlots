@@ -464,14 +464,22 @@ Form
 		{
 			name: "means"
 			id: means
-			label: qsTr("Show Means (their spacing depends on boxWidth)")
+			label: qsTr("Show Means")
 			Layout.columnSpan: 3
+
+			RadioButtonGroup
+			{
+			  name: "meanPosition"
+			  title: qsTr("Mean Position")
+			  RadioButton { value: "likeBox"; label: qsTr("like box"); checked: true }
+			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks") }
+			}
 
 			CheckBox
 			{
 				name: "meanLines"
 				label: qsTr("Connect Means")
-				enabled: means.checked && secondaryFactor.count === 0
+				enabled: means.checked
 			}
 		}
 
