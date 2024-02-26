@@ -2,6 +2,7 @@
 # No Factors + color ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
+debugonce(jaspRaincloudPlots:::.rainFillPlot)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # No Factors NO color ----
@@ -67,6 +68,19 @@ options$colorAnyway <- FALSE
 options$covariate <- "sex"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
+# Two factors + Discrete Covariate + Remove violin and box ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$variables <- "bill_length_mm"
+options$primaryFactor <- "island"
+options$secondaryFactor <- "species"
+options$colorAnyway <- FALSE
+options$covariate <- "sex"
+options$vioOpacity <- 0
+options$vioOutline <- "none"
+options$boxOpacity <- 0
+options$boxOutline <- "none"
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
 # Jitter is reproducible ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "flipper_length_mm"
@@ -79,6 +93,7 @@ options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "bill_length_mm"
 options$primaryFactor <- "species"
 options$secondaryFactor <- "sex"
+options$colorPalette <- "ggplot2"
 options$colorAnyway <- FALSE
 options$customSides <- "LRLRLR"
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)

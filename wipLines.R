@@ -26,7 +26,7 @@ ggplot(data, aes(x = Measurement, y = Value, color = Condition)) +
 
 
 
-# Whiskers fix ----
+# Whiskers fix -----------
 
 library(ggplot2)
 library(palmerpenguins)
@@ -58,7 +58,7 @@ upperWhiskers <- stat_summary(
 )
 myPlot + lowerWhiskers + upperWhiskers
 
-# the above should do the trick!
+# the above should do the trick! --------
 
 
 

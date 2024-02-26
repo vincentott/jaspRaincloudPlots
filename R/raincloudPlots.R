@@ -143,7 +143,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   aesX     <- dataset$primaryFactor
   aesFill  <- if(options$secondaryFactor != "") dataset$secondaryFactor else if (options$colorAnyway) aesX else NULL
   aesColor <- if(options$covariate       != "") dataset$covariate       else if (options$colorAnyway) aesX else aesFill
-  aesArg <- ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
+  aesArg   <- ggplot2::aes(y = .data[[inputVariable]], x = aesX, fill = aesFill, color = aesColor)
   plotInProgress <- ggplot2::ggplot(data = dataset, mapping = aesArg)
 
   # Palettes
@@ -165,22 +165,15 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     preserve = "single"  # All boxes same width and different amounts of boxes are centered around middle
   )
 
-  # boxWhiskers + boxHideWhiskerMiddle
-  boxWhiskers <- ggplot2::stat_boxplot(
-    geom = "errorbar", position = boxPosition, width = options$boxWidth, show.legend = FALSE,
-    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
-  )
-  boxHideWhiskerMiddle <- ggplot2::geom_boxplot(
-    position = boxPosition, width = options$boxWidth,
-    coef = 0, outlier.shape = NA, fatten = NULL, show.legend = FALSE,
-    fill = "white"
-  )
-  if (options$boxOutline != "none") plotInProgress <- plotInProgress + boxWhiskers + boxHideWhiskerMiddle
-
   # .rainGeomRain() - workhorse function, uses ggrain::geom_rain()
   plotInProgress <- plotInProgress + .rainGeomRain(
-    dataset, options, infoFactorCombinations, aesArg, vioSides, boxPosition, plotInProgress
+    dataset, options, infoFactorCombinations, vioSides, boxPosition, plotInProgress
   )
+
+  # Whiskers for boxplots
+  boxData <- ggplot2::ggplot_build(plotInProgress)$data[[2]]
+  getWhiskers <- .rainWhiskers(options, boxData, infoFactorCombinations, boxPosition)
+  plotInProgress <- plotInProgress + getWhiskers$lowerWhiskers + getWhiskers$upperWhiskers
 
   # Means and Lines
   means <- if (options$means) {
@@ -211,7 +204,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
   plotInProgress <- plotInProgress + means + meanLines
-
 
   # Horizontal plot?
   if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()
@@ -360,9 +352,54 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
+# .rainSetVioSides() ----
+# Either default all right orientation or as customSides from user in GUI
+# Output is as long as there are rainclouds in the plot
+# because each cloud needs own side specified in point.args.pos argument of ggrain:geom_rain()
+# see also .rainNudgeForEachCloud()
+.rainSetVioSides <- function(options, dataset, infoFactorCombinations) {
+
+  defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)
+
+  if (options$customSides == "") {
+    outputSides <- defaultSides
+    error       <- FALSE
+
+  } else if (!grepl("^[LR]+$", options$customSides)) {  # Must only contain 'L' or 'R'
+    outputSides <- defaultSides
+    error       <- TRUE
+
+    # Number of customSides must match number of axis ticks
+  } else if (length(strsplit(options$customSides, "")[[1]]) != infoFactorCombinations$numberOfClouds) {
+    outputSides <- defaultSides
+    error       <- TRUE
+
+  } else {
+    outputSides <- strsplit(tolower(options$customSides), "")[[1]]
+    error       <- FALSE
+  }
+
+  return(list(sides = outputSides, error = error))
+}  # End .rainSetVioSides()
+
+
+
+# .rainNudgeForEachCloud() ----
+# Depending on default/custom orientation
+# For example, if there are two clouds and options$customSides is "LL"
+# then vioNudge should be c(options$vioNudge * -1, options$vioNudge * -1)
+# because options$vioNudge is inverted (* -1) as violins are flipped to left (instead of default right).
+.rainNudgeForEachCloud <- function(inputNudge, vioSides) {
+  nudgeVector <- rep(inputNudge, length(vioSides))
+  for (i in 1:length(vioSides)) if (vioSides[i] == "l") nudgeVector[i] <- nudgeVector[i] * -1
+  return(nudgeVector)
+}  # End .rainNudgeForEachCloud()
+
+
+
 # .rainGeomRain() ----
 # Call of ggrain:geom_rain() with prior set up of all input arguments
-.rainGeomRain <- function(dataset, options, infoFactorCombinations, aesArg, vioSides, boxPosition, plotInProgress) {
+.rainGeomRain <- function(dataset, options, infoFactorCombinations, vioSides, boxPosition, plotInProgress) {
 
   # Arguments for the cloud elements: Violin, Box, Point, Subject lines
   showVioGuide    <- if (options$secondaryFactor == "") TRUE else FALSE
@@ -423,8 +460,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Call geom_rain()
   output <- ggrain::geom_rain(
 
-    mapping = aesArg,
-
     violin.args = vioArgs, boxplot.args = boxArgs, point.args = pointArgs, line.args = lineArgs,
 
     rain.side        = NULL,  # Necessary for neat positioning
@@ -469,48 +504,33 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
-# .rainSetVioSides() ----
-# Either default all right orientation or as customSides from user in GUI
-# Output is as long as there are rainclouds in the plot
-# because each cloud needs own side specified in point.args.pos argument of ggrain:geom_rain()
-# see also .rainNudgeForEachCloud()
-.rainSetVioSides <- function(options, dataset, infoFactorCombinations) {
+# .rainWhiskers() ----
+# Creates the lower and upper whiskers for each boxplot
+# The idea is to draw orthogonal lines as the end of the lines that originate from the box.
+# Thus, we get the corresponding y-values from boxData and then draw a geom "errorbar" that
+# starts and ends at that position, what remains is the orthogonal whisker.
+# I am aware there is also the following approach:
+# https://stackoverflow.com/questions/12993545/put-whisker-ends-on-boxplot
+# HOWEVER, if boxOpacity != 1, then stat_boxplot(geom = "errorbar") will lead to a line that crosses through the boxbody
+.rainWhiskers <- function(options, boxData, infoFactorCombinations, boxPosition) {
 
-  defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)
+  lowerEnds <- boxData$ymin
+  upperEnds <- boxData$ymax
 
-  if (options$customSides == "") {
-    outputSides <- defaultSides
-    error       <- FALSE
+  lowerWhiskers <- ggplot2::stat_summary(
+    fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
+    ggplot2::aes(ymin = ..y.. - (..y.. - lowerEnds), ymax = ..y.. - (..y.. - lowerEnds)),
+    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
+  )
 
-  } else if (!grepl("^[LR]+$", options$customSides)) {  # Must only contain 'L' or 'R'
-    outputSides <- defaultSides
-    error       <- TRUE
+  upperWhiskers <- ggplot2::stat_summary(
+    fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
+    ggplot2::aes(ymin = ..y.. + abs(..y.. - upperEnds), ymax = ..y.. + abs(..y.. - upperEnds)),
+    color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
+  )
 
-  # Number of customSides must match number of axis ticks
-  } else if (length(strsplit(options$customSides, "")[[1]]) != infoFactorCombinations$numberOfClouds) {
-    outputSides <- defaultSides
-    error       <- TRUE
-
-  } else {
-    outputSides <- strsplit(tolower(options$customSides), "")[[1]]
-    error       <- FALSE
-  }
-
-  return(list(sides = outputSides, error = error))
-}  # End .rainSetVioSides()
-
-
-
-# .rainNudgeForEachCloud() ----
-# Depending on default/custom orientation
-# For example, if there are two clouds and options$customSides is "LL"
-# then vioNudge should be c(options$vioNudge * -1, options$vioNudge * -1)
-# because options$vioNudge is inverted (* -1) as violins are flipped to left (instead of default right).
-.rainNudgeForEachCloud <- function(inputNudge, vioSides) {
-  nudgeVector <- rep(inputNudge, length(vioSides))
-  for (i in 1:length(vioSides)) if (vioSides[i] == "l") nudgeVector[i] <- nudgeVector[i] * -1
-  return(nudgeVector)
-}  # End .rainNudgeForEachCloud()
+  return(list(lowerWhiskers = lowerWhiskers, upperWhiskers = upperWhiskers))
+}
 
 
 
