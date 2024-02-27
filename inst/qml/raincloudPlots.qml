@@ -38,17 +38,17 @@ Form
 		}
 		AssignedVariablesList
 		{
-			name: 					"factorAxis"
-			title:					qsTr("Axis")
-			id: 					factorAxis;
+			name: 					"primaryFactor"
+			title:					qsTr("Primary Factor")
+			id: 					primaryFactor;
 			suggestedColumns: 		["nominal", "ordinal"]
 			singleVariable: 		true
 		}
 		AssignedVariablesList
 		{
-			name: 					"factorFill"
-			title:					qsTr("Color")
-			id: 					factorFill
+			name: 					"secondaryFactor"
+			title:					qsTr("Secondary Factor")
+			id: 					secondaryFactor
 			suggestedColumns: 		["nominal", "ordinal"]
 			singleVariable: 		true
 		}
@@ -56,7 +56,7 @@ Form
 		AssignedVariablesList
 		{
 			name: 					"covariate"
-			title:					qsTr("Points")
+			title:					qsTr("Covariate")
 			id: 					covariate
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
@@ -65,284 +65,185 @@ Form
 		AssignedVariablesList
 		{
 			name: 					"subject"
-			title:					qsTr("Subject (needs long data & Axis)")  // Extra spaces for alignment
+			title:					qsTr("Subject (needs data in long format)")  // Extra spaces for alignment
 			id: 					subject
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
-			enabled:				factorAxis.count === 1
+			enabled:				primaryFactor.count === 1
 		}
 
 	}
 
 
-
 	Section
 	{
-		title: qsTr("Color and Opacity")
+		title: qsTr("General Settings")
 		columns: 3
 
-		ColorPalette
-		{
-			name: 					"paletteFill"
-			label:					qsTr("Color palette")
-		}
+		// Start top 2 rows
 
-		CheckBox
-		{
-			name: 					"colorAnyway"
-			label:					qsTr("Apply color palette to Axis")
-			id: 					colorAnyway
-			checked:				factorFill.count === 0
-			enabled: 				factorFill.count === 0
-			Layout.columnSpan: 		2
-		}
-
-		Group  // First Column of the section: Opacities
-		{
-			PercentField
-			{
-				name: 					"vioOpacity"
-				label:					qsTr("Violin opacity")
-			}
-
-			PercentField
-			{
-				name: 					"boxOpacity"
-				label:					qsTr("Box opacity")
-			}
-
-			PercentField
-			{
-				name: 					"pointOpacity"
-				label:					qsTr("Point opacity")
-			}
-
-			PercentField
-			{
-				name:					"lineOpacity"
-				label:					qsTr("Subject Line Opacity")
-				enabled:				subject.count === 1
-				defaultValue:			25
-			}
-		}  // End First Column
-
-		Group  // Second Column of the section: Outlines & Point palette
+		Group
 		{
 			columns: 2
 
 			Label
 			{
-				text: qsTr("Violin Outline")
-			}
-			DropDown
-			{
-				name: 					"vioOutline"
-				values:	[
-						{ label: qsTr("like palette"), value: "likePalette" },
-						{ label: qsTr("black"),        value: "black" },
-						{ label: qsTr("none"),         value: "none" },
-						]
-				Layout.columnSpan: 1
-			}
-
-			Label
-			{
-				text: qsTr("Box outline")
-			}
-			DropDown
-			{
-				name: 					"boxOutline"
-				values:	[
-						{ label: qsTr("like palette"), value: "likePalette" },
-					   	{ label: qsTr("black"),        value: "black" },
-					   	{ label: qsTr("none"),         value: "none" },
-					   	]
-				Layout.columnSpan: 1
-			}
-
-			Label
-			{
-				text: qsTr("Point palette")
+				text: qsTr("Color palette")
 			}
 			ColorPalette
 			{
-				name:					"palettePoints"
-				label:					""  // No qsTr() as this will stay the same across languages
-				enabled: 				covariate.count === 1
-				// indexDefaultValue:		3  // Viridis palette works good for both discrete and continous
-											   // Commented out until there is no parsing error in R unittests
-				Layout.columnSpan: 1
-			}
-		}  // End Second Column
-
-		Group  // Third Column of the section: HelpButtons
-		{
-			HelpButton
-			{
-				toolTip: qsTr("0% opacity & no outline to hide Violin or Box")
+				name: 	"colorPalette"
+				label: ""
 			}
 
 			Label
 			{
-				// Empty placeholder
+				text: qsTr("Covariate palette")
+				enabled: 	covariate.count === 1
 			}
-
-			HelpButton
+			ColorPalette
 			{
-				toolTip: qsTr("0% opacity to hide Points")
+				name: "covariatePalette"
+				label: "" // No qsTr() as this will stay the same across languages
+				enabled: 	covariate.count === 1
+				indexDefaultValue: 3
+
 			}
-		}  // End Third Column
+		}
 
-	}  // End section Color and Opacity
+		CheckBox
+		{
+			name: 					"colorAnyway"
+			label:					qsTr("Apply color palette")
+			id: 					colorAnyway
+			enabled: 				secondaryFactor.count === 0
+			checked:				secondaryFactor.count === 0
+			Layout.columnSpan: 		2
+		}
 
+		// End top 2 rows
+		
+		CheckBox
+		{
+			name: 						"horizontal"
+			label:						qsTr("Horizontal plot")
+			checked: false
+			Layout.columnSpan: 3
+		}
+
+	}  // End section General Settings
 
 
 	Section
 	{
-		title: 						qsTr("Position and Shape")
+		title: qsTr("Cloud Elements")
 		columns: 3
 
-		// Start Top Row Position and Shape Section --------------------------------------------------------------------
-		Group  // First Column Position and Shape section
+		Group  // Start group Violin
 		{
-			CheckBox
-			{
-				name: 						"horizontal"
-				label:						qsTr("Horizontal plot")
-				checked: false
-			}
+			title: qsTr("Violin")
+			columns: 2
+			enabled: !hideVio.checked
 
-			TextField
-			{
-				name:					"customSides"
-				id:						customSides
-				label:				qsTr("Custom orientation for each cloud:")
-				placeholderText:	"Enter 'L' or 'R' for each cloud."
-			}
-		}
+				Label
+				{
+					text: qsTr("Nudge")
+				}
+				DoubleField
+				{
+					name:				"vioNudge"
+					defaultValue:		(customSides.value === "") ? 0.09 : 0.24
+					negativeValues:		true
+				}
+				Label
+				{
+					text: qsTr("Height")
+				}
+				DoubleField
+				{
+					name:				"vioHeight"
+					defaultValue:		0.7
+				}
 
-		Group  // Second Column Position and Shape section
+				Label{text: "empty"; opacity: 0}
+				DoubleField{name: "placeholder1"; opacity: 0}
+				Label{text: "empty"; opacity: 0}
+				DoubleField{name: "placeholder2"; opacity: 0}
+
+				Label
+				{
+					text: qsTr("Opacity")
+				}
+				PercentField
+				{
+					name: 		"vioOpacity"
+					fieldWidth: 40
+					defaultValue: (!hideVio.checked) ? 50 : 0
+				}
+				Label
+				{
+					text: qsTr("Outline")
+				}
+				DropDown
+				{
+					name: 	"vioOutline"
+					indexDefaultValue: (!hideVio.checked) ? 0 : 2
+					values:	[
+							{ label: qsTr("Color palette"), value: "palette" },
+							{ label: qsTr("black"),        value: "black" },
+							{ label: qsTr("none"),         value: "none" },
+							]
+				}
+				Label
+				{
+					text: qsTr("Outline Width")
+				}
+				DoubleField
+				{
+					name:				"vioOutlineWidth"
+					defaultValue:		1
+				}
+
+				Label{text: "empty"; opacity: 0}
+				DoubleField{name: "placeholder3"; opacity: 0}
+
+				Label
+				{
+					text: qsTr("Smoothing")
+				}
+				PercentField
+				{
+					name:				"vioSmoothing"
+					fieldWidth: 40
+					defaultValue:		100
+				}
+		}  // End group Violin
+
+
+		Group  // Start group Box
 		{
-			Label
-			{
-				// Empty for neat line-up
-			}
-			Label
-			{
-				// Empty for neat line-up
-			}
-		}
+			title: qsTr("Box")
+			columns: 2
+			enabled: !hideBox.checked
 
-		Group  // Third Column Position and Shape section
-		{
-			Label
-			{
-				// Empty for neat line-up
-			}
-			HelpButton
-			{
-				toolTip:	qsTr(
-								"Per default, all violins are right of the boxes.\n" +
-								"For each Axis level you can specify 'L' or 'R' for each Color level.\n" +
-								"For example, with a 2 (Axis: Pre, Post) x 2 (Color: Experimental, Control) design, " +
-								"enter 'LLRR' for flanking clouds (Pre-Exp, Pre-Control, Post-Exp, Post-Control).\n\n" +
-								"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
-								"the orientation reverts to default (all 'R').\n" +
-								"If there is any input, Point Nudge is set to 0."
-							)
-			}
-		}
-		// End Top Row Position and Shape Section ----------------------------------------------------------------------
-
-		GridLayout
-		{
-			rowSpacing: 5
-			columnSpacing: 15
-			columns: 7
-			Label
-			{
-				// Empty placeholder
-			}
 			Label
 			{
 				text: qsTr("Nudge")
+			}
+			DoubleField
+			{
+				name:		"boxNudge"
+				defaultValue:		(customSides.value === "") ? 0 : 0.15
+				negativeValues:		true
 			}
 			Label
 			{
 				text: qsTr("Width")
 			}
-			Label
-			{
-				// Empty placeholder
-			}
-			Label
-			{
-				text: qsTr("Element-Specific")
-				Layout.columnSpan: 2
-
-			}
-			Label
-			{
-				// Empty placeholder
-			}
-
-			// End first row of GridLayout
-
-			Label
-			{
-				text: qsTr("Violin")
-			}
-			DoubleField
-			{
-				name:				"vioNudge"
-				defaultValue:		(customSides.value === "") ? 0.09 : 0.24
-				negativeValues:		true
-			}
-			DoubleField
-			{
-				name:				"vioWidth"
-				defaultValue:		0.7
-			}
-			Label
-			{
-				// Empty placeholder
-			}
-			Label
-			{
-				text: qsTr("Smoothing")
-			}
-			DoubleField
-			{
-				name:				"vioSmoothing"
-				defaultValue:		1
-				min:				0
-				max:				1
-			}
-			Label
-			{
-				// Empty placeholder
-			}
-
-			// End second row of GridLayout
-
-			Label
-			{
-				text: qsTr("Box")
-			}
-			DoubleField
-			{
-				name:				"boxNudge"
-				defaultValue:		(customSides.value === "") ? 0 : 0.15
-				negativeValues:		true
-			}
 			DoubleField
 			{
 				name:				"boxWidth"
-				defaultValue:		(factorFill.count === 0) ? 0.1 : 0.2
-			}
-			Label
-			{
-				// Empty placeholder
+				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
 			}
 			Label
 			{
@@ -351,18 +252,57 @@ Form
 			DoubleField
 			{
 				name:				"boxPadding"
-				defaultValue:		(factorFill.count === 0) ? 0.1 : 0.2
-			}
-			Label
-			{
-				// Empty placeholder
+				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
 			}
 
-			// End third row of GridLayout
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder4"; opacity: 0}
 
 			Label
 			{
-				text: qsTr("Point")
+				text: qsTr("Opacity")
+			}
+			PercentField
+			{
+				name:		"boxOpacity"
+				fieldWidth: 40
+				defaultValue: (!hideBox.checked) ? 50 : 0
+			}
+			Label
+			{
+				text: qsTr("Outline")
+			}
+			DropDown
+			{
+				name: 	"boxOutline"
+				indexDefaultValue: (!hideBox.checked) ? 0 : 2
+				values:	[
+						{ label: qsTr("Color palette"), value: "palette" },
+					   	{ label: qsTr("black"),        value: "black" },
+					   	{ label: qsTr("none"),         value: "none" },
+					   	]
+			}
+			Label
+			{
+				text: qsTr("Outline Width")
+			}
+			DoubleField
+			{
+				name:				"boxOutlineWidth"
+				defaultValue:		1
+			}
+		}  // End group Box
+
+
+		Group  // Start group Point
+		{
+			title: qsTr("Point")
+			columns: 2
+			enabled: !hidePoint.checked
+
+			Label	
+			{
+				text: qsTr("Nudge")
 			}
 			DoubleField
 			{
@@ -371,50 +311,233 @@ Form
 				enabled:			(customSides.value === "") ? true : false
 				negativeValues:		true
 			}
+			Label	
+			{
+				text: qsTr("Spread")
+			}
 			DoubleField
 			{
-				name:				"pointWidth"
+				name:				"pointSpread"
 				defaultValue:		0.065
 			}
-			Label
+			Label	
 			{
-				// Empty placeholder
+				text: qsTr("Size")
 			}
-			Label
+			DoubleField
 			{
-				text: qsTr("y-Jitter")
+				name:				"pointSize"
+				defaultValue:		2.5
+			}
+
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder5"; opacity: 0}
+
+			Label	
+			{
+				text: qsTr("Opacity")
+			}
+			PercentField
+			{
+				name: 					"pointOpacity"
+				fieldWidth: 40
+				defaultValue: (!hidePoint.checked) ? 50 : 0
+			}
+
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder6"; opacity: 0}
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder7"; opacity: 0}
+			Label{text: "empty"; opacity: 0}
+			DoubleField{name: "placeholder8"; opacity: 0}
+
+			Label	
+			{
+				text: qsTr("Jitter")
 			}
 			CheckBox
 			{
-				name:				"yJitter"
-				id:					yJitter
-			}
-			Label
-			{
-				text: qsTr("See caption!")
-				visible: yJitter.checked
+				name:	"jitter"
+				id:		jitter
 			}
 
-			// End fourth row of GridLayout
 
+		}  // End group Point
+
+		Label{text: ""; Layout.columnSpan: 3}
+		CheckBox{name: "hideVio"; id: hideVio; text: qsTr("Hide Violin")}
+		CheckBox{name: "hideBox"; id: hideBox; text: qsTr("Hide Box")}
+		CheckBox{name: "hidePoint"; id: hidePoint; text: qsTr("Hide Point")}
+		Label{text: ""; Layout.columnSpan: 3}
+
+		PercentField
+		{
+			name:					"lineOpacity"
+			label:					qsTr("Subject lines opacity")
+			enabled:				subject.count === 1
+			fieldWidth: 40
+			defaultValue:			25
+			Layout.columnSpan: 2
 		}
-
-	}  // End Section Position and Shape
+	}  // End section Cloud Elements
 
 
 
 	Section
 	{
-		title: qsTr("Axes, Legend, and Caption")
+		title: qsTr("Axes, Legend, Caption, Plot size")
 		columns: 3
 
 		CheckBox
 		{
-			name: "showCaption"
-			label: qsTr("Show Caption")
-			checked: true
+			name: "customAxisLimits"
+			label: qsTr("Custom limits for dependent variable axis:")
+			childrenOnSameRow: true
+
+			IntegerField
+			{
+				name: "lowerAxisLimit"
+				label: qsTr("from")
+				negativeValues: true
+				defaultValue: 0
+			}
+			IntegerField
+			{
+				name: "upperAxisLimit"
+				label: qsTr("to")
+				negativeValues: true
+				defaultValue: 1000
+			}
+			Layout.columnSpan: 2
+		}
+		HelpButton
+		{
+			toolTip:	qsTr(
+							"Limits may not be applied exactly.\n" +
+							"For further fine-tuning of the axis, click the title of the plot\n" +
+							"where it says the name of dependent variable.\n" +
+							"Then select 'Edit Image' in the drop down menu and\n" +
+							"then go to the headers 'x-axis' or 'y-axis'."
+						)
 		}
 
-	}  // End Section Axes, Legend, and Caption
+		CheckBox
+		{
+			name: "showCaption"
+			id: showCaption
+			label: qsTr("Show Caption")
+			checked: true
+			Layout.columnSpan: 3
+		}
+
+		IntegerField
+		{
+			name: "widthPlot"
+			label: qsTr("Plot width")
+			defaultValue: if (
+				secondaryFactor.count === 1 ||
+				covariate.count       === 1 ||
+				(colorAnyway.checked && primaryFactor.count === 1) ||
+				showCaption.checked
+				) {
+					675
+				} else {
+					550
+				}
+		}
+		IntegerField
+		{
+			name: "heightPlot"
+			label: qsTr("Plot height")
+			defaultValue: (showCaption.checked) ? 550 : 450
+		}
+
+	}  // End section Axes, Legend, Caption, Plot size
+
+
+	Section
+	{
+		title: qsTr("Advanced Settings")
+		columns: 3
+
+		CheckBox
+		{
+			name: "means"
+			id: means
+			label: qsTr("Show Means")
+			Layout.columnSpan: 2
+
+			RadioButtonGroup
+			{
+			  name: "meanPosition"
+			  title: qsTr("Mean Position")
+			  RadioButton { value: "likeBox"; label: qsTr("like box (depends on box nudge and width)"); checked: true }
+			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks") }
+			}
+
+			DoubleField
+			{
+				name:	"meanSize"
+				label: qsTr("Mean size")
+				defaultValue:		6
+			}
+
+			CheckBox
+			{
+				name: "meanLines"
+				label: qsTr("Connect Means with lines")
+				enabled: means.checked
+				childrenOnSameRow: true
+
+				DoubleField
+				{
+					name:	"meanLinesWidth"
+					label: qsTr("Width")
+					defaultValue:		1
+				}
+
+				PercentField
+				{
+					name: "meanLinesOpacity"
+					label: qsTr("Opacity")
+					defaultValue: 50
+					fieldWidth: 40
+
+				}
+			}
+		}  // End Means
+		HelpButton
+		{
+			toolTip:	qsTr(
+							"If you position the means 'like Box',\n"+
+							"then their position depends on box nudge and width.\n" +
+							"Thus, before you hide the boxes, makes sure nudge and width are as desired."
+						)
+		}
+
+		TextField
+		{
+			name:				"customSides"
+			id:					customSides
+			label:				qsTr("Custom orientation for each cloud:")
+			placeholderText:	"Enter 'L' or 'R' for each cloud."
+			Layout.columnSpan: 2
+		}
+
+		HelpButton
+		{
+			toolTip:	qsTr(
+							"Per default, all violins are right of the boxes.\n" +
+							"For each level of the Primary Factor,\n" +
+							"specify 'L' or 'R' for per level of the Secondary Factor.\n" +
+							"For example, with a 2 (Primary: A, B) x 2 (Secondary: x, y) design,\n" +
+							"enter 'LLRR' for flanking clouds (Ax, Ay, Bx, By).\n\n" +
+							"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
+							"the orientation reverts to default (all 'R').\n" +
+							"If there is any input, Point Nudge is set to 0."
+						)
+		}
+
+	}  // End section Advanced Settings
 
 }  // End Form

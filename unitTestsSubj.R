@@ -5,14 +5,12 @@ larksOwls <- subset(larksOwls, Chronotype != "Intermediate")
 larksOwls$TimeOfDay <- factor(larksOwls$TimeOfDay, levels = c("Morning", "Evening"))  # Re-order for comprehension
 larksOwls$Chronotype <- factor(larksOwls$Chronotype, levels = c("Morning", "Evening"))
 
-
-
 # 2x2 ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "MWCount"
-options$factorAxis <- "TimeOfDay"
-options$factorFill <- "Chronotype"
-options$paletteFill <- "colorblind"
+options$primaryFactor <- "TimeOfDay"
+options$secondaryFactor <- "Chronotype"
+options$colorAnyway <- FALSE
 options$subject <- "Subject"
 options$customSides <- "LLRR"
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)
@@ -65,27 +63,29 @@ irisLong <- iris.long
 
 
 # Three time points ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "Sepal.Width"
-options$factorAxis <- "time"
-options$factorFill <- "Species"
-options$paletteFill <- "ggplot2"
+options$primaryFactor <- "time"
+options$secondaryFactor <- "Species"
+options$colorAnyway <- FALSE
+options$colorPalette <- "ggplot2"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
 
-
-
-# Three time points and covariate and yJitter ----
-options <- jaspTools::analysisOptions("raincloudPlots")
+# Three time points and covariate and jitter + meanLines ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "Sepal.Width"
-options$factorAxis <- "time"
-options$factorFill <- "Species"
-options$paletteFill <- "ggplot2"
+options$primaryFactor <- "time"
+options$secondaryFactor <- "Species"
+options$colorAnyway <- FALSE
+options$colorPalette <- "ggplot2"
 options$covariate <- "Sepal.Length"
-options$palettePoints <- "viridis"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
-options$yJitter <- TRUE
+options$jitter <- TRUE
+options$means <- TRUE
+options$meanLines <- TRUE
+options$meanLinesOpacity <- 100
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
 
