@@ -73,9 +73,7 @@ options$subject <- "id"
 options$customSides <- "LLLRRR"
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
 
-
-
-# Three time points and covariate and jitter ----
+# Three time points and covariate and jitter + meanLines ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$variables <- "Sepal.Width"
 options$primaryFactor <- "time"
@@ -86,5 +84,8 @@ options$covariate <- "Sepal.Length"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
 options$jitter <- TRUE
+options$means <- TRUE
+options$meanLines <- TRUE
+options$meanLinesOpacity <- 100
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
 

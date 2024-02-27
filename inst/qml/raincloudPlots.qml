@@ -143,6 +143,7 @@ Form
 		{
 			title: qsTr("Violin")
 			columns: 2
+			enabled: !hideVio.checked
 
 				Label
 				{
@@ -177,6 +178,7 @@ Form
 				{
 					name: 		"vioOpacity"
 					fieldWidth: 40
+					defaultValue: (!hideVio.checked) ? 50 : 0
 				}
 				Label
 				{
@@ -185,6 +187,7 @@ Form
 				DropDown
 				{
 					name: 	"vioOutline"
+					indexDefaultValue: (!hideVio.checked) ? 0 : 2
 					values:	[
 							{ label: qsTr("Color palette"), value: "palette" },
 							{ label: qsTr("black"),        value: "black" },
@@ -221,6 +224,7 @@ Form
 		{
 			title: qsTr("Box")
 			columns: 2
+			enabled: !hideBox.checked
 
 			Label
 			{
@@ -262,6 +266,7 @@ Form
 			{
 				name:		"boxOpacity"
 				fieldWidth: 40
+				defaultValue: (!hideBox.checked) ? 50 : 0
 			}
 			Label
 			{
@@ -270,6 +275,7 @@ Form
 			DropDown
 			{
 				name: 	"boxOutline"
+				indexDefaultValue: (!hideBox.checked) ? 0 : 2
 				values:	[
 						{ label: qsTr("Color palette"), value: "palette" },
 					   	{ label: qsTr("black"),        value: "black" },
@@ -292,6 +298,7 @@ Form
 		{
 			title: qsTr("Point")
 			columns: 2
+			enabled: !hidePoint.checked
 
 			Label	
 			{
@@ -334,6 +341,7 @@ Form
 			{
 				name: 					"pointOpacity"
 				fieldWidth: 40
+				defaultValue: (!hidePoint.checked) ? 50 : 0
 			}
 
 			Label{text: "empty"; opacity: 0}
@@ -356,11 +364,11 @@ Form
 
 		}  // End group Point
 
-		Label
-		{
-			text: ""
-			Layout.columnSpan: 3
-		}
+		Label{text: ""; Layout.columnSpan: 3}
+		CheckBox{name: "hideVio"; id: hideVio; text: qsTr("Hide Violin")}
+		CheckBox{name: "hideBox"; id: hideBox; text: qsTr("Hide Box")}
+		CheckBox{name: "hidePoint"; id: hidePoint; text: qsTr("Hide Point")}
+		Label{text: ""; Layout.columnSpan: 3}
 
 		PercentField
 		{
@@ -371,14 +379,6 @@ Form
 			defaultValue:			25
 			Layout.columnSpan: 2
 		}
-		HelpButton
-		{
-			toolTip:	qsTr(
-							"To remove an element, set the opacity to 0%.\n" +
-							"Further, for violin and box, set the outline to 'none'."
-						)
-		}
-
 	}  // End section Cloud Elements
 
 
@@ -465,22 +465,54 @@ Form
 			name: "means"
 			id: means
 			label: qsTr("Show Means")
-			Layout.columnSpan: 3
+			Layout.columnSpan: 2
 
 			RadioButtonGroup
 			{
 			  name: "meanPosition"
 			  title: qsTr("Mean Position")
-			  RadioButton { value: "likeBox"; label: qsTr("like box"); checked: true }
+			  RadioButton { value: "likeBox"; label: qsTr("like box (depends on box nudge and width)"); checked: true }
 			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks") }
+			}
+
+			DoubleField
+			{
+				name:	"meanSize"
+				label: qsTr("Mean size")
+				defaultValue:		6
 			}
 
 			CheckBox
 			{
 				name: "meanLines"
-				label: qsTr("Connect Means")
+				label: qsTr("Connect Means with lines")
 				enabled: means.checked
+				childrenOnSameRow: true
+
+				DoubleField
+				{
+					name:	"meanLinesWidth"
+					label: qsTr("Width")
+					defaultValue:		1
+				}
+
+				PercentField
+				{
+					name: "meanLinesOpacity"
+					label: qsTr("Opacity")
+					defaultValue: 50
+					fieldWidth: 40
+
+				}
 			}
+		}  // End Means
+		HelpButton
+		{
+			toolTip:	qsTr(
+							"If you position the means 'like Box',\n"+
+							"then their position depends on box nudge and width.\n" +
+							"Thus, before you hide the boxes, makes sure nudge and width are as desired."
+						)
 		}
 
 		TextField

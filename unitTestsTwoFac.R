@@ -112,7 +112,25 @@ options$variables <- "bill_length_mm"
 options$primaryFactor <- "year"
 options$secondaryFactor <- "sex"
 options$colorAnyway <- FALSE
+options$colorPalette <- "ggplot2"
+options$vioOpacity <- 0
+options$vioOutline <- "none"
+options$boxOpacity <- 0
+options$boxOutline <- "none"
+options$pointOpacity <- 0
 options$means <- TRUE
+options$meanPosition <- "onAxisTicks"
+options$meanLines <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# Means, only secondaryFactor ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$variables <- "bill_length_mm"
+options$secondaryFactor <- "year"
+options$colorAnyway <- FALSE
+options$colorPalette <- "sportsTeamsNBA"
+options$means <- TRUE
+options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Means + Lines NO color ----
