@@ -175,7 +175,7 @@ Form
 							]
 				}
 
-				Label{text: qsTr("Outline Width")}
+				Label{text: qsTr("Outline width")}
 				DoubleField{name: "vioOutlineWidth"; defaultValue: 1}
 
 				// Placeholder Start
@@ -246,7 +246,7 @@ Form
 					   	]
 			}
 
-			Label{text: qsTr("Outline Width")}
+			Label{text: qsTr("Outline width")}
 			DoubleField{name: "boxOutlineWidth"; defaultValue: 1}
 		}  // End group Box
 
@@ -298,9 +298,9 @@ Form
 		}  // End group Point
 
 		Label{text: ""; Layout.columnSpan: 3}  // Placeholder
-		CheckBox{name: "hideVio";   id: hideVio;   text: qsTr("Hide Violin")}
-		CheckBox{name: "hideBox";   id: hideBox;   text: qsTr("Hide Box")}
-		CheckBox{name: "hidePoint"; id: hidePoint; text: qsTr("Hide Point")}
+		CheckBox{name: "hideVio";   id: hideVio;   text: qsTr("Hide violin")}
+		CheckBox{name: "hideBox";   id: hideBox;   text: qsTr("Hide box")}
+		CheckBox{name: "hidePoint"; id: hidePoint; text: qsTr("Hide point")}
 		Label{text: ""; Layout.columnSpan: 3}  // Placeholder
 
 		PercentField
@@ -383,14 +383,14 @@ Form
 		{
 			name: "means"
 			id: means
-			label: qsTr("Show Means")
+			label: qsTr("Show means")
 			Layout.columnSpan: 2
 
 			RadioButtonGroup
 			{
 			  name: "meanPosition"
-			  title: qsTr("Mean Position")
-			  RadioButton { value: "likeBox"; label: qsTr("like box (depends on box nudge and width)"); checked: true }
+			  title: qsTr("Mean position")
+			  RadioButton { value: "likeBox"; label: qsTr("like box"); checked: true }
 			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks") }
 			}
 
@@ -399,7 +399,7 @@ Form
 			CheckBox
 			{
 				name: "meanLines"
-				label: qsTr("Connect Means with lines")
+				label: qsTr("Connect means with lines")
 				enabled: means.checked
 				childrenOnSameRow: true
 
@@ -415,7 +415,7 @@ Form
 			toolTip:	qsTr(
 							"If you position the means 'like Box',\n"+
 							"then their position depends on box nudge and width.\n" +
-							"Thus, before you hide the boxes, makes sure nudge and width are as desired."
+							"Thus, if you want to hide the boxes, first set nudge and width as desired."
 						)
 		}
 
