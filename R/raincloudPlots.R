@@ -22,6 +22,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   ready   <- (length(options$variables) > 0)
   dataset <- .rainReadData(dataset, options)
   .rainCreatePlots(jaspResults, dataset, options, ready)
+  # .rainCreateTable(jaspResults, dataset, options, ready)
 }  # End raincloudPlots()
 
 
@@ -42,10 +43,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     datasetInProgress <- .readDataSetToEnd(columns = columnsVector)
 
     # Step 2: Create columns with consistent names; if no input then assign default
-    datasetInProgress$primaryFactor   <- .rainCreateColumn(datasetInProgress,  options$primaryFactor)
-    datasetInProgress$secondaryFactor <- .rainCreateColumn(datasetInProgress,  options$secondaryFactor)
-    datasetInProgress$covariate       <- .rainCreateColumn(datasetInProgress,  options$covariate)
-    datasetInProgress$subject         <- .rainCreateColumn(datasetInProgress,  options$subject)
+    datasetInProgress$primaryFactor   <- .rainDataColumn(datasetInProgress,  options$primaryFactor)
+    datasetInProgress$secondaryFactor <- .rainDataColumn(datasetInProgress,  options$secondaryFactor)
+    datasetInProgress$covariate       <- .rainDataColumn(datasetInProgress,  options$covariate)
+    datasetInProgress$subject         <- .rainDataColumn(datasetInProgress,  options$subject)
 
     # Step 3: Make absolutely sure, that factors are factors
     datasetInProgress$primaryFactor   <- as.factor(datasetInProgress$primaryFactor)
@@ -59,15 +60,15 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
-# .rainCreateColumn() ----
-.rainCreateColumn <- function(inputDataset, inputOption) {
+# .rainDataColumn() ----
+.rainDataColumn <- function(inputDataset, inputOption) {
   output <- if (inputOption != "") {
     inputDataset[[inputOption]]
   } else {
       as.factor(rep("none", nrow(inputDataset)))
   }
   return(output)
-}  # End .rainCreateColumn()
+}  # End .rainDataColumn()
 
 
 
@@ -94,14 +95,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "vioOutlineWidth", "boxOutlineWidth",
         "lineOpacity",
 
-        "customAxisLimits", "lowerAxisLimit", "upperAxisLimit",
-
-        "showCaption",  # Axes, Legend, Caption, Plot size
+        "customAxisLimits",     "lowerAxisLimit",  "upperAxisLimit",  # Axes, Legend, Caption, Plot size
+        # "customLegendPosition", "legendXPosition", "legendYPosition",
+        "showCaption",
         "widthPlot", "heightPlot",
 
         "customSides",  # Advanced
         "means", "meanPosition", "meanSize", "meanLines", "meanLinesWidth", "meanLinesOpacity"
-
       )
     )
   }  # End create container
@@ -226,7 +226,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   plotInProgress <- plotInProgress + yAxis + inwardTicks + axisTitles + noFactorBlankAxis
 
-
   # Legend
   guideFill <- if (options$primaryFactor == ""  && options$secondaryFactor == "") {
     "none"  # If there is just a single cloud and colorAnyway, we do not need a legend
@@ -245,8 +244,26 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     }
   }
   guide <- ggplot2::guides(fill = guideFill, color = guideColor)
-  plotInProgress <- plotInProgress + guide
 
+  legendCloser <- ggplot2::theme(legend.box.spacing = ggplot2::unit(0, "pt"), legend.margin=ggplot2::margin(0,0,0,0))
+
+  plotInProgress <- plotInProgress + guide + legendCloser
+
+  # legendCloseToPlot <- ggplot2:: theme(
+  #                            legend.box.spacing = ggplot2::unit(0, "pt"),# The spacing between the plotting area and the legend box (unit)
+  #                            legend.margin=ggplot2::margin(0, 0, -1000, 0))# the margin around each legend
+  # plotInProgress <- plotInProgress + legendCloseToPlot
+  # legendPosition <- if (options$customLegendPosition) {
+  #   ggplot2::theme(legend.position = c(options$legendXPosition, options$legendYPosition))
+  # } else {
+  #   NULL
+  # }
+  # plotMargin <- if (options$customLegendPosition) {
+  #   ggplot2::theme(plot.margin = ggplot2::margin(ggplot2::unit(c(0 + options$legendYPosition, options$legendXPosition, 0, 0), "cm")))
+  # } else {
+  #   NULL
+  # }
+  # plotInProgress <- plotInProgress + legendPosition + plotMargin + legendCloseToPlot
 
   # Caption
   if (options$showCaption) {
@@ -318,13 +335,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   possibleCombis$rowId <- 1:nrow(possibleCombis)  # Id is necessary as merge will scramble order of possibleCombis
-
   observedCombis <- merge(possibleCombis, onlyFactors)
-  uniqueCombis   <- unique(observedCombis)
+  observedCombis <- observedCombis[order(observedCombis$rowId), ] # Re-order rows according to id
+  observedCombis <- observedCombis[ , c("primaryFactor", "secondaryFactor", "color", "rowId")]  # Re-order columns
 
-  uniqueCombis <- uniqueCombis[order(uniqueCombis$rowId), ] # Re-order rows according to id in possibleCombis
+  uniqueCombis   <- unique(observedCombis)  # dplyr::count(observedCombis, pick(everything()))
 
   numberOfClouds <- nrow(uniqueCombis)
+
   return(
     list(numberOfClouds = numberOfClouds, colors = uniqueCombis$color)
   )
@@ -388,13 +406,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   perCloud512     <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
   vioArgs$color   <- rep(vioOutlineColor, perCloud512)
 
-  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show_guide = FALSE, lwd = options$boxOutlineWidth)
+  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show.legend = FALSE, lwd = options$boxOutlineWidth)
   boxArgs$color <- .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
 
   showPointGuide <- if (options$covariate == "") FALSE else TRUE
-  pointArgs      <- list(alpha = options$pointOpacity, show_guide = showPointGuide, size = options$pointSize)
+  pointArgs      <- list(alpha = options$pointOpacity, show.legend = showPointGuide, size = options$pointSize)
 
-  lineArgs <- list(alpha = options$lineOpacity, show_guide = FALSE)
+  lineArgs <- list(alpha = options$lineOpacity, show.legend = FALSE)
   if (options$secondaryFactor   == "") lineArgs$color <- "black"
 
   # Violin positioning
@@ -494,14 +512,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   upperEnds <- boxData$ymax
 
   lowerWhiskers <- ggplot2::stat_summary(
-    fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
+    fun = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. - (..y.. - lowerEnds), ymax = ..y.. - (..y.. - lowerEnds)),
     color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
     lwd = options$boxOutlineWidth
   )
 
   upperWhiskers <- ggplot2::stat_summary(
-    fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
+    fun = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. + abs(..y.. - upperEnds), ymax = ..y.. + abs(..y.. - upperEnds)),
     color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
     lwd = options$boxOutlineWidth
@@ -574,7 +592,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   errorVioSides <- if (errorVioSides) {
-    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point Nudge set to 0.</span>")
+    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point nudge set to 0.</span>")
   } else {
     NULL
   }

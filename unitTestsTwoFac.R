@@ -47,6 +47,7 @@ options$variables <- "bill_length_mm"
 options$primaryFactor <- "species"
 options$secondaryFactor <- "island"
 options$colorAnyway <- FALSE
+debugonce(jaspRaincloudPlots:::.rainInfoFactorCombinations)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors + Continuous covariate ----

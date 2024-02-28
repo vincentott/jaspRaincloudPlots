@@ -65,7 +65,7 @@ Form
 		AssignedVariablesList
 		{
 			name: 					"subject"
-			title:					qsTr("Subject (needs data in long format)")  // Extra spaces for alignment
+			title:					qsTr("Subject")  // Extra spaces for alignment
 			id: 					subject
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
@@ -74,7 +74,7 @@ Form
 
 	}  // End variables form
 
-
+	Label{text: qsTr("Note: This module requires data in long format.")}
 
 	Section
 	{
@@ -318,7 +318,7 @@ Form
 
 	Section
 	{
-		title: qsTr("Axes, Legend, Caption, Plot size")
+		title: qsTr("Axes, Legend, Caption, Plot Size")
 		columns: 3
 
 		CheckBox
@@ -328,12 +328,9 @@ Form
 			Layout.columnSpan: 2
 			childrenOnSameRow: true
 			
-			IntegerField
-			{name: "lowerAxisLimit"; label: qsTr("from"); negativeValues: true; defaultValue: 0}
-			IntegerField
-			{name: "upperAxisLimit"; label: qsTr("to"); negativeValues: true; defaultValue: 1000}
+			IntegerField{name: "lowerAxisLimit"; label: qsTr("from"); negativeValues: true; defaultValue: 0}
+			IntegerField{name: "upperAxisLimit"; label: qsTr("to"); negativeValues: true; defaultValue: 1000}
 		}  // End CheckBox customAxisLimits
-
 		HelpButton
 		{
 			toolTip:	qsTr(
@@ -345,32 +342,48 @@ Form
 						)
 		}
 
+		// CheckBox
+		// {
+		// 	name: "customLegendPosition"
+		// 	label: qsTr("Custom legend position:")
+		// 	Layout.columnSpan: 3
+		// 	childrenOnSameRow: true
+
+		// 	DoubleField{name: "legendXPosition"; label: qsTr("X coordinate"); negativeValues: true; defaultValue: 1}
+		// 	DoubleField{name: "legendYPosition"; label: qsTr("Y coordinate"); negativeValues: true; defaultValue: 1}
+		// }
+
 		CheckBox
 		{name: "showCaption"; id: showCaption; label: qsTr("Show caption"); checked: true; Layout.columnSpan: 3}
 
-		IntegerField
+		Group
 		{
-			name: "widthPlot"
-			label: qsTr("Plot width")
-			defaultValue: if (
-				secondaryFactor.count === 1 ||
-				covariate.count       === 1 ||
-				(colorAnyway.checked && primaryFactor.count === 1) ||
-				showCaption.checked
-				) {
-					675
-				} else {
-					550
-				}
-		}
-		IntegerField
-		{
-			name: "heightPlot"
-			label: qsTr("Plot height")
-			defaultValue: (showCaption.checked) ? 550 : 450
-		}
+			title: qsTr("Plot Size")
+			columns: 2
 
-	}  // End section Axes, Legend, Caption, Plot size
+			IntegerField
+			{
+				name: "widthPlot"
+				label: qsTr("Width")
+				defaultValue: if (
+					secondaryFactor.count === 1 ||
+					covariate.count       === 1 ||
+					(colorAnyway.checked && primaryFactor.count === 1) ||
+					showCaption.checked
+					) {
+						675
+					} else {
+						550
+					}
+			}
+			IntegerField
+			{
+				name: "heightPlot"
+				label: qsTr("Height")
+				defaultValue: (showCaption.checked) ? 550 : 450
+			}
+		}
+	}  // End section Axes, Legend, Caption, Plot Size
 
 
 
