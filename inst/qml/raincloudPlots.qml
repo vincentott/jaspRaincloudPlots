@@ -31,9 +31,8 @@ Form
 		AvailableVariablesList	{ name: "allVariablesListOne" }
 		AssignedVariablesList
 		{ 
-			name: 					"variables"
+			name: 					"dependentVariables"
 			title: 					qsTr("Dependent Variables")
-			id: 					variables
 			suggestedColumns: 		["scale"]
 		}
 		AssignedVariablesList
@@ -116,8 +115,13 @@ Form
 		{
 			name: 					"horizontal"
 			label:					qsTr("Horizontal plot")
-			checked: false
 			Layout.columnSpan: 3
+		}
+
+		CheckBox
+		{
+			name: "table"
+			label: qsTr("Table with statistics")
 		}
 
 	}  // End section General Settings
@@ -394,9 +398,9 @@ Form
 
 		CheckBox
 		{
-			name: "means"
+			name: "mean"
 			id: means
-			label: qsTr("Show means")
+			label: qsTr("Mean")
 			Layout.columnSpan: 2
 
 			RadioButtonGroup
