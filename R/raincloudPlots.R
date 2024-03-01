@@ -700,6 +700,21 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   targetPlotObject <- targetJaspPlot[["plotObject"]]
 
   combinations <- .rainInfoFactorCombinations(dataInfo$dataset, targetPlotObject, extractColor = FALSE)$uniqueCombis
+  # Remove redundant primaryFactor levels for table
+  primaryLevels <- as.character(combinations$primaryFactor)
+  previousLevel <- primaryLevels[1]
+  tidyLevels <- c(previousLevel)
+  if (length(primaryLevels) > 1) {
+    for (i in 2:length(primaryLevels)) {
+      if (primaryLevels[i] == previousLevel) {
+        tidyLevels <- c(tidyLevels, "")
+      } else {
+        tidyLevels <- c(tidyLevels, primaryLevels[i])
+        previousLevel <- primaryLevels[i]
+      }
+    }
+  }
+  combinations$primaryFactor <- tidyLevels
 
   boxDataIndex <- if (options$subject == "") 2 else 3
   boxData <- ggplot2::ggplot_build(targetPlotObject)$data[[boxDataIndex]]

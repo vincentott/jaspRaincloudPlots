@@ -182,6 +182,16 @@ results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, op
 
 
 
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$dependentVariables <- "bill_length_mm"
+options$primaryFactor <- "island"
+options$secondaryFactor <- "species"
+options$table <- TRUE
+debugonce(jaspRaincloudPlots:::.rainFillTable)
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
+
 
 # Storage ----
 # debugonce(jaspRaincloudPlots:::.rainReadData)
