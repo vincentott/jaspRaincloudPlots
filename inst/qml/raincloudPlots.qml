@@ -346,17 +346,6 @@ Form
 						)
 		}
 
-		// CheckBox
-		// {
-		// 	name: "customLegendPosition"
-		// 	label: qsTr("Custom legend position:")
-		// 	Layout.columnSpan: 3
-		// 	childrenOnSameRow: true
-
-		// 	DoubleField{name: "legendXPosition"; label: qsTr("X coordinate"); negativeValues: true; defaultValue: 1}
-		// 	DoubleField{name: "legendYPosition"; label: qsTr("Y coordinate"); negativeValues: true; defaultValue: 1}
-		// }
-
 		CheckBox
 		{name: "showCaption"; id: showCaption; label: qsTr("Show caption"); checked: true; Layout.columnSpan: 3}
 

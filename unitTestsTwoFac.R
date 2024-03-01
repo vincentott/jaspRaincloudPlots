@@ -1,9 +1,12 @@
 
+# Placeholder plot and table ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$table <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
 # No Factors + color ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
-options$table <- TRUE
-# debugonce(jaspRaincloudPlots:::.rainFillTable)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # No Factors NO color ----
@@ -67,6 +70,7 @@ options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
 options$colorAnyway <- FALSE
 options$covariate <- "sex"
+options$table <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors + Discrete Covariate + Remove violin and box ----
@@ -165,7 +169,7 @@ options$upperAxisLimit <- 50
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
-# # Table ----
+# Table ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
 options$primaryFactor <- "sex"
@@ -174,7 +178,6 @@ options$colorAnyway <- FALSE
 options$colorPalette <- "sportsTeamsNBA"
 options$mean <- TRUE
 options$table <- TRUE
-debugonce(jaspRaincloudPlots:::.rainFillTable)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 

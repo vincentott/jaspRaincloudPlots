@@ -19,10 +19,11 @@
 
 # Main function: raincloudPlots() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
-  ready   <- (length(options$dependentVariables) > 0)
-  dataset <- .rainReadData(dataset, options)
-  .rainCreatePlots( jaspResults, dataset, options, ready)
-  .rainCreateTables(jaspResults, dataset, options, ready)
+  ready    <- (length(options$dependentVariables) > 0)
+  dataset  <- .rainReadData(dataset, options)
+  dataInfo <- .rainDataInfo(dataset)
+  .rainCreatePlots( jaspResults, dataInfo, options, ready)
+  .rainCreateTables(jaspResults, dataInfo, options, ready)
 }  # End raincloudPlots()
 
 
@@ -48,15 +49,10 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     datasetInProgress$covariate       <- .rainDataColumn(datasetInProgress,  options$covariate)
     datasetInProgress$subject         <- .rainDataColumn(datasetInProgress,  options$subject)
 
-    # Step 3: Make absolutely sure, that factors are factors
+    # Step 3: Make sure, that factors are factors
     datasetInProgress$primaryFactor   <- as.factor(datasetInProgress$primaryFactor)
     datasetInProgress$secondaryFactor <- as.factor(datasetInProgress$secondaryFactor)
 
-    # # Step 4: Omit NAs row-wise
-    # exclusiveDataset   <- na.omit(datasetInProgress)
-    # numberOfExclusions <- nrow(datasetInProgress) - nrow(exclusiveDataset)
-    # datasetInProgress  <- exclusiveDataset
-    # sampleSize         <- nrow(datasetInProgress)
 
     output <- datasetInProgress
   }
@@ -78,9 +74,24 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
+# .rainDataInfo() ----
+.rainDataInfo <- function(dataset) {
+
+  # Omit NAs row-wise
+  exclusiveDataset   <- na.omit(dataset)
+  numberOfExclusions <- nrow(dataset) - nrow(exclusiveDataset)
+  sampleSize         <- nrow(exclusiveDataset)
+  dataset            <- exclusiveDataset
+
+  output <- list(dataset = dataset, sampleSize = sampleSize, numberOfExclusions = numberOfExclusions)
+  return(output)
+}  # End .rainDataInfo()
+
+
+
 # .rainCreatePlots() ----
 # Creates a container with a plot for each options$dependentVariables - if none then placeholder
-.rainCreatePlots <- function(jaspResults, dataset, options, ready) {
+.rainCreatePlots <- function(jaspResults, dataInfo, options, ready) {
 
   # Create container in jaspResults
   if (is.null(jaspResults[["containerRaincloudPlots"]])) {
@@ -103,7 +114,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "lineOpacity",
 
         "customAxisLimits",     "lowerAxisLimit",  "upperAxisLimit",  # Axes, Legend, Caption, Plot size
-        # "customLegendPosition", "legendXPosition", "legendYPosition",
         "showCaption",
         "widthPlot", "heightPlot",
 
@@ -131,7 +141,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     variablePlot <- createJaspPlot(title = variable, width = options$widthPlot, height = options$heightPlot)
     variablePlot$dependOn(optionContainsValue = list(dependentVariables = variable))  # Depends on respective variable
 
-    variablePlot[["plotObject"]] <- .rainFillPlot(dataset, options, variable)
+    variablePlot[["plotObject"]] <- .rainFillPlot(dataInfo, options, variable)
 
     container[[variable]] <- variablePlot
   }  # End of for loop
@@ -142,13 +152,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainFillPlot() ----
 # Fills each inputPlot from .rainCreatePlots() with ggplot + palettes + geom_rain() + theme
-.rainFillPlot <- function(dataset, options, inputVariable) {
+.rainFillPlot <- function(dataInfo, options, inputVariable) {
 
-  # Omit NAs row-wise
-  exclusiveDataset   <- na.omit(dataset)
-  numberOfExclusions <- nrow(dataset) - nrow(exclusiveDataset)
-  dataset            <- exclusiveDataset
-  sampleSize         <- nrow(dataset)
+  dataset <- dataInfo$dataset
 
   # Ggplot() with aes()
   aesX     <- dataset$primaryFactor
@@ -274,7 +280,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Caption
   if (options$showCaption) {
-    caption         <- .rainCaption(options, sampleSize, numberOfExclusions, warningAxisLimits, errorVioSides)
+    caption         <- .rainCaption(options, dataInfo$numberOfExclusions, warningAxisLimits, errorVioSides)
     addCaption      <- ggplot2::labs(caption = caption)
     captionPosition <- ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0))  # Bottom left position
     plotInProgress  <- plotInProgress + addCaption + captionPosition
@@ -583,9 +589,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainCaption() ----
 # CSS formatting is brought to life by ggtext::element_markdown(), see .rainFillPlot()
-.rainCaption <- function(options, sampleSize, numberOfExclusions, warningAxisLimits, errorVioSides) {
-
-  sampleSize <- gettextf("<i>N</i> = %s", sampleSize)
+.rainCaption <- function(options, numberOfExclusions, warningAxisLimits, errorVioSides) {
 
   exclusions <- if (numberOfExclusions > 0) {
     gettextf("Not shown are %s observations due to missing data.", numberOfExclusions)
@@ -611,14 +615,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
-  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
+  output <- paste0(exclusions, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
   return(output)
 }  # End .rainCaption()
 
 
 
 # .rainCreateTables ----
-.rainCreateTables <- function(jaspResults, dataset, options, ready) {
+.rainCreateTables <- function(jaspResults, dataInfo, options, ready) {
 
   if (!options$table) return()
 
@@ -651,7 +655,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     variableTable$dependOn(optionContainsValue = list(dependentVariables = variable))  # Depends on respective variable
     variableTable <- .rainAddTableColumns(options, variableTable)
 
-    .rainFillTable(jaspResults, dataset, variable, options, variableTable)
+    .rainFillTable(jaspResults, dataInfo, variable, options, variableTable)
 
     container[[variable]] <- variableTable
 
@@ -688,14 +692,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainFillTable() ----
-.rainFillTable <- function(jaspResults, dataset, variable, options, inputTable) {
+.rainFillTable <- function(jaspResults, dataInfo, variable, options, inputTable) {
 
-  # Step 1: Extract statistics from corresponding plot
+  # Extract statistics from corresponding plot
   plotContainer <- jaspResults[["containerRaincloudPlots"]]
   targetJaspPlot <- plotContainer[[variable]]
   targetPlotObject <- targetJaspPlot[["plotObject"]]
 
-  combinations <- .rainInfoFactorCombinations(na.omit(dataset), targetPlotObject, extractColor = FALSE)$uniqueCombis
+  combinations <- .rainInfoFactorCombinations(dataInfo$dataset, targetPlotObject, extractColor = FALSE)$uniqueCombis
 
   boxDataIndex <- if (options$subject == "") 2 else 3
   boxData <- ggplot2::ggplot_build(targetPlotObject)$data[[boxDataIndex]]
@@ -708,15 +712,19 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     tableStatistics$meanData <- meanData
   }
 
-  # Step 2: Add statistics to table
+  # Add statistics to table
   inputTable$setData(tableStatistics)
 
-  # Step 3: Add footnote with total N
-  if (nrow(tableStatistics) > 1) {
-    totalN <- sum(tableStatistics$n)
-    footnote <- gettextf("<i>N</i><sub>Total</sub> = %s", totalN)
-    inputTable$addFootnote(footnote)
+  # Footnote
+  sampleSize <- gettextf("<i>N</i><sub>Total</sub> = %s", dataInfo$sampleSize)
+  exclusions <- if (dataInfo$numberOfExclusions > 0) {
+    gettextf(". Excluded were %s observations due to missing data.", dataInfo$numberOfExclusions)
+  } else {
+    NULL
   }
+
+  footnote <- paste0(sampleSize, exclusions)
+  inputTable$addFootnote(footnote)
 
 
 }  # End .rainFillTable()

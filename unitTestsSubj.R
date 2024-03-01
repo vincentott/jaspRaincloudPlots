@@ -88,5 +88,5 @@ options$mean <- TRUE
 options$meanLines <- TRUE
 options$meanLinesOpacity <- 100
 options$table <- TRUE
-results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
+results <- jaspTools::runAnalysis("raincloudPlots", irisLong[-1, ], options)
 
