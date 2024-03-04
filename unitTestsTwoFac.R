@@ -129,7 +129,7 @@ options$meanPosition <- "onAxisTicks"
 options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# Means, only secondaryFactor ----
+# Means ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
 options$primaryFactor <- "sex"
@@ -167,7 +167,6 @@ options$customAxisLimits <- TRUE
 options$lowerAxisLimit <- 0
 options$upperAxisLimit <- 50
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
 
 # Table ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")

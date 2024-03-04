@@ -89,6 +89,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
+# .rainComputeInterval() ----
+.rainComputeInterval <- function(dataInfo, options, ready) {
+
+}  # End .rainComp
+
+
 # .rainCreatePlots() ----
 # Creates a container with a plot for each options$dependentVariables - if none then placeholder
 .rainCreatePlots <- function(jaspResults, dataInfo, options, ready) {
@@ -364,7 +370,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   numberOfClouds <- nrow(uniqueCombis)
 
   return(
-    list(numberOfClouds = numberOfClouds, colors = uniqueCombis$color, uniqueCombis = uniqueCombis)
+    list(
+      numberOfClouds = numberOfClouds,
+      colors         = uniqueCombis$color,
+      uniqueCombis   = uniqueCombis,
+      observedCombis = observedCombis
+    )
   )
 }  # End .rainInfoFactorCombinations()
 
@@ -632,7 +643,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspResults[["containerTables"]] <- createJaspContainer(title = gettext("Statistics"))
     jaspResults[["containerTables"]]$dependOn(
       c(
-        "dependentVariables", "table"
+        "dependentVariables", "table", "tableBoxStatistics"
       )
     )
   }  # End create container
@@ -671,16 +682,23 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   tableInProgress <- inputTable
 
   # Add columns; names of boxplot statistics are like extracted from ggplot, see boxData and .rainFillTable
-  tableInProgress$addColumnInfo(name = "primaryFactor",   title = "Primary Factor",   type = "string")
-  tableInProgress$addColumnInfo(name = "secondaryFactor", title = "Secondary Factor", type = "string")
-  tableInProgress$addColumnInfo(name = "n",               title = "<i>N</i>",         type = "integer")
-  tableInProgress$addColumnInfo(name = "ymin",            title = "Lower Whisker",    type = "number", format = "dp:2")
-  tableInProgress$addColumnInfo(name = "lower",           title = "25th Percentile",  type = "number", format = "dp:2")
-  tableInProgress$addColumnInfo(name = "middle",          title = "Median",           type = "number", format = "dp:2")
-  tableInProgress$addColumnInfo(name = "upper",           title = "75th Percentile",  type = "number", format = "dp:2")
-  tableInProgress$addColumnInfo(name = "ymax",            title = "Upper Whisker",    type = "number", format = "dp:2")
+  tableInProgress$addColumnInfo(name = "primaryFactor", title = "Primary Factor", type = "string")
 
-  if(options$mean) {
+  if (options$secondaryFactor != "") {
+    tableInProgress$addColumnInfo(name = "secondaryFactor", title = "Secondary Factor", type = "string")
+  }
+
+  tableInProgress$addColumnInfo(name = "n", title = "<i>N</i>", type = "integer")
+
+  if (options$tableBoxStatistics) {
+    tableInProgress$addColumnInfo(name = "ymin",   title = "Lower Whisker",   type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "lower",  title = "25th Percentile", type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "middle", title = "Median",          type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "upper",  title = "75th Percentile", type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "ymax",   title = "Upper Whisker",   type = "number", format = "dp:2")
+  }
+
+  if (options$mean) {
     tableInProgress$addColumnInfo(name = "meanData", title = "Mean", type = "number", format = "dp:2")
   }
 
@@ -699,8 +717,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   targetJaspPlot <- plotContainer[[variable]]
   targetPlotObject <- targetJaspPlot[["plotObject"]]
 
+  # Extract observed factor combinations and remove duplicate levels of primaryFactor for table
   combinations <- .rainInfoFactorCombinations(dataInfo$dataset, targetPlotObject, extractColor = FALSE)$uniqueCombis
-  # Remove redundant primaryFactor levels for table
   primaryLevels <- as.character(combinations$primaryFactor)
   previousLevel <- primaryLevels[1]
   tidyLevels <- c(previousLevel)

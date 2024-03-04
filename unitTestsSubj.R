@@ -13,6 +13,8 @@ options$secondaryFactor <- "Chronotype"
 options$colorAnyway <- FALSE
 options$subject <- "Subject"
 options$customSides <- "LLRR"
+options$mean <- TRUE
+options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)
 
 
