@@ -89,12 +89,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
-# .rainComputeInterval() ----
-.rainComputeInterval <- function(dataInfo, options, ready) {
-
-}  # End .rainComp
-
-
 # .rainCreatePlots() ----
 # Creates a container with a plot for each options$dependentVariables - if none then placeholder
 .rainCreatePlots <- function(jaspResults, dataInfo, options, ready) {
@@ -200,9 +194,40 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   plotInProgress <- plotInProgress + getWhiskers$lowerWhiskers + getWhiskers$upperWhiskers
 
   # Means and Lines
-  getMeansAndLines <- .rainMeansAndLines(options, boxPosVec, aesX, aesFill, infoFactorCombinations)
-  # Add means second so that meanLines dont reach into mean area
-  plotInProgress <- plotInProgress + getMeansAndLines$meanLines + getMeansAndLines$means
+  meanPosition <- if (options$meanPosition == "likeBox") {
+    ggpp::position_dodge2nudge(x = boxPosVec, width = options$boxWidth, preserve = "single")
+  } else {
+    ggpp::position_dodge2nudge(x = 0, width = 0.00000000000001, preserve = "single")
+    # With the default "identity" as position, colors of meanLines would be scrambled
+    # and width = 0 messes up the position of the means (same for several position_ functions I tried)
+    # Thus, set very small width that the human eye will not notice.
+  }
+  getMeansAndLines <- .rainMeansAndLines(options, boxPosVec, aesX, aesFill, infoFactorCombinations, meanPosition)
+  plotInProgress <- plotInProgress + getMeansAndLines$meanLines + getMeansAndLines$means  # Lines first so means cover
+
+
+  intervalPosition <- if (options$meanPosition == "likeBox") {
+    meanPosition
+  } else {
+    "identity"
+  }
+  # Interval around mean
+  interval <- if (options$interval) {
+    if (options$intervalOption == "sd") {
+      SDs <- .rainComputeInterval(dataInfo, options, inputVariable)
+      intervalSDs <- ggplot2::stat_summary(
+        fun = mean, geom = "errorbar",
+        width = options$boxWidth, # todo: CHANGE THIS!
+        position = intervalPosition,
+        ggplot2::aes(ymin = ..y.. - SDs, ymax = ..y.. + SDs),
+        color = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),
+        lwd = options$boxOutlineWidth,  # todo: CHANGE THIS!
+        show.legend = FALSE
+      )
+      plotInProgress <- plotInProgress + intervalSDs
+    }
+  }
+
 
   # Horizontal plot?
   if (options$horizontal) plotInProgress <- plotInProgress + ggplot2::coord_flip()
@@ -267,22 +292,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   legendCloser <- ggplot2::theme(legend.box.spacing = ggplot2::unit(0, "pt"), legend.margin=ggplot2::margin(0,0,0,0))
 
   plotInProgress <- plotInProgress + guide + legendCloser
-
-  # legendCloseToPlot <- ggplot2:: theme(
-  #                            legend.box.spacing = ggplot2::unit(0, "pt"),# The spacing between the plotting area and the legend box (unit)
-  #                            legend.margin=ggplot2::margin(0, 0, -1000, 0))# the margin around each legend
-  # plotInProgress <- plotInProgress + legendCloseToPlot
-  # legendPosition <- if (options$customLegendPosition) {
-  #   ggplot2::theme(legend.position = c(options$legendXPosition, options$legendYPosition))
-  # } else {
-  #   NULL
-  # }
-  # plotMargin <- if (options$customLegendPosition) {
-  #   ggplot2::theme(plot.margin = ggplot2::margin(ggplot2::unit(c(0 + options$legendYPosition, options$legendXPosition, 0, 0), "cm")))
-  # } else {
-  #   NULL
-  # }
-  # plotInProgress <- plotInProgress + legendPosition + plotMargin + legendCloseToPlot
 
   # Caption
   if (options$showCaption) {
@@ -373,8 +382,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     list(
       numberOfClouds = numberOfClouds,
       colors         = uniqueCombis$color,
-      uniqueCombis   = uniqueCombis,
-      observedCombis = observedCombis
+      uniqueCombis   = uniqueCombis
     )
   )
 }  # End .rainInfoFactorCombinations()
@@ -514,7 +522,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     output <- rep("black", infoFactorCombinations$numberOfClouds)
   } else if (inputOutline == "none") {
     output <- rep(NA, infoFactorCombinations$numberOfClouds)
-  } else if (inputOutline == "palette") {
+  } else if (inputOutline == "colorPalette") {
     if (options$secondaryFactor != "" || options$colorAnyway) {
       output <- infoFactorCombinations$colors
     } else {
@@ -537,6 +545,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # I am aware there is also the following approach:
 # https://stackoverflow.com/questions/12993545/put-whisker-ends-on-boxplot
 # HOWEVER, if boxOpacity != 1, then stat_boxplot(geom = "errorbar") will lead to a line that crosses through the boxbody
+# and that looks ugly.
 .rainWhiskers <- function(options, boxData, infoFactorCombinations, boxPosition) {
 
   lowerEnds <- boxData$ymin
@@ -546,14 +555,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     fun = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. - (..y.. - lowerEnds), ymax = ..y.. - (..y.. - lowerEnds)),
     color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
-    lwd = options$boxOutlineWidth
+    lwd = options$boxOutlineWidth, show.legend = FALSE
   )
 
   upperWhiskers <- ggplot2::stat_summary(
     fun = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. + abs(..y.. - upperEnds), ymax = ..y.. + abs(..y.. - upperEnds)),
     color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
-    lwd = options$boxOutlineWidth
+    lwd = options$boxOutlineWidth, show.legend = FALSE
   )
 
   return(list(lowerWhiskers = lowerWhiskers, upperWhiskers = upperWhiskers))
@@ -562,28 +571,20 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainMeansAndLines() ----
-.rainMeansAndLines <- function(options, boxPosVec, aesX, aesFill, infoFactorCombinations) {
+.rainMeansAndLines <- function(options, boxPosVec, aesX, aesFill, infoFactorCombinations, meanPosition) {
 
-  meanPosition <- if (options$meanPosition == "likeBox") {
-    ggpp::position_dodge2nudge(x = boxPosVec, width = options$boxWidth, preserve = "single")
-  } else {
-    ggpp::position_dodge2nudge(x = 0, width = 0.00000000000001, preserve = "single")
-    # With the default "identity" as position, colors of meanLines would be scrambled
-    # and width = 0 messes up the position of the means (same for several position_ functions I tried)
-    # Thus, set very small width that the human eye will not notice.
-  }
   means <- if (options$mean) {
     ggplot2::stat_summary(
       fun = mean, geom = "point",
       mapping = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
-      color = .rainOutlineColor(options, "palette", infoFactorCombinations),  # Instead like Outlines
+      color = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),  # Instead like Outlines
       shape = 18, size = options$meanSize, alpha = 1, show.legend = FALSE, position = meanPosition
     )
   } else {
     NULL
   }
   meanLinesGroupMapping <- if (options$secondaryFactor == "") 1 else aesFill
-  meanLinesColor <- if (options$secondaryFactor == "") "black" else .rainOutlineColor(options, "palette", infoFactorCombinations)
+  meanLinesColor <- if (options$secondaryFactor == "") "black" else .rainOutlineColor(options, "colorPalette", infoFactorCombinations)
   meanLines <- if (options$mean && options$meanLines) {  # Needs options$mean as qml wont uncheck options$meanLines
     ggplot2::stat_summary(                                # if options$mean is unchecked again
       fun = mean, geom = "line", mapping = ggplot2::aes(group = meanLinesGroupMapping),
@@ -595,6 +596,32 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   return(list(means = means, meanLines = meanLines))
 }  # End .rainMeansAndLines()
+
+
+
+# .rainComputeInterval() ----
+.rainComputeInterval <- function(dataInfo, options, inputVariable) {
+
+  uniqueCombis <- .rainInfoFactorCombinations(dataInfo$dataset, inputPlot = NULL, extractColor = FALSE)$uniqueCombis
+  dataset      <- dataInfo$dataset
+
+  means <- c()
+  SDs <- c()
+  for (rowNumber in 1:nrow(uniqueCombis)) {
+
+    primaryLevel   <- as.character(uniqueCombis$primaryFactor[rowNumber])   # as.character() ensures that it also works
+    secondaryLevel <- as.character(uniqueCombis$secondaryFactor[rowNumber]) # for numeric levels
+    currentCell <- dataset[dataset$primaryFactor == primaryLevel & dataset$secondaryFactor == secondaryLevel, ]
+
+    cellMean <- mean(currentCell[[inputVariable]])
+    cellSD   <- sd(  currentCell[[inputVariable]])
+
+    means <- c(means, cellMean)
+    SDs   <- c(SDs,   cellSD)
+  }
+  print(SDs)
+  return(SDs)
+}  # End .rainComputeInterval()
 
 
 

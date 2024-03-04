@@ -185,9 +185,9 @@ Form
 					name: 	"vioOutline"
 					indexDefaultValue: (showVio.checked) ? 0 : 2
 					values:	[
-							{ label: qsTr("Color palette"), value: "palette" },
-							{ label: qsTr("black"),        value: "black" },
-							{ label: qsTr("none"),         value: "none" },
+							{label: qsTr("Color palette"), value: "colorPalette"},
+							{label: qsTr("black"),         value: "black"},
+							{label: qsTr("none"),          value: "none"},
 							]
 				}
 
@@ -256,9 +256,9 @@ Form
 				name: 	"boxOutline"
 				indexDefaultValue: (showBox.checked) ? 0 : 2
 				values:	[
-						{ label: qsTr("Color palette"), value: "palette" },
-					   	{ label: qsTr("black"),        value: "black" },
-					   	{ label: qsTr("none"),         value: "none" },
+						{label: qsTr("Color palette"), value: "colorPalette"},
+					   	{label: qsTr("black"),         value: "black"},
+					   	{label: qsTr("none"),          value: "none"},
 					   	]
 			}
 
@@ -410,8 +410,8 @@ Form
 							"Per default, all violins are right of the boxes.\n" +
 							"For each level of the Primary Factor,\n" +
 							"specify 'L' or 'R' for per level of the Secondary Factor.\n" +
-							"For example, with a 2 (Primary: A, B) x 2 (Secondary: x, y) design,\n" +
-							"enter 'LLRR' for flanking clouds (Ax, Ay, Bx, By).\n\n" +
+							"For example, with a 2 (Primary: A, B) x 2 (Secondary: i, ii) design,\n" +
+							"enter 'LLRR' for flanking clouds (Ai, Aii, Bi, Bii).\n\n" +
 							"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
 							"the orientation reverts to default (all 'R').\n" +
 							"If there is any input, Point Nudge is set to 0."
@@ -422,7 +422,7 @@ Form
 		CheckBox
 		{
 			name: "mean"
-			id: means
+			id: mean
 			label: qsTr("Mean")
 			Layout.columnSpan: 2
 
@@ -440,7 +440,7 @@ Form
 			{
 				name: "meanLines"
 				label: qsTr("Connect means with lines")
-				enabled: means.checked
+				enabled: mean.checked
 				childrenOnSameRow: true
 
 				DoubleField{name: "meanLinesWidth"; label: qsTr("Width"); defaultValue: 1}
@@ -453,10 +453,95 @@ Form
 		HelpButton
 		{
 			toolTip:	qsTr(
-							"If you position the means 'like Box',\n"+
-							"then their position depends on box nudge and width.\n" +
+							"If you position the mean 'like Box',\n"+
+							"then the position depends on box nudge and width.\n" +
 							"Thus, if you do not want to show the box, first set its nudge and width as desired."
 						)
+		}
+
+		CheckBox
+		{
+			name: "interval"
+			label: qsTr("Interval around mean")
+			enabled: mean.checked
+			Layout.columnSpan: 3
+
+			RadioButtonGroup
+			{
+				name: "intervalOption"
+			  	enabled: interval.checked
+
+				RadioButton
+				{
+					label: qsTr("± 1 standard deviation")
+					value: "sd"
+					checked: true
+				}
+
+				RadioButton
+				{
+					label: qsTr("Confidence interval")
+					value: "ci"
+
+					CheckBox
+					{
+						name: "ciAssumption"
+						label: qsTr("Assume that all groups are independent of each other.")
+
+						PercentField{name: "ciWidth"; label: qsTr("Width"); defaultValue: 95; fieldWidth: 40}
+
+						DropDown
+						{
+							name: 	"ciMethod"
+							id: ciMethod
+							label: qsTr("Method")
+							values:	[
+									{label: qsTr("Normal model"), value: "normalModel"},
+								   	{label: qsTr("T model"),      value: "oneSampleTTest"},
+								   	{label: qsTr("Bootstrap"),    value: "bootstrap"},
+								   	]
+						}
+
+						IntegerField
+						{
+							name: "ciBootstrapSamples"
+							enabled: ciMethod.value == "bootstrap"
+							label: qsTr("Bootstrap samples")
+							defaultValue: 1000
+							min: 1
+							max: 50000
+						}
+					}  // End ciAssumption CheckBox
+				}  // End RadioButton Confidence interval
+
+				RadioButton
+				{
+					label: qsTr("Custom interval limits")
+					id: intervalCustom
+					value: "custom"
+				}
+
+			}  // End RadioButtonGroup intervalOption
+		}  // End CheckBox interval
+
+		TextArea
+		{
+			Layout.columnSpan: 3
+			name: "intervalCustom"
+			visible: intervalCustom.checked
+			width: 400
+			height: 300
+			placeholderText: qsTr(
+				"For each cloud, enter the lower and the upper interval limit.\n" +
+				"Enter in the following format:\n\n" +
+				"X.XX; Y.YY;		<- lower; upper; for first cloud\n" +
+				"Z.ZZ; W.WW;		<- lower; upper; for second cloud\n" +
+				"lower3; upper3;	<- lower; upper; for third cloud\n" +
+				"etc.\n\n" +
+				"Specify according to the following order:\n" +
+				"If there is a 2 (Primary: A, B) x 2 (Secondary: i, ii) design,\n" +
+				"then the cloud order is: Ai, Aii, Bi, Bii."
+			)
 		}
 
 	}  // End section Advanced

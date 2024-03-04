@@ -37,13 +37,15 @@ options$colorAnyway <- FALSE  # otherwise overwrites colorPalette
 options$horizontal <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-# Two factors version 1 with black boxOutline ----
+# Two factors version 1 ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
 options$colorAnyway <- FALSE
-options$boxOutline <- "black"
+options$table <- TRUE
+options$tableBoxStatistics <- FALSE
+options$mean <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Two factors version 2 ----
@@ -181,13 +183,21 @@ results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, op
 
 
 
+# Interval around mean ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
-options$primaryFactor <- "island"
-options$secondaryFactor <- "species"
+options$primaryFactor <- "year"
+options$secondaryFactor <- "sex"
+options$colorAnyway <- FALSE
+options$boxOutline <- "none"
+options$boxOpacity <- 0
 options$table <- TRUE
-debugonce(jaspRaincloudPlots:::.rainFillTable)
+options$tableBoxStatistics <- FALSE
+options$mean <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+
+
 
 
 
