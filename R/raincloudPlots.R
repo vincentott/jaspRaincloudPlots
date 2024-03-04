@@ -19,9 +19,11 @@
 
 # Main function: raincloudPlots() ----
 raincloudPlots <- function(jaspResults, dataset, options) {
-  ready   <- (length(options$variables) > 0)
-  dataset <- .rainReadData(dataset, options)
-  .rainCreatePlots(jaspResults, dataset, options, ready)
+  ready    <- (length(options$dependentVariables) > 0)
+  dataset  <- .rainReadData(dataset, options)
+  dataInfo <- .rainDataInfo(dataset)
+  .rainCreatePlots( jaspResults, dataInfo, options, ready)
+  .rainCreateTables(jaspResults, dataInfo, options, ready)
 }  # End raincloudPlots()
 
 
@@ -34,7 +36,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else {
 
     # Step 1: Read in all variables that are given by JASP; if no input, then nothing is read in
-    columnsVector <- c(options$variables)
+    columnsVector <- c(options$dependentVariables)
     optionsVector <- c(options$primaryFactor, options$secondaryFactor, options$covariate, options$subject)
     for (option in optionsVector) {
       if (option != "") columnsVector <- c(columnsVector, option)
@@ -42,14 +44,15 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     datasetInProgress <- .readDataSetToEnd(columns = columnsVector)
 
     # Step 2: Create columns with consistent names; if no input then assign default
-    datasetInProgress$primaryFactor   <- .rainCreateColumn(datasetInProgress,  options$primaryFactor)
-    datasetInProgress$secondaryFactor <- .rainCreateColumn(datasetInProgress,  options$secondaryFactor)
-    datasetInProgress$covariate       <- .rainCreateColumn(datasetInProgress,  options$covariate)
-    datasetInProgress$subject         <- .rainCreateColumn(datasetInProgress,  options$subject)
+    datasetInProgress$primaryFactor   <- .rainDataColumn(datasetInProgress,  options$primaryFactor)
+    datasetInProgress$secondaryFactor <- .rainDataColumn(datasetInProgress,  options$secondaryFactor)
+    datasetInProgress$covariate       <- .rainDataColumn(datasetInProgress,  options$covariate)
+    datasetInProgress$subject         <- .rainDataColumn(datasetInProgress,  options$subject)
 
-    # Step 3: Make absolutely sure, that factors are factors
+    # Step 3: Make sure, that factors are factors
     datasetInProgress$primaryFactor   <- as.factor(datasetInProgress$primaryFactor)
     datasetInProgress$secondaryFactor <- as.factor(datasetInProgress$secondaryFactor)
+
 
     output <- datasetInProgress
   }
@@ -59,26 +62,48 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 
-# .rainCreateColumn() ----
-.rainCreateColumn <- function(inputDataset, inputOption) {
+# .rainDataColumn() ----
+.rainDataColumn <- function(inputDataset, inputOption) {
   output <- if (inputOption != "") {
     inputDataset[[inputOption]]
   } else {
       as.factor(rep("none", nrow(inputDataset)))
   }
   return(output)
-}  # End .rainCreateColumn()
+}  # End .rainDataColumn()
 
+
+
+# .rainDataInfo() ----
+.rainDataInfo <- function(dataset) {
+
+  # Omit NAs row-wise
+  exclusiveDataset   <- na.omit(dataset)
+  numberOfExclusions <- nrow(dataset) - nrow(exclusiveDataset)
+  sampleSize         <- nrow(exclusiveDataset)
+  dataset            <- exclusiveDataset
+
+  output <- list(dataset = dataset, sampleSize = sampleSize, numberOfExclusions = numberOfExclusions)
+  return(output)
+}  # End .rainDataInfo()
+
+
+
+# .rainComputeInterval() ----
+.rainComputeInterval <- function(dataInfo, options, ready) {
+
+}  # End .rainComp
 
 
 # .rainCreatePlots() ----
-# Creates a container with a plot for each options$variables - if none then placeholder
-.rainCreatePlots <- function(jaspResults, dataset, options, ready) {
+# Creates a container with a plot for each options$dependentVariables - if none then placeholder
+.rainCreatePlots <- function(jaspResults, dataInfo, options, ready) {
 
   # Create container in jaspResults
-  if (is.null(jaspResults[["containerRainPlots"]])) {
-    jaspResults[["containerRainPlots"]] <- createJaspContainer(title = gettext("Raincloud Plots"))
-    jaspResults[["containerRainPlots"]]$dependOn(
+  if (is.null(jaspResults[["containerRaincloudPlots"]])) {
+
+    jaspResults[["containerRaincloudPlots"]] <- createJaspContainer(title = gettext("Raincloud Plots"))
+    jaspResults[["containerRaincloudPlots"]]$dependOn(
       c(
         "primaryFactor", "secondaryFactor", "covariate", "subject",  # VariablesForm
 
@@ -94,40 +119,38 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "vioOutlineWidth", "boxOutlineWidth",
         "lineOpacity",
 
-        "customAxisLimits", "lowerAxisLimit", "upperAxisLimit",
-
-        "showCaption",  # Axes, Legend, Caption, Plot size
+        "customAxisLimits",     "lowerAxisLimit",  "upperAxisLimit",  # Axes, Legend, Caption, Plot size
+        "showCaption",
         "widthPlot", "heightPlot",
 
         "customSides",  # Advanced
-        "means", "meanPosition", "meanSize", "meanLines", "meanLinesWidth", "meanLinesOpacity"
-
+        "mean", "meanPosition", "meanSize", "meanLines", "meanLinesWidth", "meanLinesOpacity"
       )
     )
   }  # End create container
 
   # Access through container object
-  container <- jaspResults[["containerRainPlots"]]
+  container <- jaspResults[["containerRaincloudPlots"]]
 
-  # Placeholder plot, if no variables
+  # Placeholder plot, if no dependentVariables
   if (!ready) {
-    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("variables"))
+    container[["placeholder"]] <- createJaspPlot(title = "", dependencies = c("dependentVariables"))
     return()
   }
 
-  # Plot for each variable
-  for (variable in options$variables) {
+  # Plot for each dependentVariable
+  for (variable in options$dependentVariables) {
 
     # If plot for variable already exists, we can skip recalculating plot
     if (!is.null(container$variable)) next
 
     variablePlot <- createJaspPlot(title = variable, width = options$widthPlot, height = options$heightPlot)
-    variablePlot$dependOn(optionContainsValue = list(variables = variable))  # Depends on respective variable
+    variablePlot$dependOn(optionContainsValue = list(dependentVariables = variable))  # Depends on respective variable
 
-    .rainFillPlot(dataset, options, variable, variablePlot)
+    variablePlot[["plotObject"]] <- .rainFillPlot(dataInfo, options, variable)
 
     container[[variable]] <- variablePlot
-  }  # End for loop
+  }  # End of for loop
 
 }  # End .rainCreatePlots()
 
@@ -135,13 +158,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainFillPlot() ----
 # Fills each inputPlot from .rainCreatePlots() with ggplot + palettes + geom_rain() + theme
-.rainFillPlot <- function(dataset, options, inputVariable, inputPlot) {
+.rainFillPlot <- function(dataInfo, options, inputVariable) {
 
-  # Omit NAs row-wise
-  exclusiveDataset   <- na.omit(dataset)
-  numberOfExclusions <- nrow(dataset) - nrow(exclusiveDataset)
-  dataset            <- exclusiveDataset
-  sampleSize         <- nrow(dataset)
+  dataset <- dataInfo$dataset
 
   # Ggplot() with aes()
   aesX     <- dataset$primaryFactor
@@ -226,7 +245,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   plotInProgress <- plotInProgress + yAxis + inwardTicks + axisTitles + noFactorBlankAxis
 
-
   # Legend
   guideFill <- if (options$primaryFactor == ""  && options$secondaryFactor == "") {
     "none"  # If there is just a single cloud and colorAnyway, we do not need a legend
@@ -245,19 +263,37 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     }
   }
   guide <- ggplot2::guides(fill = guideFill, color = guideColor)
-  plotInProgress <- plotInProgress + guide
 
+  legendCloser <- ggplot2::theme(legend.box.spacing = ggplot2::unit(0, "pt"), legend.margin=ggplot2::margin(0,0,0,0))
+
+  plotInProgress <- plotInProgress + guide + legendCloser
+
+  # legendCloseToPlot <- ggplot2:: theme(
+  #                            legend.box.spacing = ggplot2::unit(0, "pt"),# The spacing between the plotting area and the legend box (unit)
+  #                            legend.margin=ggplot2::margin(0, 0, -1000, 0))# the margin around each legend
+  # plotInProgress <- plotInProgress + legendCloseToPlot
+  # legendPosition <- if (options$customLegendPosition) {
+  #   ggplot2::theme(legend.position = c(options$legendXPosition, options$legendYPosition))
+  # } else {
+  #   NULL
+  # }
+  # plotMargin <- if (options$customLegendPosition) {
+  #   ggplot2::theme(plot.margin = ggplot2::margin(ggplot2::unit(c(0 + options$legendYPosition, options$legendXPosition, 0, 0), "cm")))
+  # } else {
+  #   NULL
+  # }
+  # plotInProgress <- plotInProgress + legendPosition + plotMargin + legendCloseToPlot
 
   # Caption
   if (options$showCaption) {
-    caption         <- .rainCaption(options, sampleSize, numberOfExclusions, warningAxisLimits, errorVioSides)
+    caption         <- .rainCaption(options, dataInfo$numberOfExclusions, warningAxisLimits, errorVioSides)
     addCaption      <- ggplot2::labs(caption = caption)
     captionPosition <- ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0))  # Bottom left position
     plotInProgress  <- plotInProgress + addCaption + captionPosition
   }
 
   # Assign to inputPlot
-  inputPlot[["plotObject"]] <- plotInProgress
+  return(plotInProgress)
 }  # End .rainFillPlot()
 
 
@@ -293,21 +329,28 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainInfoFactorCombinations() ----
 # Calculates info to determine colors & geom orientation
-.rainInfoFactorCombinations <- function(inputDataset, inputPlot) {
+.rainInfoFactorCombinations <- function(inputDataset, inputPlot, extractColor = TRUE) {
   onlyFactors    <- inputDataset[c("primaryFactor", "secondaryFactor")]
   # Extract used Fill colors from plot
   # https://stackoverflow.com/questions/11774262/how-to-extract-the-fill-colours-from-a-ggplot-object
-  onlyFactors$color <- tryCatch(
-    {
-      ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill  # Requires secondaryFactor or colorAnyway
-    },
-    error = function(e) {                                      # Thus error handling, but not used further
-      return("black")
-    },
-    warning = function(w) {
-      return("black")
-    }
-  )
+
+  if (extractColor) {  # So that we can re-use it in .rainFillTable()
+
+    onlyFactors$color <- tryCatch(
+      {
+        ggplot2::ggplot_build(inputPlot)$data[[1]]["fill"]$fill  # Requires secondaryFactor or colorAnyway
+      },
+      error = function(e) {                                      # Thus error handling, but not used further
+        return("black")
+      },
+      warning = function(w) {
+        return("black")
+      }
+    )
+
+  } else {
+    onlyFactors$color <- "black"
+  }
 
   # In the following possibleCombis <- expand.grid() secondaryFactor first because
   # then structure will match order in which ggplot accesses the clouds:
@@ -318,15 +361,21 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   possibleCombis$rowId <- 1:nrow(possibleCombis)  # Id is necessary as merge will scramble order of possibleCombis
-
   observedCombis <- merge(possibleCombis, onlyFactors)
-  uniqueCombis   <- unique(observedCombis)
+  observedCombis <- observedCombis[order(observedCombis$rowId), ] # Re-order rows according to id
+  observedCombis <- observedCombis[ , c("primaryFactor", "secondaryFactor", "color", "rowId")]  # Re-order columns
 
-  uniqueCombis <- uniqueCombis[order(uniqueCombis$rowId), ] # Re-order rows according to id in possibleCombis
+  uniqueCombis   <- dplyr::count(observedCombis, pick(everything()))
 
   numberOfClouds <- nrow(uniqueCombis)
+
   return(
-    list(numberOfClouds = numberOfClouds, colors = uniqueCombis$color)
+    list(
+      numberOfClouds = numberOfClouds,
+      colors         = uniqueCombis$color,
+      uniqueCombis   = uniqueCombis,
+      observedCombis = observedCombis
+    )
   )
 }  # End .rainInfoFactorCombinations()
 
@@ -388,13 +437,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   perCloud512     <- rep(512, infoFactorCombinations$numberOfClouds)  # Each violin consists of 512 points by default
   vioArgs$color   <- rep(vioOutlineColor, perCloud512)
 
-  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show_guide = FALSE, lwd = options$boxOutlineWidth)
+  boxArgs       <- list(outlier.shape = NA, alpha = options$boxOpacity, show.legend = FALSE, lwd = options$boxOutlineWidth)
   boxArgs$color <- .rainOutlineColor(options, options$boxOutline, infoFactorCombinations)
 
   showPointGuide <- if (options$covariate == "") FALSE else TRUE
-  pointArgs      <- list(alpha = options$pointOpacity, show_guide = showPointGuide, size = options$pointSize)
+  pointArgs      <- list(alpha = options$pointOpacity, show.legend = showPointGuide, size = options$pointSize)
 
-  lineArgs <- list(alpha = options$lineOpacity, show_guide = FALSE)
+  lineArgs <- list(alpha = options$lineOpacity, show.legend = FALSE)
   if (options$secondaryFactor   == "") lineArgs$color <- "black"
 
   # Violin positioning
@@ -494,14 +543,14 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   upperEnds <- boxData$ymax
 
   lowerWhiskers <- ggplot2::stat_summary(
-    fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
+    fun = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. - (..y.. - lowerEnds), ymax = ..y.. - (..y.. - lowerEnds)),
     color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
     lwd = options$boxOutlineWidth
   )
 
   upperWhiskers <- ggplot2::stat_summary(
-    fun.y = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
+    fun = median, geom = "errorbar", width = options$boxWidth, position = boxPosition,
     ggplot2::aes(ymin = ..y.. + abs(..y.. - upperEnds), ymax = ..y.. + abs(..y.. - upperEnds)),
     color = .rainOutlineColor(options, options$boxOutline, infoFactorCombinations),
     lwd = options$boxOutlineWidth
@@ -523,7 +572,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     # and width = 0 messes up the position of the means (same for several position_ functions I tried)
     # Thus, set very small width that the human eye will not notice.
   }
-  means <- if (options$means) {
+  means <- if (options$mean) {
     ggplot2::stat_summary(
       fun = mean, geom = "point",
       mapping = ggplot2::aes(x = aesX, fill = aesFill),  # No color argument, covariate will interfere with it
@@ -535,8 +584,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
   meanLinesGroupMapping <- if (options$secondaryFactor == "") 1 else aesFill
   meanLinesColor <- if (options$secondaryFactor == "") "black" else .rainOutlineColor(options, "palette", infoFactorCombinations)
-  meanLines <- if (options$means && options$meanLines) {  # Needs options$means as qml wont uncheck options$meanLines
-    ggplot2::stat_summary(                                # if options$means is unchecked again
+  meanLines <- if (options$mean && options$meanLines) {  # Needs options$mean as qml wont uncheck options$meanLines
+    ggplot2::stat_summary(                                # if options$mean is unchecked again
       fun = mean, geom = "line", mapping = ggplot2::aes(group = meanLinesGroupMapping),
       color = meanLinesColor, alpha = options$meanLinesOpacity, position = meanPosition, lwd = options$meanLinesWidth
     )
@@ -551,9 +600,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 # .rainCaption() ----
 # CSS formatting is brought to life by ggtext::element_markdown(), see .rainFillPlot()
-.rainCaption <- function(options, sampleSize, numberOfExclusions, warningAxisLimits, errorVioSides) {
-
-  sampleSize <- gettextf("<i>N</i> = %s", sampleSize)
+.rainCaption <- function(options, numberOfExclusions, warningAxisLimits, errorVioSides) {
 
   exclusions <- if (numberOfExclusions > 0) {
     gettextf("Not shown are %s observations due to missing data.", numberOfExclusions)
@@ -574,11 +621,143 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
 
   errorVioSides <- if (errorVioSides) {
-    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point Nudge set to 0.</span>")
+    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point nudge set to 0.</span>")
   } else {
     NULL
   }
 
-  output <- paste0(sampleSize, "\n\n", exclusions, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
+  output <- paste0(exclusions, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
   return(output)
 }  # End .rainCaption()
+
+
+
+# .rainCreateTables ----
+.rainCreateTables <- function(jaspResults, dataInfo, options, ready) {
+
+  if (!options$table) return()
+
+  # Create container in jaspResults
+  if (is.null(jaspResults[["containerTables"]])) {
+
+    jaspResults[["containerTables"]] <- createJaspContainer(title = gettext("Statistics"))
+    jaspResults[["containerTables"]]$dependOn(
+      c(
+        "dependentVariables", "table", "tableBoxStatistics"
+      )
+    )
+  }  # End create container
+
+  # Access through container object
+  container <- jaspResults[["containerTables"]]
+
+  # Placeholder table, if no dependentVariables
+  if (!ready) {
+    placeholderTable <- createJaspTable(title = "", dependencies = c("dependentVariables"))
+    placeholderTable <- .rainAddTableColumns(options, placeholderTable)
+    container[["placeholderTable"]] <- placeholderTable
+    return()
+  }
+
+  # Table for each dependentVariable
+  for (variable in options$dependentVariables) {
+
+    variableTable <- createJaspTable(title = variable)
+    variableTable$dependOn(optionContainsValue = list(dependentVariables = variable))  # Depends on respective variable
+    variableTable <- .rainAddTableColumns(options, variableTable)
+
+    .rainFillTable(jaspResults, dataInfo, variable, options, variableTable)
+
+    container[[variable]] <- variableTable
+
+  }  # End of for loop
+
+}  # End .rainCreateTables()
+
+
+
+# .rainAddTableColumns() ----
+.rainAddTableColumns <- function(options, inputTable) {
+
+  tableInProgress <- inputTable
+
+  # Add columns; names of boxplot statistics are like extracted from ggplot, see boxData and .rainFillTable
+  tableInProgress$addColumnInfo(name = "primaryFactor", title = "Primary Factor", type = "string")
+
+  if (options$secondaryFactor != "") {
+    tableInProgress$addColumnInfo(name = "secondaryFactor", title = "Secondary Factor", type = "string")
+  }
+
+  tableInProgress$addColumnInfo(name = "n", title = "<i>N</i>", type = "integer")
+
+  if (options$tableBoxStatistics) {
+    tableInProgress$addColumnInfo(name = "ymin",   title = "Lower Whisker",   type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "lower",  title = "25th Percentile", type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "middle", title = "Median",          type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "upper",  title = "75th Percentile", type = "number", format = "dp:2")
+    tableInProgress$addColumnInfo(name = "ymax",   title = "Upper Whisker",   type = "number", format = "dp:2")
+  }
+
+  if (options$mean) {
+    tableInProgress$addColumnInfo(name = "meanData", title = "Mean", type = "number", format = "dp:2")
+  }
+
+  tableInProgress$showSpecifiedColumnsOnly <- TRUE  # Only show columns that were added
+
+  return(tableInProgress)
+}  # End .rainAddTableColumns()
+
+
+
+# .rainFillTable() ----
+.rainFillTable <- function(jaspResults, dataInfo, variable, options, inputTable) {
+
+  # Extract statistics from corresponding plot
+  plotContainer <- jaspResults[["containerRaincloudPlots"]]
+  targetJaspPlot <- plotContainer[[variable]]
+  targetPlotObject <- targetJaspPlot[["plotObject"]]
+
+  # Extract observed factor combinations and remove duplicate levels of primaryFactor for table
+  combinations <- .rainInfoFactorCombinations(dataInfo$dataset, targetPlotObject, extractColor = FALSE)$uniqueCombis
+  primaryLevels <- as.character(combinations$primaryFactor)
+  previousLevel <- primaryLevels[1]
+  tidyLevels <- c(previousLevel)
+  if (length(primaryLevels) > 1) {
+    for (i in 2:length(primaryLevels)) {
+      if (primaryLevels[i] == previousLevel) {
+        tidyLevels <- c(tidyLevels, "")
+      } else {
+        tidyLevels <- c(tidyLevels, primaryLevels[i])
+        previousLevel <- primaryLevels[i]
+      }
+    }
+  }
+  combinations$primaryFactor <- tidyLevels
+
+  boxDataIndex <- if (options$subject == "") 2 else 3
+  boxData <- ggplot2::ggplot_build(targetPlotObject)$data[[boxDataIndex]]
+
+  tableStatistics <- cbind(combinations, boxData)
+
+  if (options$mean) {
+    meanDataIndex <- if (options$subject == "") 6 else 7
+    meanData <- ggplot2::ggplot_build(targetPlotObject)$data[[meanDataIndex]]$y_orig
+    tableStatistics$meanData <- meanData
+  }
+
+  # Add statistics to table
+  inputTable$setData(tableStatistics)
+
+  # Footnote
+  sampleSize <- gettextf("<i>N</i><sub>Total</sub> = %s", dataInfo$sampleSize)
+  exclusions <- if (dataInfo$numberOfExclusions > 0) {
+    gettextf(". Excluded were %s observations due to missing data.", dataInfo$numberOfExclusions)
+  } else {
+    NULL
+  }
+
+  footnote <- paste0(sampleSize, exclusions)
+  inputTable$addFootnote(footnote)
+
+
+}  # End .rainFillTable()

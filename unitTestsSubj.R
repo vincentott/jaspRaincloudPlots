@@ -7,12 +7,14 @@ larksOwls$Chronotype <- factor(larksOwls$Chronotype, levels = c("Morning", "Even
 
 # 2x2 ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
-options$variables <- "MWCount"
+options$dependentVariables <- "MWCount"
 options$primaryFactor <- "TimeOfDay"
 options$secondaryFactor <- "Chronotype"
 options$colorAnyway <- FALSE
 options$subject <- "Subject"
 options$customSides <- "LLRR"
+options$mean <- TRUE
+options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", larksOwls, options)
 
 
@@ -64,7 +66,7 @@ irisLong <- iris.long
 
 # Three time points ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
-options$variables <- "Sepal.Width"
+options$dependentVariables <- "Sepal.Width"
 options$primaryFactor <- "time"
 options$secondaryFactor <- "Species"
 options$colorAnyway <- FALSE
@@ -75,7 +77,7 @@ results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
 
 # Three time points and covariate and jitter + meanLines ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
-options$variables <- "Sepal.Width"
+options$dependentVariables <- "Sepal.Width"
 options$primaryFactor <- "time"
 options$secondaryFactor <- "Species"
 options$colorAnyway <- FALSE
@@ -84,8 +86,9 @@ options$covariate <- "Sepal.Length"
 options$subject <- "id"
 options$customSides <- "LLLRRR"
 options$jitter <- TRUE
-options$means <- TRUE
+options$mean <- TRUE
 options$meanLines <- TRUE
 options$meanLinesOpacity <- 100
-results <- jaspTools::runAnalysis("raincloudPlots", irisLong, options)
+options$table <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", irisLong[-1, ], options)
 
