@@ -480,19 +480,25 @@ Form
 
 				RadioButton
 				{
+					label: qsTr("± 1 standard error of the mean")
+					value: "se"
+				}
+
+				RadioButton
+				{
 					label: qsTr("Confidence interval")
 					value: "ci"
 
 					CheckBox
 					{
-						name: "ciAssumption"
+						name: "meanCiAssumption"
 						label: qsTr("Assume that all groups are independent of each other.")
 
-						PercentField{name: "ciWidth"; label: qsTr("Width"); defaultValue: 95; fieldWidth: 40}
+						PercentField{name: "meanCiWidth"; label: qsTr("Width"); defaultValue: 95; fieldWidth: 40}
 
 						DropDown
 						{
-							name: 	"ciMethod"
+							name: 	"meanCiMethod"
 							id: ciMethod
 							label: qsTr("Method")
 							values:	[
@@ -504,7 +510,7 @@ Form
 
 						IntegerField
 						{
-							name: "ciBootstrapSamples"
+							name: "meanCiBootstrapSamples"
 							enabled: ciMethod.value == "bootstrap"
 							label: qsTr("Bootstrap samples")
 							defaultValue: 1000

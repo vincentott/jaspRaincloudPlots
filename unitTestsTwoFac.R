@@ -195,7 +195,8 @@ options$table <- TRUE
 options$tableBoxStatistics <- FALSE
 options$mean <- TRUE
 options$meanInterval <- TRUE
-options$meanIntervalOption <- "sd"
+options$meanIntervalOption <- "ci"
+options$meanCiAssumption <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
