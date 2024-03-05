@@ -461,15 +461,15 @@ Form
 
 		CheckBox
 		{
-			name: "interval"
+			name: "meanInterval"
 			label: qsTr("Interval around mean")
 			enabled: mean.checked
 			Layout.columnSpan: 3
 
 			RadioButtonGroup
 			{
-				name: "intervalOption"
-			  	enabled: interval.checked
+				name: "meanIntervalOption"
+			  	enabled: meanInterval.checked
 
 				RadioButton
 				{
@@ -516,9 +516,9 @@ Form
 
 				RadioButton
 				{
-					name: "customInterval"
 					label: qsTr("Custom interval limits")
-					id: intervalCustom
+					value: "custom"
+					id: meanIntervalCustom
 				}
 
 			}  // End RadioButtonGroup intervalOption
@@ -528,7 +528,7 @@ Form
 		{
 			Layout.columnSpan: 3
 			name: "intervalCustom"
-			visible: intervalCustom.checked
+			visible: meanIntervalCustom.checked
 			width: 400
 			height: 300
 			placeholderText: qsTr(

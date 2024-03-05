@@ -206,25 +206,26 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   plotInProgress <- plotInProgress + getMeansAndLines$meanLines + getMeansAndLines$means  # Lines first so means cover
 
 
-  intervalPosition <- if (options$meanPosition == "likeBox") {
-    meanPosition
-  } else {
-    "identity"
-  }
+  intervalPosition <- if (options$meanPosition == "likeBox") meanPosition else "identity"
+
   # Interval around mean
-  interval <- if (options$interval) {
-    if (options$intervalOption == "sd") {
-      sd <- .rainComputeInterval(dataInfo, options, inputVariable)
-      intervalSd <- ggplot2::stat_summary(
+  if (options$meanInterval) {
+    if (options$meanIntervalOption == "sd") {
+
+      intervalBounds <- .rainComputeInterval(dataInfo, options, inputVariable)
+      lowerBound     <- intervalBounds$lowerBound
+      upperBound     <- intervalBounds$upperBound
+
+      meanInterval <- ggplot2::stat_summary(
         fun = mean, geom = "errorbar",
         width = options$boxWidth, # todo: CHANGE THIS!
         position = intervalPosition,
-        ggplot2::aes(ymin = ..y.. - sd, ymax = ..y.. + sd),
+        ggplot2::aes(ymin = ..y.. - (..y.. - lowerBound), ymax = ..y.. + (upperBound - ..y..)),
         color = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),
         lwd = options$boxOutlineWidth,  # todo: CHANGE THIS!
         show.legend = FALSE
       )
-      plotInProgress <- plotInProgress + intervalSd
+      plotInProgress <- plotInProgress + meanInterval
     }
   }
 
@@ -606,11 +607,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   dataset      <- dataInfo$dataset
 
   means <- c()
-  sds    <- c()
+  sds   <- c()
   for (rowNumber in 1:nrow(uniqueCombis)) {
 
-    primaryLevel   <- as.character(uniqueCombis$primaryFactor[rowNumber])   # as.character() ensures that it also works
-    secondaryLevel <- as.character(uniqueCombis$secondaryFactor[rowNumber]) # for numeric levels
+    primaryLevel   <- as.character(uniqueCombis$primaryFactor[rowNumber])    # as.character() ensures that it also works
+    secondaryLevel <- as.character(uniqueCombis$secondaryFactor[rowNumber])  # for numeric factor levels
     currentCell <- dataset[dataset$primaryFactor == primaryLevel & dataset$secondaryFactor == secondaryLevel, ]
 
     cellMean <- mean(currentCell[[inputVariable]])
@@ -619,7 +620,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     means <- c(means, cellMean)
     sds   <- c(sds,   cellSd)
   }
-  return(sds)
+
+  lowerBound <- means - sds
+  upperBound <- means + sds
+
+  output <- list(lowerBound = lowerBound, upperBound = upperBound, sd = sds)
+
+  return(output)
 }  # End .rainComputeInterval()
 
 
