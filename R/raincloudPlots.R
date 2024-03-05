@@ -214,17 +214,17 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Interval around mean
   interval <- if (options$interval) {
     if (options$intervalOption == "sd") {
-      SDs <- .rainComputeInterval(dataInfo, options, inputVariable)
-      intervalSDs <- ggplot2::stat_summary(
+      sd <- .rainComputeInterval(dataInfo, options, inputVariable)
+      intervalSd <- ggplot2::stat_summary(
         fun = mean, geom = "errorbar",
         width = options$boxWidth, # todo: CHANGE THIS!
         position = intervalPosition,
-        ggplot2::aes(ymin = ..y.. - SDs, ymax = ..y.. + SDs),
+        ggplot2::aes(ymin = ..y.. - sd, ymax = ..y.. + sd),
         color = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),
         lwd = options$boxOutlineWidth,  # todo: CHANGE THIS!
         show.legend = FALSE
       )
-      plotInProgress <- plotInProgress + intervalSDs
+      plotInProgress <- plotInProgress + intervalSd
     }
   }
 
@@ -606,7 +606,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   dataset      <- dataInfo$dataset
 
   means <- c()
-  SDs <- c()
+  sds    <- c()
   for (rowNumber in 1:nrow(uniqueCombis)) {
 
     primaryLevel   <- as.character(uniqueCombis$primaryFactor[rowNumber])   # as.character() ensures that it also works
@@ -614,13 +614,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     currentCell <- dataset[dataset$primaryFactor == primaryLevel & dataset$secondaryFactor == secondaryLevel, ]
 
     cellMean <- mean(currentCell[[inputVariable]])
-    cellSD   <- sd(  currentCell[[inputVariable]])
+    cellSd   <- sd(  currentCell[[inputVariable]])
 
     means <- c(means, cellMean)
-    SDs   <- c(SDs,   cellSD)
+    sds   <- c(sds,   cellSd)
   }
-  print(SDs)
-  return(SDs)
+  return(sds)
 }  # End .rainComputeInterval()
 
 

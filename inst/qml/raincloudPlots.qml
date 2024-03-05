@@ -516,9 +516,9 @@ Form
 
 				RadioButton
 				{
+					name: "customInterval"
 					label: qsTr("Custom interval limits")
 					id: intervalCustom
-					value: "custom"
 				}
 
 			}  // End RadioButtonGroup intervalOption
