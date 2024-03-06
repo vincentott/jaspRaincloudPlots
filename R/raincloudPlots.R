@@ -157,7 +157,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         k <- options$meanCiBootstrapSamples
         means <- numeric(k)
         n <- length(currentCell)
-        # set.seed(1)  # For reproducibility
+        jaspBase::.setSeedJASP(options)
         for (i in seq_len(k)) {
           bootData <- sample(currentCell, size = n, replace = TRUE)
           means[i] <- mean(bootData)
@@ -798,7 +798,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     tableInProgress$addColumnInfo(name = "ymax",   title = "Upper Whisker",   type = "number", format = "dp:2")
   }
 
-  if (options$mean && options$meanInterval && options$meanIntervalOption == "ci") {
+  if (options$mean && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
       tableInProgress$addColumnInfo(
         name = "lowerBound", title = "Lower Confidence Interval Limit", type = "number", format = "dp:2"
       )
@@ -815,7 +815,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     tableInProgress$addColumnInfo(name = "se", title = "Standard Error of the Mean", type = "number", format = "dp:2")
   }
 
-  if (options$mean && options$meanInterval && options$meanIntervalOption == "ci") {
+  if (options$mean && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
     tableInProgress$addColumnInfo(
       name = "upperBound", title = "Upper Confidence Interval Limit", type = "number", format = "dp:2"
     )

@@ -494,29 +494,61 @@ Form
 						name: "meanCiAssumption"
 						label: qsTr("Assume that all groups are independent of each other.")
 
-						PercentField{name: "meanCiWidth"; label: qsTr("Width"); defaultValue: 95; fieldWidth: 40}
-
-						DropDown
+						Group    // Start group ci settings
 						{
-							name: 	"meanCiMethod"
-							id: ciMethod
-							label: qsTr("Method")
-							values:	[
-									{label: qsTr("Normal model"), value: "normalModel"},
-								   	{label: qsTr("T model"),      value: "oneSampleTTest"},
-								   	{label: qsTr("Bootstrap"),    value: "bootstrap"},
-								   	]
-						}
+							columns: 2
 
-						IntegerField
+							Label {text: qsTr("Width")}
+							PercentField
+							{
+								name: "meanCiWidth"; defaultValue: 95; fieldWidth: 40
+							}
+
+							Label {text: qsTr("Method")}
+							DropDown
+							{
+								name: 	"meanCiMethod"
+								id: ciMethod
+								values:	[
+										{label: qsTr("Normal model"), value: "normalModel"},
+									   	{label: qsTr("T model"),      value: "oneSampleTTest"},
+									   	{label: qsTr("Bootstrap"),    value: "bootstrap"},
+									   	]
+							}
+						}  // End group ci settings
+
+						Group  // Start group bootstrap settings
 						{
-							name: "meanCiBootstrapSamples"
-							enabled: ciMethod.value == "bootstrap"
-							label: qsTr("Bootstrap samples")
-							defaultValue: 1000
-							min: 1
-							max: 50000
-						}
+							columns: 2
+
+							Label {text: qsTr("Bootstrap samples"); enabled: ciMethod.value == "bootstrap"}
+							IntegerField
+							{
+								name: "meanCiBootstrapSamples"
+								enabled: ciMethod.value == "bootstrap"
+								defaultValue: 1000
+								min: 1
+								max: 50000
+							}
+
+							CheckBox
+							{
+								name: "setSeed"
+								id: setSeed
+								enabled: ciMethod.value == "bootstrap"
+								label: qsTr("Seed for reproducibility")
+							}
+							IntegerField
+							{
+								name: "seed"
+								enabled: setSeed.checked
+								defaultValue: 1
+								negativeValues: true
+							}
+
+						}    // End group bootstrap settings
+
+
 					}  // End ciAssumption CheckBox
 				}  // End RadioButton Confidence interval
 
