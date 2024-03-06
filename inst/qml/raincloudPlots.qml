@@ -480,12 +480,6 @@ Form
 
 				RadioButton
 				{
-					label: qsTr("± 1 standard error of the mean")
-					value: "se"
-				}
-
-				RadioButton
-				{
 					label: qsTr("Confidence interval")
 					value: "ci"
 
@@ -499,9 +493,9 @@ Form
 							columns: 2
 
 							Label {text: qsTr("Width")}
-							PercentField
+							CIField
 							{
-								name: "meanCiWidth"; defaultValue: 95; fieldWidth: 40
+								name: "meanCiWidth"
 							}
 
 							Label {text: qsTr("Method")}
@@ -562,25 +556,59 @@ Form
 			}  // End RadioButtonGroup intervalOption
 		}  // End CheckBox interval
 
-		TextArea
+		Group
 		{
-			Layout.columnSpan: 3
-			name: "intervalCustom"
 			visible: meanIntervalCustom.checked
-			width: 400
-			height: 300
-			placeholderText: qsTr(
-				"For each cloud, enter the lower and the upper interval limit.\n" +
-				"Enter in the following format:\n\n" +
-				"X.XX; Y.YY;		<- lower; upper; for first cloud\n" +
-				"Z.ZZ; W.WW;		<- lower; upper; for second cloud\n" +
-				"lower3; upper3;	<- lower; upper; for third cloud\n" +
-				"etc.\n\n" +
-				"Specify according to the following order:\n" +
-				"If there is a 2 (Primary: A, B) x 2 (Secondary: i, ii) design,\n" +
-				"then the cloud order is: Ai, Aii, Bi, Bii."
-			)
-		}
+
+			IntegerField
+			{
+				id: numberOfClouds
+				name: "numberOfClouds"
+				label: qsTr("Number of clouds")
+				min: 1
+				defaultValue: 1
+			}
+
+			TableView
+			{
+
+				id: meanIntervalCustomTable
+				modelType			: JASP.Simple
+
+				implicitWidth		: 350 //  form.implicitWidth
+				implicitHeight		: 140 * preferencesModel.uiScale // about 3 rows
+
+				initialRowCount		: numberOfClouds.value
+				initialColumnCount	: 2
+				rowCount			: numberOfClouds.value
+				columnCount			: 2
+
+				name				: "meanIntervalCustomTable"
+				cornerText			: qsTr("Cloud")
+				columnNames			: [qsTr("Lower Limit"), qsTr("Upper Limit")]
+
+				// isFirstColEditable	: false
+
+
+				itemType			: JASP.Double
+				// itemTypePerColumn	: [JASP.String] // first column is string, all others are double
+
+				function getRowHeaderText(headerText, rowIndex)	 { return String.fromCharCode(65 + rowIndex);	}
+
+				// function getDefaultValue(columnIndex, rowIndex)	 { return columnIndex === 0 ? String.fromCharCode(65 + rowIndex) : 2 * columnIndex - 3;	}
+
+				function getDefaultValue(columnIndex, rowIndex)	 { return columnIndex === 0 ? String.fromCharCode(65 + rowIndex) : 0	}
+
+
+
+				JASPDoubleValidator			{ id: doubleValidator; decimals: 3	}
+				RegularExpressionValidator	{ id: stringValidator				}
+				function getValidator(columnIndex, rowIndex) 	 { return columnIndex === 0 ? stringValidator : doubleValidator							}
+			}
+
+
+
+		}  // End group with custom table
 
 	}  // End section Advanced
 

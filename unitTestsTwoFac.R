@@ -197,10 +197,12 @@ options$mean <- TRUE
 options$meanInterval <- TRUE
 options$meanIntervalOption <- "ci"
 options$meanCiAssumption <- TRUE
+options$meanCiWidth <- 0.9567
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
-
+# Custom Interval around mean ----
+options <- jaspTools::analysisOptions("raincloudPlots")
 
 
 

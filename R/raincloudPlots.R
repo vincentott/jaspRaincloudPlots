@@ -127,14 +127,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       output$upperBound[cloudNumber] <- xBar + sd
       output$successfulComputation <- TRUE
 
-    } else if (options$meanIntervalOption == "se") {
-      xBar <- mean(currentCell)
-      se   <- sd(currentCell) / sqrt(length(currentCell))
-      output$se[cloudNumber] <- se
-      output$lowerBound[cloudNumber] <- xBar - se
-      output$upperBound[cloudNumber] <- xBar + se
-      output$successfulComputation <- TRUE
-
     } else if (options$meanIntervalOption == "ci" && options$meanCiAssumption) {
       # The following is adapted from .descriptivesMeanCI() in jaspDescriptives
 
@@ -162,7 +154,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
           bootData <- sample(currentCell, size = n, replace = TRUE)
           means[i] <- mean(bootData)
         }
-        percentiles <- (1 + c(-options$meanCiWidth, options$meanCiWidth)) / 2
+        percentiles <- (1 + c(-ciWidth, options$meanCiWidth)) / 2
         CIs <- quantile(means, probs = percentiles)
         output$lowerBound[cloudNumber] <- CIs[1]
         output$upperBound[cloudNumber] <- CIs[2]
@@ -708,6 +700,21 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
+  if (options$meanInterval) {
+    if (options$meanIntervalOption == "sd") {
+      meanInterval <- gettextf("Interval around mean represents ± 1 standard deviation.")
+    } else if (options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+      meanInterval <- paste0(
+        "Interval around mean represents ",
+        options$meanCiWidth * 100,
+        "% confidence interval;<br>this assumes that all groups are independent of each other.")
+    } else {
+      meanInterval <- NULL
+    }
+  } else {
+    meanInterval <- NULL
+  }
+
   jitter <- if (options$jitter) {
     gettextf("Points are slightly jittered from their true values.")
   } else {
@@ -726,7 +733,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
-  output <- paste0(exclusions, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
+  output <- paste0(exclusions, "\n\n", meanInterval, "\n\n", jitter, "\n\n", warningAxisLimits, "\n\n", errorVioSides)
   return(output)
 }  # End .rainCaption()
 
@@ -811,9 +818,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (options$mean && options$meanInterval && options$meanIntervalOption == "sd") {
       tableInProgress$addColumnInfo(name = "sd", title = "Standard Deviation", type = "number", format = "dp:2")
   }
-  if (options$mean && options$meanInterval && options$meanIntervalOption == "se") {
-    tableInProgress$addColumnInfo(name = "se", title = "Standard Error of the Mean", type = "number", format = "dp:2")
-  }
 
   if (options$mean && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
     tableInProgress$addColumnInfo(
@@ -865,7 +869,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   if (options$meanInterval) {
     tableStatistics$lowerBound <- dataInfo$intervalBounds[[inputVariable]]$lowerBound
     tableStatistics$sd <- dataInfo$intervalBounds[[inputVariable]]$sd
-    tableStatistics$se <- dataInfo$intervalBounds[[inputVariable]]$se
     tableStatistics$upperBound <- dataInfo$intervalBounds[[inputVariable]]$upperBound
 
   }
@@ -876,7 +879,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Footnote
   sampleSize <- gettextf("<i>N</i><sub>Total</sub> = %s", dataInfo$sampleSize)
   exclusions <- if (dataInfo$numberOfExclusions > 0) {
-    gettextf(". Excluded were %s observations due to missing data.", dataInfo$numberOfExclusions)
+    gettextf(". This excludes %s observations due to missing data.", dataInfo$numberOfExclusions)
   } else {
     NULL
   }
