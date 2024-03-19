@@ -141,7 +141,20 @@ Form
 		columns: 3
 
 		CheckBox{name: "showVio";   id: showVio;   text: qsTr("Show violin"); checked: true}
-		CheckBox{name: "showBox";   id: showBox;   text: qsTr("Show box");    checked: true}
+		CheckBox
+		{
+			name: "showBox"
+			id: showBox
+			text: qsTr("Show box")
+			checked: if (
+					meanInterval.checked ||
+					meanIntervalCustom.checked
+					) {
+						false
+					} else {
+						true
+					}
+		}
 		CheckBox{name: "showPoint"; id: showPoint; text: qsTr("Show point");  checked: true}
 		// Label{text: ""; Layout.columnSpan: 3}  // Placeholder
 
@@ -156,7 +169,7 @@ Form
 				DoubleField
 				{
 					name:				"vioNudge"
-					defaultValue:		(customSides.value === "") ? 0.09 : 0.24
+					defaultValue:		(!customSides.checked) ? 0.09 : 0.24
 					negativeValues:		true
 				}
 
@@ -219,7 +232,7 @@ Form
 			DoubleField
 			{
 				name:				"boxNudge"
-				defaultValue:		(customSides.value === "") ? 0 : 0.15
+				defaultValue:		(!customSides.checked) ? 0 : 0.15
 				negativeValues:		true
 			}
 
@@ -277,8 +290,8 @@ Form
 			DoubleField
 			{
 				name:				"pointNudge"
-				defaultValue:		(customSides.value === "") ? 0.15 : 0 // Is multiplied by -1 in the R script
-				enabled:			(customSides.value === "") ? true : false
+				defaultValue:		(!customSides.checked) ? 0.15 : 0 // Is multiplied by -1 in the R script
+				enabled:			(!customSides.checked) ? true : false
 				negativeValues:		true
 			}
 
@@ -348,7 +361,7 @@ Form
 		HelpButton
 		{
 			toolTip:	qsTr(
-							"Limits may not be applied exactly.\n" +
+							"Limits may only be applied approximately.\n" +
 							"For further fine-tuning of the axis, click the title of the plot\n" +
 							"where it says the name of dependent variable.\n" +
 							"Then select 'Edit Image' in the drop down menu and\n" +
@@ -395,30 +408,6 @@ Form
 		title: qsTr("Advanced")
 		columns: 3
 
-		TextField
-		{
-			name:				"customSides"
-			id:					customSides
-			label:				qsTr("Custom orientation for each cloud:")
-			placeholderText:	"Enter 'L' or 'R' for each cloud."
-			Layout.columnSpan: 2
-		}
-
-		HelpButton
-		{
-			toolTip:	qsTr(
-							"Per default, all violins are right of the boxes.\n" +
-							"For each level of the Primary Factor,\n" +
-							"specify 'L' or 'R' for per level of the Secondary Factor.\n" +
-							"For example, with a 2 (Primary: A, B) x 2 (Secondary: i, ii) design,\n" +
-							"enter 'LLRR' for flanking clouds (Ai, Aii, Bi, Bii).\n\n" +
-							"If you enter too little or too many letters or anything but 'L' or 'R',\n"+
-							"the orientation reverts to default (all 'R').\n" +
-							"If there is any input, Point Nudge is set to 0."
-						)
-		}
-
-
 		CheckBox
 		{
 			name: "mean"
@@ -462,8 +451,9 @@ Form
 		CheckBox
 		{
 			name: "meanInterval"
+			id: meanInterval
 			label: qsTr("Interval around mean")
-			enabled: mean.checked
+			enabled: mean.checked && !meanIntervalCustom.checked
 			Layout.columnSpan: 3
 
 			RadioButtonGroup
@@ -546,69 +536,109 @@ Form
 					}  // End ciAssumption CheckBox
 				}  // End RadioButton Confidence interval
 
-				RadioButton
-				{
-					label: qsTr("Custom interval limits")
-					value: "custom"
-					id: meanIntervalCustom
-				}
-
 			}  // End RadioButtonGroup intervalOption
 		}  // End CheckBox interval
 
 		Group
 		{
-			visible: meanIntervalCustom.checked
+			title: qsTr("Interval aesthetics")
+			Layout.columnSpan: 3
+			columns: 3
+			enabled: meanInterval.checked || meanIntervalCustom.checked
+
+			DoubleField
+			{
+				label: qsTr("Whisker width")
+				name:	"intervalWhiskerWidth"
+				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
+			}
+			DoubleField{label: qsTr("Outline width"); name: "intervalOutlineWidth"; defaultValue: 1}
+		}
+
+
+
+		Group
+		{
+			title: qsTr("Custom Cloud Orientation and Mean Interval Limits")
+			Layout.columnSpan: 2
 
 			IntegerField
 			{
 				id: numberOfClouds
 				name: "numberOfClouds"
-				label: qsTr("Number of clouds")
+				label: qsTr("How many clouds are currently shown?")
 				min: 1
 				defaultValue: 1
+			}
+
+			CheckBox
+			{
+				id: customSides
+				name: "customSides"
+				label: qsTr("Apply custom orientation")
+			}
+
+			CheckBox
+			{
+				id: meanIntervalCustom
+				name: "meanIntervalCustom"
+				enabled: mean.checked
+				label: qsTr("Apply custom mean interval limits")
 			}
 
 			TableView
 			{
 
-				id: meanIntervalCustomTable
+				id: customizationTable
 				modelType			: JASP.Simple
 
 				implicitWidth		: 350 //  form.implicitWidth
-				implicitHeight		: 140 * preferencesModel.uiScale // about 3 rows
+				implicitHeight		: 240 * preferencesModel.uiScale // about 6 rows
 
 				initialRowCount		: numberOfClouds.value
-				initialColumnCount	: 2
 				rowCount			: numberOfClouds.value
-				columnCount			: 2
+				initialColumnCount	: 3
+				columnCount			: 3
 
-				name				: "meanIntervalCustomTable"
+				name				: "customizationTable"
 				cornerText			: qsTr("Cloud")
-				columnNames			: [qsTr("Lower Limit"), qsTr("Upper Limit")]
+				columnNames			: [qsTr("Orientation"), qsTr("Lower Limit"), qsTr("Upper Limit")]
 
 				// isFirstColEditable	: false
 
-
 				itemType			: JASP.Double
-				// itemTypePerColumn	: [JASP.String] // first column is string, all others are double
+				itemTypePerColumn	: [JASP.String, JASP.Double, JASP.Double] // first column is string, all others are double
 
 				function getRowHeaderText(headerText, rowIndex)	 { return String.fromCharCode(65 + rowIndex);	}
-
 				// function getDefaultValue(columnIndex, rowIndex)	 { return columnIndex === 0 ? String.fromCharCode(65 + rowIndex) : 2 * columnIndex - 3;	}
 
-				function getDefaultValue(columnIndex, rowIndex)	 { return columnIndex === 0 ? String.fromCharCode(65 + rowIndex) : 0	}
-
-
+				function getDefaultValue(columnIndex, rowIndex)	 { return columnIndex === 0 ? "R" : 0	}
+				// function getDefaultValue(columnIndex, rowIndex)	 { return columnIndex === 0 ? String.fromCharCode(65 + rowIndex) : 0	}
 
 				JASPDoubleValidator			{ id: doubleValidator; decimals: 3	}
-				RegularExpressionValidator	{ id: stringValidator				}
-				function getValidator(columnIndex, rowIndex) 	 { return columnIndex === 0 ? stringValidator : doubleValidator							}
+				RegularExpressionValidator  { id: stringValidator; regularExpression: /^[LR]$/ }
+
+				function getValidator(columnIndex, rowIndex) 	 { return columnIndex === 0 ? stringValidator : doubleValidator	}
 			}
 
+		}  // End group custom orientation and table
 
-
-		}  // End group with custom table
+		HelpButton
+		{
+			toolTip:	qsTr(
+							"For customization, the cloud order is as follows:\n" +
+							"For each level of the Primary Factor,\n" +
+							"go through all levels of the Secondary Factor.\n" +
+							"For example, with a 2 (Primary: X, Y) x 2 (Secondary: i, ii) design,\n" +
+							"there are four clouds, A to D, with:\n" +
+							"A = Xi, B = Xii, C = Yi, D = Yii.\n\n" +
+							
+							"Custom orientation:\n" +
+							"Per default, all violins are right of the boxes.\n" +
+							"To customize this, specify 'L' or 'R' for each cloud.\n" +
+							"Applying the custom orientation sets Point Nudge to 0."
+						)
+		}
 
 	}  // End section Advanced
 

@@ -102,7 +102,9 @@ options$primaryFactor <- "species"
 options$secondaryFactor <- "sex"
 options$colorPalette <- "ggplot2"
 options$colorAnyway <- FALSE
-options$customSides <- "LRLRLR"
+options$numberOfClouds <- 6
+options$customSides <- TRUE
+options$customizationTable[[1]]$values <- rep(c("L", "R"), 3)
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Invalid input: Custom orientation ----
@@ -111,10 +113,31 @@ options$dependentVariables <- "bill_length_mm"
 options$primaryFactor <- "species"
 options$secondaryFactor <- "sex"
 options$colorAnyway <- FALSE
-options$customSides <- "LRLRL"
+options$customSides <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 # Means ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$dependentVariables <- "bill_length_mm"
+options$primaryFactor <- "sex"
+options$secondaryFactor <- "year"
+options$colorAnyway <- FALSE  # otherwise overwrite colorPalette
+options$colorPalette <- "sportsTeamsNBA"
+options$mean <- TRUE
+options$meanLines <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# Means + Lines NO color ----
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$dependentVariables <- "bill_length_mm"
+options$primaryFactor <- "island"
+options$colorAnyway <- FALSE
+options$colorPalette <- "grandBudapest"
+options$mean <- TRUE
+options$meanLines <- TRUE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
+
+# Means only ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
 options$primaryFactor <- "year"
@@ -128,27 +151,6 @@ options$boxOutline <- "none"
 options$pointOpacity <- 0
 options$mean <- TRUE
 options$meanPosition <- "onAxisTicks"
-options$meanLines <- TRUE
-results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
-# Means ----
-options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
-options$dependentVariables <- "bill_length_mm"
-options$primaryFactor <- "sex"
-options$secondaryFactor <- "year"
-options$colorAnyway <- FALSE
-options$colorPalette <- "sportsTeamsNBA"
-options$mean <- TRUE
-options$meanLines <- TRUE
-results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
-
-# Means + Lines NO color ----
-options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
-options$dependentVariables <- "bill_length_mm"
-options$primaryFactor <- "island"
-options$colorAnyway <- FALSE
-options$colorPalette <- "grandBudapest"
-options$mean <- TRUE
 options$meanLines <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
@@ -181,8 +183,6 @@ options$mean <- TRUE
 options$table <- TRUE
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-
-
 # Interval around mean ----
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
@@ -200,10 +200,22 @@ options$meanCiAssumption <- TRUE
 options$meanCiWidth <- 0.9567
 results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
-
 # Custom Interval around mean ----
-options <- jaspTools::analysisOptions("raincloudPlots")
-
+options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
+options$dependentVariables <- "bill_length_mm"
+options$primaryFactor <- "sex"
+options$colorPalette <- "grandBudapest"
+options$colorAnyway <- TRUE
+options$boxOutline <- "none"
+options$boxOpacity <- 0
+options$numberOfClouds <- 2
+options$meanIntervalCustom <- TRUE
+options$mean <- TRUE
+options$customizationTable[[2]]$values <- c(35, 43)
+options$customizationTable[[3]]$values <- c(47.5, 58.911)
+options$table <- TRUE
+options$tableBoxStatistics <- FALSE
+results <- jaspTools::runAnalysis("raincloudPlots", palmerpenguins::penguins, options)
 
 
 

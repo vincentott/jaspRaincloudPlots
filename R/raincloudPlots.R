@@ -84,7 +84,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   dataset            <- exclusiveDataset
 
   # Calculate meanInterval
-  if (options$meanInterval) {
+  if (options$meanInterval || options$meanIntervalCustom) {
     intervalBounds <- list()
     for (dependentVariable in options$dependentVariables) {
       intervalBounds[[dependentVariable]] <- .rainMeanInterval(dataset, options, dependentVariable)
@@ -110,7 +110,18 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   infoFactorCombinations <- .rainInfoFactorCombinations(dataset, inputPlot = NULL, extractColor = FALSE)
   uniqueCombis           <- infoFactorCombinations$uniqueCombis
 
-  output <- list(lowerBound = c(), upperBound = c(), successfulComputation = FALSE, sd = c(), se = c())
+  output <- list(lowerBound = c(), upperBound = c(), successfulComputation = FALSE, sd = c())
+
+  if (options$meanIntervalCustom) {
+    if (options$numberOfClouds == nrow(uniqueCombis)) {
+      output$lowerBound <- options$customizationTable[[2]]$values
+      output$upperBound <- options$customizationTable[[3]]$values
+      output$successfulComputation <- TRUE
+    } else {
+      # successfulComputation remains FALSE
+    }
+    return(output)
+  }
 
   # Loop through each cell of the design...
   for (cloudNumber in 1:nrow(uniqueCombis)) {
@@ -164,9 +175,6 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         # successfulComputation remains FALSE
 
       }  # End section confidence interval
-
-    } else if (options$meanIntervalOption == "custom"){
-      # successfulComputation remains FALSE
 
     } else {
       # successfulComputation remains FALSE
@@ -260,12 +268,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Preparation
   infoFactorCombinations <- .rainInfoFactorCombinations(dataset, plotInProgress)  # Also has color info
 
-  getVioSides   <- .rainSetVioSides(options, dataset, infoFactorCombinations)  # Default "r" or like to custom input
+  getVioSides   <- .rainSetVioSides(options, dataset, infoFactorCombinations)  # Default "r" or custom orientation
   vioSides      <- getVioSides$sides
   errorVioSides <- getVioSides$error
 
   boxPosVec   <- .rainNudgeForEachCloud(options$boxNudge, vioSides)
-  boxPosition <- ggpp::position_dodge2nudge(  # boxPosition for whiskers, .rainGeomRain
+  boxPosition <- ggpp::position_dodge2nudge(  # boxPosition for whiskers and .rainGeomRain
     x        = boxPosVec,
     width    = 0,
     padding  = options$boxPadding,
@@ -278,9 +286,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Whiskers for boxplots
-  boxDataIndex <- if (options$subject == "") 2 else 3
-  boxData <- ggplot2::ggplot_build(plotInProgress)$data[[boxDataIndex]]
-  getWhiskers <- .rainWhiskers(options, boxData, infoFactorCombinations, boxPosition)
+  boxDataIndex   <- if (options$subject == "") 2 else 3
+  boxData        <- ggplot2::ggplot_build(plotInProgress)$data[[boxDataIndex]]
+  getWhiskers    <- .rainWhiskers(options, boxData, infoFactorCombinations, boxPosition)
   plotInProgress <- plotInProgress + getWhiskers$lowerWhiskers + getWhiskers$upperWhiskers
 
   # Means and Lines
@@ -297,18 +305,19 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Interval around mean
   intervalPosition <- if (options$meanPosition == "likeBox") meanPosition else "identity"
-  if (options$meanInterval) {
+  if (options$meanInterval || options$meanIntervalCustom) {
     intervalBounds <- dataInfo$intervalBounds[[inputVariable]]
       if (intervalBounds$successfulComputation) {
-        lowerBound     <- intervalBounds$lowerBound
-        upperBound     <- intervalBounds$upperBound
+        lowerBound <- intervalBounds$lowerBound
+        upperBound <- intervalBounds$upperBound
         meanInterval <- ggplot2::stat_summary(
-          fun = mean, geom = "errorbar",
-          width = options$boxWidth, # todo: CHANGE THIS!
-          position = intervalPosition,
           ggplot2::aes(ymin = ..y.. - (..y.. - lowerBound), ymax = ..y.. + (upperBound - ..y..)),
-          color = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),
-          lwd = options$boxOutlineWidth,  # todo: CHANGE THIS!
+          fun         = mean,
+          geom        = "errorbar",
+          width       = options$intervalWhiskerWidth,
+          lwd         = options$intervalOutlineWidth,
+          position    = intervalPosition,
+          color       = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),
           show.legend = FALSE
         )
       } else {
@@ -386,7 +395,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Caption
   if (options$showCaption) {
-    caption         <- .rainCaption(options, dataInfo$numberOfExclusions, warningAxisLimits, errorVioSides)
+    caption         <- .rainCaption(options, dataInfo, dataInfo$intervalBounds[[inputVariable]], warningAxisLimits, errorVioSides)
     addCaption      <- ggplot2::labs(caption = caption)
     captionPosition <- ggplot2::theme(plot.caption = ggtext::element_markdown(hjust = 0))  # Bottom left position
     plotInProgress  <- plotInProgress + addCaption + captionPosition
@@ -489,22 +498,12 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   defaultSides  <- rep("r", infoFactorCombinations$numberOfClouds)
 
-  if (options$customSides == "") {
-    outputSides <- defaultSides
-    error       <- FALSE
-
-  } else if (!grepl("^[LR]+$", options$customSides)) {  # Must only contain 'L' or 'R'
-    outputSides <- defaultSides
-    error       <- TRUE
-
-    # Number of customSides must match number of axis ticks
-  } else if (length(strsplit(options$customSides, "")[[1]]) != infoFactorCombinations$numberOfClouds) {
-    outputSides <- defaultSides
-    error       <- TRUE
-
+  if (options$numberOfClouds == infoFactorCombinations$numberOfClouds && options$customSides) {
+    outputSides <- tolower(options$customizationTable[[1]]$values)
+    error <- FALSE
   } else {
-    outputSides <- strsplit(tolower(options$customSides), "")[[1]]
-    error       <- FALSE
+    outputSides <- defaultSides
+    error <- TRUE
   }
 
   return(list(sides = outputSides, error = error))
@@ -559,7 +558,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   boxArgsPos <- list(width = options$boxWidth, position = boxPosition)
 
   # Point positioning
-  negativePointNudge <- if (options$customSides == "") {
+  negativePointNudge <- if (!options$customSides) {
     options$pointNudge * -1  # This way all nudges in the GUI are positive by default
   } else {
     0                        # CustomSides fixes points to Axis ticks (see HelpButton in .qml)
@@ -691,16 +690,22 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
 
 # .rainCaption() ----
-# CSS formatting is brought to life by ggtext::element_markdown(), see .rainFillPlot()
-.rainCaption <- function(options, numberOfExclusions, warningAxisLimits, errorVioSides) {
+# CSS formatting works through ggtext::element_markdown(); see .rainFillPlot()
+.rainCaption <- function(options, dataInfo, intervalBounds, warningAxisLimits, errorVioSides) {
 
-  exclusions <- if (numberOfExclusions > 0) {
-    gettextf("Not shown are %s observations due to missing data.", numberOfExclusions)
+  exclusions <- if (dataInfo$numberOfExclusions > 0) {
+    gettextf("Not shown are %s observations due to missing data.", dataInfo$numberOfExclusions)
   } else {
     NULL
   }
 
-  if (options$meanInterval) {
+  if (options$meanIntervalCustom) {
+    if (intervalBounds$successfulComputation) {
+      meanInterval <- gettextf("Interval around mean is custom.")
+    } else {
+      meanInterval <- gettextf("<span style = 'color: darkorange'>Error with custom interval: Specified number of clouds does not match clouds in plot.</span>")
+    }
+  } else if (options$meanInterval) {
     if (options$meanIntervalOption == "sd") {
       meanInterval <- gettextf("Interval around mean represents ± 1 standard deviation.")
     } else if (options$meanIntervalOption == "ci" && options$meanCiAssumption) {
@@ -727,8 +732,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     NULL
   }
 
-  errorVioSides <- if (errorVioSides) {
-    gettextf("<span style = 'color: darkorange'> Invalid input: Custom orientation. Reverted to default all 'R'. Point nudge set to 0.</span>")
+  errorVioSides <- if (errorVioSides && options$customSides) {
+    gettextf("<span style = 'color: darkorange'> Error with custom orientation: Specified number of clouds does not match clouds in plot.<br>Reverted to default all 'R'. Point nudge set to 0.</span>")
   } else {
     NULL
   }
@@ -805,9 +810,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     tableInProgress$addColumnInfo(name = "ymax",   title = "Upper Whisker",   type = "number", format = "dp:2")
   }
 
-  if (options$mean && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+  meanInterval <- options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption
+
+  if (options$mean && (meanInterval || options$meanIntervalCustom)) {
       tableInProgress$addColumnInfo(
-        name = "lowerBound", title = "Lower Confidence Interval Limit", type = "number", format = "dp:2"
+        name = "lowerBound", title = "Lower Interval Limit", type = "number", format = "dp:2"
       )
   }
 
@@ -819,9 +826,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       tableInProgress$addColumnInfo(name = "sd", title = "Standard Deviation", type = "number", format = "dp:2")
   }
 
-  if (options$mean && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+  if (options$mean && (meanInterval || options$meanIntervalCustom)) {
     tableInProgress$addColumnInfo(
-      name = "upperBound", title = "Upper Confidence Interval Limit", type = "number", format = "dp:2"
+      name = "upperBound", title = "Upper Interval Limit", type = "number", format = "dp:2"
     )
   }
 
@@ -866,26 +873,33 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     meanDataIndex <- if (options$subject == "") 6 else 7
     tableStatistics$mean <- ggplot2::ggplot_build(targetPlotObject)$data[[meanDataIndex]]$y_orig
   }
-  if (options$meanInterval) {
+  if (options$meanInterval || options$meanIntervalCustom) {
     tableStatistics$lowerBound <- dataInfo$intervalBounds[[inputVariable]]$lowerBound
-    tableStatistics$sd <- dataInfo$intervalBounds[[inputVariable]]$sd
+    tableStatistics$sd         <- dataInfo$intervalBounds[[inputVariable]]$sd
     tableStatistics$upperBound <- dataInfo$intervalBounds[[inputVariable]]$upperBound
-
   }
 
   # Add statistics to table
   inputTable$setData(tableStatistics)
 
   # Footnote
-  sampleSize <- gettextf("<i>N</i><sub>Total</sub> = %s", dataInfo$sampleSize)
+  sampleSize <- gettextf("<i>N</i><sub>Total</sub> = %s.", dataInfo$sampleSize)
   exclusions <- if (dataInfo$numberOfExclusions > 0) {
-    gettextf(". This excludes %s observations due to missing data.", dataInfo$numberOfExclusions)
+    gettextf(" This excludes %s observations due to missing data.", dataInfo$numberOfExclusions)
+  } else {
+    NULL
+  }
+  meanInterval <- if (options$meanIntervalCustom) {
+    gettextf(" Interval around mean is custom.")
+  } else if (options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+    paste0(
+      " Interval around mean represents ",
+      options$meanCiWidth * 100,
+      "% confidence interval; this assumes that all groups are independent of each other.")
   } else {
     NULL
   }
 
-  footnote <- paste0(sampleSize, exclusions)
+  footnote <- paste0(sampleSize, exclusions, meanInterval)
   inputTable$addFootnote(footnote)
-
-
 }  # End .rainFillTable()
