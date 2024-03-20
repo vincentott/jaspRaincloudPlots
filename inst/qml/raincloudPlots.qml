@@ -34,6 +34,7 @@ Form
 			name: 					"dependentVariables"
 			title: 					qsTr("Dependent Variables")
 			suggestedColumns: 		["scale"]
+			info:					qsTr("Select all the variables that you want to plot.")
 		}
 		AssignedVariablesList
 		{
@@ -42,6 +43,7 @@ Form
 			id: 					primaryFactor;
 			suggestedColumns: 		["nominal", "ordinal"]
 			singleVariable: 		true
+			info:					qsTr("Its levels are shown on the x-axis (y-axis for horizontal plot).")
 		}
 		AssignedVariablesList
 		{
@@ -50,6 +52,7 @@ Form
 			id: 					secondaryFactor
 			suggestedColumns: 		["nominal", "ordinal"]
 			singleVariable: 		true
+			info:					qsTr("Its levels are color coded.")
 		}
 
 		AssignedVariablesList
@@ -59,6 +62,7 @@ Form
 			id: 					covariate
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
+			info:					qsTr("Points are color coded according to this.")
 		}
 
 		AssignedVariablesList
@@ -69,6 +73,11 @@ Form
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
 			enabled:				primaryFactor.count === 1
+			info:					qsTr(
+										"Select a participant/observation ID in your dataset, " +
+										"to connect individual observations (points) accross the levels of the primary factor." +
+										"Otherwise, you do not need this."
+									)
 		}
 
 	}  // End variables form
@@ -87,7 +96,12 @@ Form
 			columns: 2
 
 			Label        { text: qsTr("Color palette") 	   }
-			ColorPalette { name: "colorPalette"; label: "" }
+			ColorPalette
+			{
+				name: "colorPalette"
+				label: ""
+				info:  qsTr("colorPalette: How to color code the levels of the secondary factor.")
+			}
 
 			Label{ text: qsTr("Covariate palette"); enabled: covariate.count === 1 }
 			ColorPalette
@@ -96,6 +110,7 @@ Form
 				label:      		""
 				enabled: 			covariate.count === 1
 				indexDefaultValue:  3
+				info:  				qsTr("covariatePalette: How to color code the covariate. 'Viridis' works good for both discrete and continuous covariates.")
 			}
 		}
 
@@ -107,21 +122,43 @@ Form
 			enabled: 				secondaryFactor.count === 0
 			checked:				secondaryFactor.count === 0
 			Layout.columnSpan: 		2
+			info:					qsTr(
+										"Applies the color palette to the levels of the primary factor. " +
+										"Otherwise, the plot stays black and white." +
+										"This option is superseeded by a secondary factor; then color coding is according to that."
+									)
 		}
 
 		// End top 2 rows
 		
-		CheckBox{ name: "horizontal"; label: qsTr("Horizontal plot"); Layout.columnSpan: 3 }
+		CheckBox
+		{
+			name: 				"horizontal"
+			label: 				qsTr("Horizontal plot")
+			Layout.columnSpan:  3
+			info:				qsTr(
+									"Plots the dependent variable axis horizontally, at the bottom of the plot. " +
+									"This is where the raincloud plot gets its name from: It will look like the points are raining from the violin and box (cloud)."
+								)
+		}
 
 		CheckBox
 		{
-			name: "table"
-			label: qsTr("Table with statistics")
+			name:   			"table"
+			label:  			qsTr("Table with statistics")
+			info:				qsTr(
+									"Shows a table under the plot with statistics per cloud, like number of observations or median. " +
+									"If you select 'Mean' or 'Interval around mean' (see Advanced Section), they will also be shown here."
+								)
 			CheckBox
 			{
-				name:  				"tableBoxStatistics"
-				label: 				qsTr("Box Statistics")
-				checked: 			true
+				name:  			"tableBoxStatistics"
+				label: 			qsTr("Box Statistics")
+				checked: 		true
+				info:			qsTr(
+									"Shows the box statistics in the table: lower whisker, 25th percentile, median, 75th percentile, upper whisker. " +
+									"It can be helpful to un-check this if you are also working with 'Interval around mean' (see Advanced Section)."
+								)
 			}
 		}
 
@@ -134,20 +171,42 @@ Form
 		title:   qsTr("Cloud Elements")
 		columns: 3
 
-		CheckBox{ name: "showVio";   id: showVio;   text: qsTr("Show violin"); checked: true }
 		CheckBox
 		{
-			name: 					"showBox"
-			id:   					showBox
-			text: 					qsTr("Show box")
-			checked: 				if ( meanInterval.checked || meanIntervalCustom.checked )
-									{
-										false
-									} else {
-										true
-									}
+			name: 		"showVio"
+			id: 		showVio
+			text: 		qsTr("Show violin")
+			checked: 	true
+			info: 		qsTr(
+							"Whether or not the violin should be shown. If un-checked, opacity is set to 0 and outline to 'none'."
+						)
 		}
-		CheckBox{ name: "showPoint"; id: showPoint; text: qsTr("Show point");  checked: true }
+		CheckBox
+		{
+			name: 		"showBox"
+			id:   		showBox
+			text: 		qsTr("Show box")
+			checked: 	if ( meanInterval.checked || meanIntervalCustom.checked )
+						{
+							false
+						} else {
+							true
+						}
+			info: 		qsTr(
+							"Whether or not the box should be shown. If un-checked, opacity is set to 0 and outline to 'none'."
+						)
+		}
+		CheckBox
+		{
+			name: 		"showPoint"
+			id: 		showPoint
+			text: 		qsTr("Show point")
+			checked: 	true
+			info: 		qsTr(
+							"Whether or not the points of a cloud should be shown. If un-checked, opacity is set to 0. " +
+							"If you have many, many points, it can be helpful to hide them."
+						)
+		}
 
 
 		Group  // Start group Violin
@@ -162,6 +221,9 @@ Form
 					name:				"vioNudge"
 					defaultValue:		(!customSides.checked) ? 0.09 : 0.24
 					negativeValues:		true
+					info:				qsTr(
+											"vioNudge: How far the violin is nudged from the center (axis tick)."
+										)
 				}
 
 				Label		{ text: qsTr("Height")				   }
@@ -197,8 +259,8 @@ Form
 				DoubleField { name: "placeholder3"; opacity: 0 }
 				// Placeholder End
 
-				Label		 { text: qsTr("Smoothing") 									  }
-				PercentField { name:	"vioSmoothing"; fieldWidth: 40; defaultValue: 100 }
+				Label		 { text: qsTr("Smoothing") 									 }
+				PercentField { name: "vioSmoothing";   fieldWidth: 40; defaultValue: 100 }
 		}  // End group Violin
 
 
@@ -212,12 +274,21 @@ Form
 			DoubleField
 			{
 				name:				"boxNudge"
+				id:					boxNudge
 				defaultValue:		(!customSides.checked) ? 0 : 0.15
+				onValueChanged:		if (initialized) meanNudge.value = boxNudge.value
 				negativeValues:		true
 			}
 
-			Label       { text: qsTr("Width") 														}
-			DoubleField { name: "boxWidth"; defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2 }
+			Label{ text: qsTr("Width") }
+			
+			DoubleField
+			{
+    			name: "boxWidth"
+    			id: boxWidth
+    			defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2
+    			onValueChanged: if (initialized) meanDistance.value = boxWidth.value
+			}
 
 			Label       { text: qsTr("Padding") 													  }
 			DoubleField { name: "boxPadding"; defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2 }
@@ -242,8 +313,14 @@ Form
 					   	]
 			}
 
-			Label		{ text: qsTr("Outline width") 			   }
-			DoubleField { name: "boxOutlineWidth"; defaultValue: 1 }
+			Label{ text: qsTr("Outline width") }
+			DoubleField
+			{
+				name: "boxOutlineWidth"
+				id: boxOutlineWidth
+				defaultValue: 1
+				onValueChanged: intervalOutlineWidth.value = boxOutlineWidth.value
+			}
 		}  // End group Box
 
 
@@ -253,7 +330,7 @@ Form
 			columns: 2
 			enabled: showPoint.checked
 
-			Label{ text: qsTr("Nudge") }
+			Label{ text: qsTr("Nudge"); enabled: (!customSides.checked) ? true : false }
 			DoubleField
 			{
 				name:				"pointNudge"
@@ -286,7 +363,7 @@ Form
 			// Placeholder End
 
 			Label	 { text: qsTr("Jitter")		  	   }
-			CheckBox { name: "jitter"; 		id: jitter }
+			CheckBox { name: "jitter"; 		id: jitter; info: qsTr(" Jitter: help me") }
 		}  // End group Point
 
 		Label{ text: ""; Layout.columnSpan: 3 }  // Placeholder
@@ -299,6 +376,7 @@ Form
 			fieldWidth: 			40
 			defaultValue:			25
 			Layout.columnSpan: 		2
+			info:					qsTr("Hi PsychoPy")
 		}
 	}  // End section Cloud Elements
 
@@ -372,10 +450,40 @@ Form
 
 			RadioButtonGroup
 			{
-			  name:       "meanPosition"
-			  title:       qsTr("Position")
-			  RadioButton { value: "likeBox"; 	  label: qsTr("like box");     checked: true }
-			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks")               }
+				name:       "meanPosition"
+			  	title:       qsTr("Position")
+			  	RadioButton
+			  	{
+					value:   "likeBox"
+					label:   qsTr("Custom")
+					checked: true
+
+					Group
+					{
+						columns: 2
+
+						DoubleField
+						{
+							label: 	        qsTr("Nudge")
+							isBound:        false  // Is not passed on to options, does not need a name
+							id:		        meanNudge
+							defaultValue:   boxNudge.value
+							onValueChanged: if (initialized) boxNudge.value = meanNudge.value
+						}
+
+						DoubleField
+						{
+							label: 	        qsTr("Distance")
+							isBound:        false  // Is not passed on to options, does not need a name
+							id:		        meanDistance
+							defaultValue:   boxWidth.value
+							onValueChanged: if (initialized) boxWidth.value = meanDistance.value
+						}
+
+					}
+				}
+
+				RadioButton { value: "onAxisTicks"; label: qsTr("On axis ticks")               }
 			}
 
 			DoubleField{ name: "meanSize"; label: qsTr("Size"); defaultValue: 6 }
@@ -391,16 +499,6 @@ Form
 				PercentField { name: "meanLinesOpacity"; label: qsTr("Opacity"); defaultValue: 50; fieldWidth: 40 }
 			}
 		}  // End CheckBox Means
-
-
-		HelpButton
-		{
-			toolTip:	qsTr(
-							"If you position the mean 'like Box',\n"+
-							"then the position depends on box nudge and width.\n" +
-							"Thus, if you do not want to show the box, first set its nudge and width as desired."
-						)
-		}
 
 		CheckBox
 		{
@@ -485,17 +583,20 @@ Form
 			}  // End RadioButtonGroup meanIntervalOption
 		}  // End CheckBox meanInterval
 
-		Group
+		DoubleField
 		{
-			title:             qsTr("Interval aesthetics")
-			Layout.columnSpan: 3
-			columns:           3
-			enabled:           meanInterval.checked || meanIntervalCustom.checked
-
-			DoubleField{ label: qsTr("Whisker width"); name:	"intervalWhiskerWidth"; defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2 }
-			DoubleField{ label: qsTr("Outline width"); name:    "intervalOutlineWidth"; defaultValue: 1											}
+			label: 				qsTr("Interval outline width")
+			isBound:			false  // Is not passed on to options, does not need a name
+			id:					intervalOutlineWidth
+			defaultValue: 		boxOutlineWidth.value
+			onValueChanged: 	boxOutlineWidth.value = intervalOutlineWidth.value
+			enabled: 			meanInterval.checked || meanIntervalCustom.checked
+			Layout.columnSpan:  2
 		}
-
+		HelpButton
+		{
+			toolTip:	qsTr("With of interval whiskers depends on mean distance.")
+		}
 
 
 		Group

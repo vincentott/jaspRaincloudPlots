@@ -314,8 +314,8 @@ raincloudPlots <- function(jaspResults, dataset, options) {
           ggplot2::aes(ymin = ..y.. - (..y.. - lowerBound), ymax = ..y.. + (upperBound - ..y..)),
           fun         = mean,
           geom        = "errorbar",
-          width       = options$intervalWhiskerWidth,
-          lwd         = options$intervalOutlineWidth,
+          width       = options$boxWidth,
+          lwd         = options$boxOutlineWidth,
           position    = intervalPosition,
           color       = .rainOutlineColor(options, "colorPalette", infoFactorCombinations),
           show.legend = FALSE
@@ -774,6 +774,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   # Table for each dependentVariable
   for (variable in options$dependentVariables) {
 
+    # If table for variable already exists, we can skip recreating table
+    if (!is.null(container$variable)) next
+
     variableTable <- createJaspTable(title = variable)
     variableTable$dependOn(optionContainsValue = list(dependentVariables = variable))  # Depends on respective variable
     variableTable <- .rainAddTableColumns(options, variableTable)
@@ -822,7 +825,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     tableInProgress$addColumnInfo(name = "mean", title = "Mean", type = "number", format = "dp:2")
   }
 
-  if (options$mean && options$meanInterval && options$meanIntervalOption == "sd") {
+  if (options$mean && options$meanInterval && options$meanIntervalOption == "sd" && !options$meanIntervalCustom) {
       tableInProgress$addColumnInfo(name = "sd", title = "Standard Deviation", type = "number", format = "dp:2")
   }
 
