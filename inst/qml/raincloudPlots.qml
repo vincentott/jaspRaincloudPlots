@@ -226,12 +226,21 @@ Form
 										)
 				}
 
-				Label		{ text: qsTr("Height")				   }
-				DoubleField { name: "vioHeight"; defaultValue: 0.7 }
+				Label{ text: qsTr("Height") }
+				DoubleField
+				{
+					name: 				"vioHeight"
+					defaultValue: 		0.7
+					info:				qsTr(
+											"vioHeight: The height of the violin. " +
+											"With a custom orientation to the left (see Advanced Section), it can be " +
+											"helpful to decrease the height if the violin overlaps with axis ticks."
+										)
+				}
 
 				// Placeholder Start
 				Label       { text: "empty"; 		opacity: 0 }
-				DoubleField { name: "placeholder1"; opacity: 0 }
+				DoubleField { name: "placeholder1"; opacity: 0 }  // For clean alignment, it does not work to omit this DoubleField and Layout.columnSpan: 2 the Label
 				Label		{ text: "empty";    	opacity: 0 }
 				DoubleField { name: "placeholder2"; opacity: 0 }
 				// Placeholder End
@@ -363,7 +372,7 @@ Form
 			// Placeholder End
 
 			Label	 { text: qsTr("Jitter")		  	   }
-			CheckBox { name: "jitter"; 		id: jitter; info: qsTr(" Jitter: help me") }
+			CheckBox { name: "jitter"; 		id: jitter; info: qsTr(" jitter: Lorem ispsum.") }
 		}  // End group Point
 
 		Label{ text: ""; Layout.columnSpan: 3 }  // Placeholder
@@ -376,7 +385,7 @@ Form
 			fieldWidth: 			40
 			defaultValue:			25
 			Layout.columnSpan: 		2
-			info:					qsTr("Hi PsychoPy")
+			info:					qsTr("The opacity of the subject lines. Hi Joris, this should only be shown if the PercentField is enabled, right? But its always shown!")
 		}
 	}  // End section Cloud Elements
 
@@ -565,6 +574,7 @@ Form
 								id: setSeed
 								enabled: ciMethod.value == "bootstrap"
 								label: qsTr("Seed for reproducibility")
+								info: qsTr("Hi Joris, I think this works.")
 							}
 							IntegerField
 							{
@@ -592,6 +602,9 @@ Form
 			onValueChanged: 	boxOutlineWidth.value = intervalOutlineWidth.value
 			enabled: 			meanInterval.checked || meanIntervalCustom.checked
 			Layout.columnSpan:  2
+			info:				qstR(
+									"intervalOutlineWidth: Hi Joris, I think this does not work."
+								)
 		}
 		HelpButton
 		{
@@ -672,5 +685,12 @@ Form
 		}
 
 	}  // End section Advanced
+
+	DoubleField
+	{
+		name: "myDouble"
+		label: qsTr("myDouble")
+		info: qsTr("Hi Joris, this is not supposed to be in bold font, right?. Because it still refers to the DoubleField.")
+	}
 
 }  // End Form
