@@ -64,7 +64,7 @@ Form
 		AssignedVariablesList
 		{
 			name: 					"subject"
-			title:					qsTr("Subject")  // Extra spaces for alignment
+			title:					qsTr("Subject")
 			id: 					subject
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
@@ -73,11 +73,11 @@ Form
 
 	}  // End variables form
 
-	Label{text: qsTr("Note: This module requires data in long format.")}
+	Label{ text: qsTr("Note: This module requires data in long format.") }
 
 	Section
 	{
-		title: qsTr("General")
+		title:   qsTr("General")
 		columns: 3
 
 		// Start top 2 rows
@@ -86,16 +86,16 @@ Form
 		{
 			columns: 2
 
-			Label{text: qsTr("Color palette")}
-			ColorPalette{name: "colorPalette"; label: ""}
+			Label        { text: qsTr("Color palette") 	   }
+			ColorPalette { name: "colorPalette"; label: "" }
 
-			Label{text: qsTr("Covariate palette"); enabled: covariate.count === 1}
+			Label{ text: qsTr("Covariate palette"); enabled: covariate.count === 1 }
 			ColorPalette
 			{
-				name: "covariatePalette"
-				label: "" // No qsTr() as this will stay the same across languages
-				enabled: 	covariate.count === 1
-				indexDefaultValue: 3
+				name:       		"covariatePalette"
+				label:      		""
+				enabled: 			covariate.count === 1
+				indexDefaultValue:  3
 			}
 		}
 
@@ -111,23 +111,17 @@ Form
 
 		// End top 2 rows
 		
-		CheckBox
-		{
-			name: 					"horizontal"
-			label:					qsTr("Horizontal plot")
-			Layout.columnSpan: 3
-		}
+		CheckBox{ name: "horizontal"; label: qsTr("Horizontal plot"); Layout.columnSpan: 3 }
 
 		CheckBox
 		{
 			name: "table"
 			label: qsTr("Table with statistics")
-
 			CheckBox
 			{
-				name: "tableBoxStatistics"
-				label: qsTr("Box Statistics")
-				checked: true
+				name:  				"tableBoxStatistics"
+				label: 				qsTr("Box Statistics")
+				checked: 			true
 			}
 		}
 
@@ -137,35 +131,32 @@ Form
 
 	Section
 	{
-		title: qsTr("Cloud Elements")
+		title:   qsTr("Cloud Elements")
 		columns: 3
 
-		CheckBox{name: "showVio";   id: showVio;   text: qsTr("Show violin"); checked: true}
+		CheckBox{ name: "showVio";   id: showVio;   text: qsTr("Show violin"); checked: true }
 		CheckBox
 		{
-			name: "showBox"
-			id: showBox
-			text: qsTr("Show box")
-			checked: if (
-					meanInterval.checked ||
-					meanIntervalCustom.checked
-					) {
-						false
-					} else {
-						true
-					}
+			name: 					"showBox"
+			id:   					showBox
+			text: 					qsTr("Show box")
+			checked: 				if ( meanInterval.checked || meanIntervalCustom.checked )
+									{
+										false
+									} else {
+										true
+									}
 		}
-		CheckBox{name: "showPoint"; id: showPoint; text: qsTr("Show point");  checked: true}
-		// Label{text: ""; Layout.columnSpan: 3}  // Placeholder
+		CheckBox{ name: "showPoint"; id: showPoint; text: qsTr("Show point");  checked: true }
 
 
 		Group  // Start group Violin
 		{
-			title: qsTr("Violin")
+			title:   qsTr("Violin")
 			columns: 2
 			enabled: showVio.checked
 
-				Label{text: qsTr("Nudge")}
+				Label{ text: qsTr("Nudge") }
 				DoubleField
 				{
 					name:				"vioNudge"
@@ -173,62 +164,51 @@ Form
 					negativeValues:		true
 				}
 
-				Label
-				{text: qsTr("Height")}
-				DoubleField{name: "vioHeight"; defaultValue: 0.7}
+				Label		{ text: qsTr("Height")				   }
+				DoubleField { name: "vioHeight"; defaultValue: 0.7 }
 
 				// Placeholder Start
-				Label{text: "empty"; opacity: 0}
-				DoubleField{name: "placeholder1"; opacity: 0}
-				Label{text: "empty"; opacity: 0}
-				DoubleField{name: "placeholder2"; opacity: 0}
+				Label       { text: "empty"; 		opacity: 0 }
+				DoubleField { name: "placeholder1"; opacity: 0 }
+				Label		{ text: "empty";    	opacity: 0 }
+				DoubleField { name: "placeholder2"; opacity: 0 }
 				// Placeholder End
 
-				Label{text: qsTr("Opacity")}
-				PercentField
-				{
-					name:				"vioOpacity"
-					fieldWidth: 		40
-					defaultValue: 		(showVio.checked) ? 50 : 0
-				}
+				Label		 { text: qsTr("Opacity") 														}
+				PercentField { name: "vioOpacity"; fieldWidth: 40; defaultValue: (showVio.checked) ? 50 : 0 }
 
-				Label{text: qsTr("Outline")}
+				Label{ text: qsTr("Outline") }
 				DropDown
 				{
-					name: 	"vioOutline"
+					name: 				"vioOutline"
 					indexDefaultValue: (showVio.checked) ? 0 : 2
 					values:	[
-							{label: qsTr("Color palette"), value: "colorPalette"},
-							{label: qsTr("black"),         value: "black"},
-							{label: qsTr("none"),          value: "none"},
+							{ label: qsTr("Color palette"), value: "colorPalette" },
+							{ label: qsTr("black"),         value: "black"        },
+							{ label: qsTr("none"),          value: "none"         },
 							]
 				}
 
-				Label{text: qsTr("Outline width")}
-				DoubleField{name: "vioOutlineWidth"; defaultValue: 1}
+				Label 		{ text: qsTr("Outline width") 			   }
+				DoubleField { name: "vioOutlineWidth"; defaultValue: 1 }
 
 				// Placeholder Start
-				Label{text: "empty"; opacity: 0}
-				DoubleField{name: "placeholder3"; opacity: 0}
+				Label		{ text: "empty"; 		opacity: 0 }
+				DoubleField { name: "placeholder3"; opacity: 0 }
 				// Placeholder End
 
-				Label{text: qsTr("Smoothing")}
-				PercentField
-				{
-					name:				"vioSmoothing"
-					fieldWidth: 40
-					defaultValue:		100
-				}
+				Label		 { text: qsTr("Smoothing") 									  }
+				PercentField { name:	"vioSmoothing"; fieldWidth: 40; defaultValue: 100 }
 		}  // End group Violin
 
 
 		Group  // Start group Box
 		{
-			title: qsTr("Box")
+			title:   qsTr("Box")
 			columns: 2
 			enabled: showBox.checked
 
-			Label{text: qsTr("Nudge")}
+			Label{ text: qsTr("Nudge") }
 			DoubleField
 			{
 				name:				"boxNudge"
@@ -236,57 +216,44 @@ Form
 				negativeValues:		true
 			}
 
-			Label{text: qsTr("Width")}
-			DoubleField
-			{
-				name:				"boxWidth"
-				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
-			}
+			Label       { text: qsTr("Width") 														}
+			DoubleField { name: "boxWidth"; defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2 }
 
-			Label{text: qsTr("Padding")}
-			DoubleField
-			{
-				name:				"boxPadding"
-				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
-			}
+			Label       { text: qsTr("Padding") 													  }
+			DoubleField { name: "boxPadding"; defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2 }
 
 			// Placeholder Start
-			Label{text: "empty"; opacity: 0}
-			DoubleField{name: "placeholder4"; opacity: 0}
+			Label		{ text: "empty"; 		opacity: 0 }
+			DoubleField { name: "placeholder4"; opacity: 0 }
 			// Placeholder End
 
-			Label{text: qsTr("Opacity")}
-			PercentField
-			{
-				name:		"boxOpacity"
-				fieldWidth: 40
-				defaultValue: (showBox.checked) ? 50 : 0
-			}
+			Label		 { text: qsTr("Opacity") 														}
+			PercentField { name: "boxOpacity"; fieldWidth: 40; defaultValue: (showBox.checked) ? 50 : 0 }
 
-			Label{text: qsTr("Outline")}
+			Label{ text: qsTr("Outline") }
 			DropDown
 			{
 				name: 	"boxOutline"
 				indexDefaultValue: (showBox.checked) ? 0 : 2
 				values:	[
-						{label: qsTr("Color palette"), value: "colorPalette"},
-					   	{label: qsTr("black"),         value: "black"},
-					   	{label: qsTr("none"),          value: "none"},
+						{ label: qsTr("Color palette"), value: "colorPalette" },
+					   	{ label: qsTr("black"),         value: "black"		  },
+					   	{ label: qsTr("none"),          value: "none"		  },
 					   	]
 			}
 
-			Label{text: qsTr("Outline width")}
-			DoubleField{name: "boxOutlineWidth"; defaultValue: 1}
+			Label		{ text: qsTr("Outline width") 			   }
+			DoubleField { name: "boxOutlineWidth"; defaultValue: 1 }
 		}  // End group Box
 
 
 		Group  // Start group Point
 		{
-			title: qsTr("Point")
+			title:   qsTr("Point")
 			columns: 2
 			enabled: showPoint.checked
 
-			Label{text: qsTr("Nudge")}
+			Label{ text: qsTr("Nudge") }
 			DoubleField
 			{
 				name:				"pointNudge"
@@ -295,40 +262,34 @@ Form
 				negativeValues:		true
 			}
 
-			Label{text: qsTr("Spread")}
-			DoubleField{name: "pointSpread"; defaultValue: 0.065}
+			Label		{ text: qsTr("Spread") 					   }
+			DoubleField { name: "pointSpread"; defaultValue: 0.065 }
 
-			Label{text: qsTr("Size")}
-			DoubleField{name: "pointSize"; defaultValue: 2.5}
+			Label		{ text: qsTr("Size")				   }
+			DoubleField { name: "pointSize"; defaultValue: 2.5 }
 
 			// Placeholder Start
-			Label{text: "empty"; opacity: 0}
-			DoubleField{name: "placeholder5"; opacity: 0}
+			Label		{ text: "empty"; 		opacity: 0 }
+			DoubleField { name: "placeholder5"; opacity: 0 }
 			// Placeholder End
 
-			Label	
-			{text: qsTr("Opacity")}
-			PercentField
-			{
-				name: "pointOpacity"
-				fieldWidth: 40
-				defaultValue: (showPoint.checked) ? 50 : 0
-			}
+			Label 		 {text: qsTr("Opacity")																}
+			PercentField { name: "pointOpacity"; fieldWidth: 40; defaultValue: (showPoint.checked) ? 50 : 0 }
 
-			Label{text: "empty"; opacity: 0}
-			DoubleField{name: "placeholder6"; opacity: 0}
-			Label{text: "empty"; opacity: 0}
-			DoubleField{name: "placeholder7"; opacity: 0}
-			Label{text: "empty"; opacity: 0}
-			DoubleField{name: "placeholder8"; opacity: 0}
+			// Placeholder Start
+			Label       { text: "empty"; 		opacity: 0 }
+			DoubleField { name: "placeholder6"; opacity: 0 }
+			Label       { text: "empty"; 		opacity: 0 }
+			DoubleField { name: "placeholder7"; opacity: 0 }
+			Label       { text: "empty"; 		opacity: 0 }
+			DoubleField { name: "placeholder8"; opacity: 0 }
+			// Placeholder End
 
-			Label{text: qsTr("Jitter")}
-			CheckBox{name:	"jitter"; id: jitter}
+			Label	 { text: qsTr("Jitter")		  	   }
+			CheckBox { name: "jitter"; 		id: jitter }
 		}  // End group Point
 
-
-		Label{text: ""; Layout.columnSpan: 3}  // Placeholder
-
+		Label{ text: ""; Layout.columnSpan: 3 }  // Placeholder
 
 		PercentField
 		{
@@ -345,18 +306,18 @@ Form
 
 	Section
 	{
-		title: qsTr("Axes, Legend, Caption, Plot Size")
+		title:   qsTr("Axes, Legend, Caption, Plot Size")
 		columns: 3
 
 		CheckBox
 		{
-			name: "customAxisLimits"
-			label: qsTr("Custom limits for dependent variable axis:")
-			Layout.columnSpan: 2
-			childrenOnSameRow: true
+			name:  				"customAxisLimits"
+			label: 				qsTr("Custom limits for dependent variable axis:")
+			Layout.columnSpan:  2
+			childrenOnSameRow:  true
 			
-			IntegerField{name: "lowerAxisLimit"; label: qsTr("from"); negativeValues: true; defaultValue: 0}
-			IntegerField{name: "upperAxisLimit"; label: qsTr("to");   negativeValues: true; defaultValue: 1000}
+			IntegerField{ name: "lowerAxisLimit"; label: qsTr("from"); negativeValues: true; defaultValue: 0	}
+			IntegerField{ name: "upperAxisLimit"; label: qsTr("to");   negativeValues: true; defaultValue: 1000 }
 		}  // End CheckBox customAxisLimits
 		HelpButton
 		{
@@ -369,12 +330,11 @@ Form
 						)
 		}
 
-		CheckBox
-		{name: "showCaption"; id: showCaption; label: qsTr("Show caption"); checked: true; Layout.columnSpan: 3}
+		CheckBox{ name: "showCaption"; id: showCaption; label: qsTr("Show caption"); checked: true; Layout.columnSpan: 3 }
 
 		Group
 		{
-			title: qsTr("Plot Size")
+			title:   qsTr("Plot Size")
 			columns: 2
 
 			IntegerField
@@ -392,12 +352,7 @@ Form
 						550
 					}
 			}
-			IntegerField
-			{
-				name: "heightPlot"
-				label: qsTr("Height")
-				defaultValue: (showCaption.checked) ? 550 : 450
-			}
+			IntegerField{ name: "heightPlot"; label: qsTr("Height"); defaultValue: (showCaption.checked) ? 550 : 450 }
 		}
 	}  // End section Axes, Legend, Caption, Plot Size
 
@@ -405,36 +360,35 @@ Form
 
 	Section
 	{
-		title: qsTr("Advanced")
+		title:   qsTr("Advanced")
 		columns: 3
 
 		CheckBox
 		{
-			name: "mean"
-			id: mean
-			label: qsTr("Mean")
-			Layout.columnSpan: 2
+			name: 				"mean"
+			id:   				mean
+			label:				qsTr("Mean")
+			Layout.columnSpan:  2
 
 			RadioButtonGroup
 			{
-			  name: "meanPosition"
-			  title: qsTr("Position")
-			  RadioButton { value: "likeBox"; label: qsTr("like box"); checked: true }
-			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks") }
+			  name:       "meanPosition"
+			  title:       qsTr("Position")
+			  RadioButton { value: "likeBox"; 	  label: qsTr("like box");     checked: true }
+			  RadioButton { value: "onAxisTicks"; label: qsTr("on axis ticks")               }
 			}
 
-			DoubleField{name: "meanSize"; label: qsTr("Size"); defaultValue: 6}
+			DoubleField{ name: "meanSize"; label: qsTr("Size"); defaultValue: 6 }
 
 			CheckBox
 			{
-				name: "meanLines"
-				label: qsTr("Connect means with lines")
-				enabled: mean.checked
-				childrenOnSameRow: true
+				name: 				"meanLines"
+				label:  			qsTr("Connect means with lines")
+				enabled: 			mean.checked
+				childrenOnSameRow:  true
 
-				DoubleField{name: "meanLinesWidth"; label: qsTr("Width"); defaultValue: 1}
-
-				PercentField{name: "meanLinesOpacity"; label: qsTr("Opacity"); defaultValue: 50; fieldWidth: 40}
+				DoubleField  { name: "meanLinesWidth";   label: qsTr("Width");   defaultValue: 1 				  }
+				PercentField { name: "meanLinesOpacity"; label: qsTr("Opacity"); defaultValue: 50; fieldWidth: 40 }
 			}
 		}  // End CheckBox Means
 
@@ -450,25 +404,20 @@ Form
 
 		CheckBox
 		{
-			name: "meanInterval"
-			id: meanInterval
-			label: qsTr("Interval around mean")
-			enabled: mean.checked && !meanIntervalCustom.checked
-			Layout.columnSpan: 3
+			name: 				"meanInterval"
+			id:   				meanInterval
+			label:  			qsTr("Interval around mean")
+			enabled:			mean.checked && !meanIntervalCustom.checked
+			Layout.columnSpan: 	3
 
 			RadioButtonGroup
 			{
-				name: "meanIntervalOption"
+				name:    "meanIntervalOption"
 			  	enabled: meanInterval.checked
 
-				RadioButton
-				{
-					label: qsTr("± 1 standard deviation")
-					value: "sd"
-					checked: true
-				}
+				RadioButton { label: qsTr("± 1 standard deviation"); value: "sd"; checked: true }
 
-				RadioButton
+				RadioButton  // Start RadioButtion Confidence interval
 				{
 					label: qsTr("Confidence interval")
 					value: "ci"
@@ -482,21 +431,18 @@ Form
 						{
 							columns: 2
 
-							Label {text: qsTr("Width")}
-							CIField
-							{
-								name: "meanCiWidth"
-							}
+							Label   { text: qsTr("Width") }
+							CIField { name: "meanCiWidth" }
 
-							Label {text: qsTr("Method")}
+							Label{ text: qsTr("Method") }
 							DropDown
 							{
 								name: 	"meanCiMethod"
 								id: ciMethod
 								values:	[
-										{label: qsTr("Normal model"), value: "normalModel"},
-									   	{label: qsTr("T model"),      value: "oneSampleTTest"},
-									   	{label: qsTr("Bootstrap"),    value: "bootstrap"},
+										{ label: qsTr("Normal model"), value: "normalModel"    },
+									   	{ label: qsTr("T model"),      value: "oneSampleTTest" },
+									   	{ label: qsTr("Bootstrap"),    value: "bootstrap"      },
 									   	]
 							}
 						}  // End group ci settings
@@ -505,7 +451,7 @@ Form
 						{
 							columns: 2
 
-							Label {text: qsTr("Bootstrap samples"); enabled: ciMethod.value == "bootstrap"}
+							Label { text: qsTr("Bootstrap samples"); enabled: ciMethod.value == "bootstrap" }
 							IntegerField
 							{
 								name: "meanCiBootstrapSamples"
@@ -536,31 +482,26 @@ Form
 					}  // End ciAssumption CheckBox
 				}  // End RadioButton Confidence interval
 
-			}  // End RadioButtonGroup intervalOption
-		}  // End CheckBox interval
+			}  // End RadioButtonGroup meanIntervalOption
+		}  // End CheckBox meanInterval
 
 		Group
 		{
-			title: qsTr("Interval aesthetics")
+			title:             qsTr("Interval aesthetics")
 			Layout.columnSpan: 3
-			columns: 3
-			enabled: meanInterval.checked || meanIntervalCustom.checked
+			columns:           3
+			enabled:           meanInterval.checked || meanIntervalCustom.checked
 
-			DoubleField
-			{
-				label: qsTr("Whisker width")
-				name:	"intervalWhiskerWidth"
-				defaultValue:		(secondaryFactor.count === 0) ? 0.1 : 0.2
-			}
-			DoubleField{label: qsTr("Outline width"); name: "intervalOutlineWidth"; defaultValue: 1}
+			DoubleField{ label: qsTr("Whisker width"); name:	"intervalWhiskerWidth"; defaultValue: (secondaryFactor.count === 0) ? 0.1 : 0.2 }
+			DoubleField{ label: qsTr("Outline width"); name:    "intervalOutlineWidth"; defaultValue: 1											}
 		}
 
 
 
 		Group
 		{
-			title: qsTr("Custom Cloud Orientation and Mean Interval Limits")
-			Layout.columnSpan: 2
+			title:				qsTr("Custom Cloud Orientation and Mean Interval Limits")
+			Layout.columnSpan:  2
 
 			IntegerField
 			{
@@ -571,20 +512,9 @@ Form
 				defaultValue: 1
 			}
 
-			CheckBox
-			{
-				id: customSides
-				name: "customSides"
-				label: qsTr("Apply custom orientation")
-			}
+			CheckBox{ id: customSides; name: "customSides"; label: qsTr("Apply custom orientation") }
 
-			CheckBox
-			{
-				id: meanIntervalCustom
-				name: "meanIntervalCustom"
-				enabled: mean.checked
-				label: qsTr("Apply custom mean interval limits")
-			}
+			CheckBox{ id: meanIntervalCustom; name: "meanIntervalCustom"; enabled: mean.checked; label: qsTr("Apply custom mean interval limits") }
 
 			TableView
 			{
