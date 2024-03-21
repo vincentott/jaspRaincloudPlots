@@ -98,9 +98,10 @@ Form
 			Label        { text: qsTr("Color palette") 	   }
 			ColorPalette
 			{
-				name: "colorPalette"
-				label: ""
-				info:  qsTr("colorPalette: How to color code the levels of the secondary factor.")
+				name:  		"colorPalette"
+				label: 		""
+				infoLabel: 	qsTr("Color palette")
+				info:  		qsTr("How to color code the levels of the secondary factor.")
 			}
 
 			Label{ text: qsTr("Covariate palette"); enabled: covariate.count === 1 }
@@ -110,6 +111,7 @@ Form
 				label:      		""
 				enabled: 			covariate.count === 1
 				indexDefaultValue:  3
+				infoLabel:			qsTr("Covariate palette")
 				info:  				qsTr("covariatePalette: How to color code the covariate. 'Viridis' works good for both discrete and continuous covariates.")
 			}
 		}
@@ -117,14 +119,14 @@ Form
 		CheckBox
 		{
 			name: 					"colorAnyway"
-			label:					qsTr("Apply color palette")
+			label:					qsTr("Apply color palette to primary factor")
 			id: 					colorAnyway
 			enabled: 				secondaryFactor.count === 0
 			checked:				secondaryFactor.count === 0
 			Layout.columnSpan: 		2
 			info:					qsTr(
 										"Applies the color palette to the levels of the primary factor. " +
-										"Otherwise, the plot stays black and white." +
+										"Otherwise, the plot stays black and white.<br>" +
 										"This option is superseeded by a secondary factor; then color coding is according to that."
 									)
 		}
@@ -137,7 +139,7 @@ Form
 			label: 				qsTr("Horizontal plot")
 			Layout.columnSpan:  3
 			info:				qsTr(
-									"Plots the dependent variable axis horizontally, at the bottom of the plot. " +
+									"Plots the dependent variable axis horizontally, at the bottom of the plot.<br>" +
 									"This is where the raincloud plot gets its name from: It will look like the points are raining from the violin and box (cloud)."
 								)
 		}
@@ -147,7 +149,7 @@ Form
 			name:   			"table"
 			label:  			qsTr("Table with statistics")
 			info:				qsTr(
-									"Shows a table under the plot with statistics per cloud, like number of observations or median. " +
+									"Shows a table under the plot with statistics per cloud, like number of observations or median.<br>" +
 									"If you select 'Mean' or 'Interval around mean' (see Advanced Section), they will also be shown here."
 								)
 			CheckBox
@@ -156,7 +158,7 @@ Form
 				label: 			qsTr("Box Statistics")
 				checked: 		true
 				info:			qsTr(
-									"Shows the box statistics in the table: lower whisker, 25th percentile, median, 75th percentile, upper whisker. " +
+									"Shows the box statistics in the table: lower whisker, 25th percentile, median, 75th percentile, upper whisker.<br>" +
 									"It can be helpful to un-check this if you are also working with 'Interval around mean' (see Advanced Section)."
 								)
 			}
@@ -203,7 +205,7 @@ Form
 			text: 		qsTr("Show point")
 			checked: 	true
 			info: 		qsTr(
-							"Whether or not the points of a cloud should be shown. If un-checked, opacity is set to 0. " +
+							"Whether or not the points of a cloud should be shown. If un-checked, opacity is set to 0.<br>" +
 							"If you have many, many points, it can be helpful to hide them."
 						)
 		}
@@ -246,7 +248,15 @@ Form
 				// Placeholder End
 
 				Label		 { text: qsTr("Opacity") 														}
-				PercentField { name: "vioOpacity"; fieldWidth: 40; defaultValue: (showVio.checked) ? 50 : 0 }
+				PercentField
+				{
+					name: "vioOpacity"
+					fieldWidth: 40
+					defaultValue: (showVio.checked) ? 50 : 0
+					infoLabel: qsTr("Opacity")
+					info: qsTr("Opacity of the violin.")
+
+				}
 
 				Label{ text: qsTr("Outline") }
 				DropDown
@@ -308,7 +318,10 @@ Form
 			// Placeholder End
 
 			Label		 { text: qsTr("Opacity") 														}
-			PercentField { name: "boxOpacity"; fieldWidth: 40; defaultValue: (showBox.checked) ? 50 : 0 }
+			PercentField { name: "boxOpacity"; fieldWidth: 40; defaultValue: (showBox.checked) ? 50 : 0
+				infoLabel: qsTr("Opacity")
+					info: qsTr("Opacity of the box.")
+			}
 
 			Label{ text: qsTr("Outline") }
 			DropDown
@@ -692,5 +705,40 @@ Form
 		label: qsTr("myDouble")
 		info: qsTr("Hi Joris, this is not supposed to be in bold font, right?. Because it still refers to the DoubleField.")
 	}
+
+	infoBottom: qsTr(
+
+		"The output is a raincloud plot for each dependent variable. Optionally, there is a table with statistics for each plot.<br><br><br>" +
+
+		"<b>References</b><br><br>" +
+
+		"Allen, M., Poggiali, D., Whitaker, K., Marshall, T. R., van Langen, J., & Kievit, R. A. (2021). " +
+		"Raincloud plots: a multi-platform tool for robust data visualization. [version 2; peer review: 2 approved]. " +
+		"Wellcome Open Res 2021, 4:63. https://doi.org/10.12688/wellcomeopenres.15191.2." +
+
+		"<br><br>" +
+
+		"Aphalo, P. (2024). _ggpp: Grammar Extensions to 'ggplot2'_. R package version 0.5.6, <https://CRAN.R-project.org/package=ggpp>." +
+
+		"<br><br>" +
+
+		 "JASP Team (2024). In particular: Ott, V. L., van den Bergh, D., Boutin, B., Goosen, J., Judd, N., Bartoš, F., & Wagenmakers, E. J." +
+
+		"<br><br>" +
+
+		"Judd, N., van Langen, J., Allen, M., & Kievit, R. A. (2024). _ggrain: A Rainclouds Geom for 'ggplot2'_. R package version 0.0.4, <https://CRAN.R-project.org/package=ggrain>." +
+
+		"<br><br>" +
+
+		"Wickham, H. (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York." +
+
+		"<br><br>" +
+
+		"Wickham, H., François, R., Henry, L., Müller, K., & Vaughan, D. (2023). _dplyr: A Grammar of Data Manipulation_. R package version 1.1.4, <https://CRAN.R-project.org/package=dplyr>." +
+
+		"<br><br>" +
+
+		"Wilke C. & Wiernik, B. (2022). _ggtext: Improved Text Rendering Support for 'ggplot2'_. R package version 0.1.2, <https://wilkelab.org/ggtext/>."
+	)
 
 }  // End Form
