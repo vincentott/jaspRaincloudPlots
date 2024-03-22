@@ -11,9 +11,12 @@ options$dependentVariables <- "MWCount"
 options$primaryFactor <- "TimeOfDay"
 options$secondaryFactor <- "Chronotype"
 options$colorAnyway <- FALSE
-options$subject <- "Subject"
+options$observationId <- "Subject"
 options$mean <- TRUE
 options$meanLines <- TRUE
+options$boxNudge <- 0.15
+options$vioNudge <- 0.25
+options$vioHeight <- 0.5
 options$numberOfClouds <- 4
 options$customSides <- TRUE
 options$customizationTable[[1]]$values <- c(rep("L", 2), rep("R", 2))
@@ -74,10 +77,11 @@ irisLong <- iris.long
 options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "Sepal.Width"
 options$primaryFactor <- "time"
+options$covariate <- "Sepal.Length"
 options$secondaryFactor <- "Species"
 options$colorAnyway <- FALSE
 options$colorPalette <- "ggplot2"
-options$subject <- "id"
+options$observationId <- "id"
 options$numberOfClouds <- 6
 options$customSides <- TRUE
 options$customizationTable[[1]]$values <- c(rep("L", 3), rep("R", 3))
@@ -90,11 +94,11 @@ options$primaryFactor <- "time"
 options$secondaryFactor <- "Species"
 options$colorAnyway <- FALSE
 options$colorPalette <- "ggplot2"
-options$covariate <- "Sepal.Length"
-options$subject <- "id"
+# options$covariate <- "Sepal.Length"
 options$boxOpacity <- 0
 options$boxOutline <- "none"
 options$meanInterval <- TRUE
+options$meanPosition <- "onAxis"
 options$meanIntervalOption <- "ci"
 options$meanCiAssumption <- TRUE
 options$numberOfClouds <- 6
@@ -103,9 +107,9 @@ options$customizationTable[[1]]$values <- c(rep("L", 3), rep("R", 3))
 options$jitter <- TRUE
 options$mean <- TRUE
 options$meanLines <- TRUE
-options$meanLinesOpacity <- 100
+options$meanLinesOpacity <- 0.25
 options$table <- TRUE
-options$vioNudge <- 0.25
+options$vioNudge <- 0.15
 options$vioHeight <- 0.5
 options$boxNudge <- 0.15
 results <- jaspTools::runAnalysis("raincloudPlots", irisLong[-1, ], options)

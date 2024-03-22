@@ -37,7 +37,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
     # Step 1: Read in all variables that are given by JASP; if no input, then nothing is read in
     columnsVector <- c(options$dependentVariables)
-    optionsVector <- c(options$primaryFactor, options$secondaryFactor, options$covariate, options$subject)
+    optionsVector <- c(options$primaryFactor, options$secondaryFactor, options$covariate, options$observationId)
     for (option in optionsVector) {
       if (option != "") columnsVector <- c(columnsVector, option)
     }
@@ -47,7 +47,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     datasetInProgress$primaryFactor   <- .rainDataColumn(datasetInProgress,  options$primaryFactor)
     datasetInProgress$secondaryFactor <- .rainDataColumn(datasetInProgress,  options$secondaryFactor)
     datasetInProgress$covariate       <- .rainDataColumn(datasetInProgress,  options$covariate)
-    datasetInProgress$subject         <- .rainDataColumn(datasetInProgress,  options$subject)
+    datasetInProgress$observationId   <- .rainDataColumn(datasetInProgress,  options$observationId)
 
     # Step 3: Make sure, that factors are factors
     datasetInProgress$primaryFactor   <- as.factor(datasetInProgress$primaryFactor)
@@ -197,7 +197,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     jaspResults[["containerRaincloudPlots"]] <- createJaspContainer(title = gettext("Raincloud Plots"))
     jaspResults[["containerRaincloudPlots"]]$dependOn(
       c(
-        "primaryFactor", "secondaryFactor", "covariate", "subject",  # VariablesForm
+        "primaryFactor", "secondaryFactor", "covariate", "observationId",  # VariablesForm
 
         "colorPalette", "colorAnyway",  # General Settings
         "covariatePalette",
@@ -209,7 +209,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
         "vioOpacity",      "boxOpacity",      "pointOpacity",
         "vioOutline",      "boxOutline",      "jitter",
         "vioOutlineWidth", "boxOutlineWidth",
-        "lineOpacity",
+        "observationIdLineOpacity", "observationIdLineWidth",
 
         "customAxisLimits",     "lowerAxisLimit",  "upperAxisLimit",  # Axes, Legend, Caption, Plot size
         "showCaption",
@@ -286,7 +286,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   )
 
   # Whiskers for boxplots
-  boxDataIndex   <- if (options$subject == "") 2 else 3
+  boxDataIndex   <- if (options$observationId == "") 2 else 3
   boxData        <- ggplot2::ggplot_build(plotInProgress)$data[[boxDataIndex]]
   getWhiskers    <- .rainWhiskers(options, boxData, infoFactorCombinations, boxPosition)
   plotInProgress <- plotInProgress + getWhiskers$lowerWhiskers + getWhiskers$upperWhiskers
@@ -528,7 +528,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 # Call of ggrain:geom_rain() with prior set up of all input arguments
 .rainGeomRain <- function(dataset, options, infoFactorCombinations, vioSides, boxPosition, plotInProgress) {
 
-  # Arguments for the cloud elements: Violin, Box, Point, Subject lines
+  # Arguments for the cloud elements: Violin, Box, Point, observationId lines
   showVioGuide    <- if (options$secondaryFactor == "") TRUE else FALSE
   vioArgs         <- list(alpha = options$vioOpacity, adjust = options$vioSmoothing, lwd = options$vioOutlineWidth)
   vioOutlineColor <- .rainOutlineColor(options, options$vioOutline, infoFactorCombinations)
@@ -541,7 +541,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   showPointGuide <- if (options$covariate == "") FALSE else TRUE
   pointArgs      <- list(alpha = options$pointOpacity, show.legend = showPointGuide, size = options$pointSize)
 
-  lineArgs <- list(alpha = options$lineOpacity, show.legend = FALSE)
+  lineArgs <- list(alpha = options$observationIdLineOpacity, show.legend = FALSE, lwd = options$observationIdLineWidth)
   if (options$secondaryFactor   == "") lineArgs$color <- "black"
 
   # Violin positioning
@@ -576,9 +576,9 @@ raincloudPlots <- function(jaspResults, dataset, options) {
 
   # Cov and id
   covArg <- if (options$covariate == "")                                 NULL else "covariate"  # Must be string
-  idArg  <- if (options$subject   == "" || options$primaryFactor == "")  NULL else "subject"
-            # primaryFactor condition necessary because if user input primaryFactor, then adds Subject input,
-            # and then removes primaryFactor again, JASP/GUI/qml will not remove Subject input
+  idArg  <- if (options$observationId   == "" || options$primaryFactor == "")  NULL else "observationId"
+            # primaryFactor condition necessary because if user input primaryFactor, then adds observationId input,
+            # and then removes primaryFactor again, JASP/GUI/qml will not remove observationId input
 
   # Call geom_rain()
   output <- ggrain::geom_rain(
@@ -867,13 +867,13 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
   combinations$primaryFactor <- tidyLevels
 
-  boxDataIndex <- if (options$subject == "") 2 else 3
+  boxDataIndex <- if (options$observationId == "") 2 else 3
   boxData <- ggplot2::ggplot_build(targetPlotObject)$data[[boxDataIndex]]
 
   tableStatistics <- cbind(combinations, boxData)
 
   if (options$mean) {
-    meanDataIndex <- if (options$subject == "") 6 else 7
+    meanDataIndex <- if (options$observationId == "") 6 else 7
     tableStatistics$mean <- ggplot2::ggplot_build(targetPlotObject)$data[[meanDataIndex]]$y_orig
   }
   if (options$meanInterval || options$meanIntervalCustom) {

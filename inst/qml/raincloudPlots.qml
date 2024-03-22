@@ -67,9 +67,9 @@ Form
 
 		AssignedVariablesList
 		{
-			name: 					"subject"
-			title:					qsTr("Subject")
-			id: 					subject
+			name: 					"observationId"
+			title:					qsTr("ID")
+			id: 					observationId
 			suggestedColumns: 		["nominal", "ordinal", "scale"]
 			singleVariable: 		true
 			enabled:				primaryFactor.count === 1
@@ -112,7 +112,7 @@ Form
 				enabled: 			covariate.count === 1
 				indexDefaultValue:  3
 				infoLabel:			qsTr("Covariate palette")
-				info:  				qsTr("covariatePalette: How to color code the covariate. 'Viridis' works good for both discrete and continuous covariates.")
+				info:  				qsTr("How to color code the covariate. 'Viridis' works good for both discrete and continuous covariates.")
 			}
 		}
 
@@ -206,7 +206,54 @@ Form
 			checked: 	true
 			info: 		qsTr(
 							"Whether or not the points of a cloud should be shown. If un-checked, opacity is set to 0.<br>" +
-							"If you have many, many points, it can be helpful to hide them."
+							"If you have many, many points, it can be helpful to hide them." +
+
+							"<br><br>" +
+
+							"<h3>Element Settings</h3>" +  // All of this here, because infoLabel{} for DoubleField{} does not work.
+
+							"<h4>Nudge</h4>" +
+							"The nudge for violin, box, and point determines how far the elements are nudged from the center (axis tick).<br>" +
+							"By default, the box is in the center (nudge = 0) and the violin is nudged to the right. " +
+							"The points are nudged to the left of the box.<br>" +
+							"With a custom orientation (see Advanced section), the points get centered (nudge fixed to 0). Violin and box are nudged depending on orientation: left or right." +
+
+							"<h4>Height, Width, and Spread</h4>" +
+							"These settings determine the respective properties of the elements:<br><br>" +
+							"How high should the violin peak? (Does not change the proportions of the probability density.)<br>" +
+							"With a custom orientation to the left (see Advanced Section), it can be " +
+							"helpful to decrease the height if the violin overlaps with axis ticks.<br><br>" +
+							"How wide should the box be?<br><br>" +
+							"How wide should the points spread? I.e., how jittered should they be along the x-axis (y-axis if horizontal plot?.<br>" +
+							"Note, that this still correctly shows the values of the points on the dependent variable axis.<br>" +
+							"(If you would also like y-jitter see the 'Jitter' option for points.)" +
+
+							"<h4>Box Padding</h4>" +
+							"With a secondary factor, there will be a box for each factor level. With the padding, you can change the spacing between theses boxes.<br>" +
+							"Increasing the padding will - visually - decrease the box width. If you want to keep box width constant, also increase the box width." +
+
+							"<h4>Point Size</h4>" +
+							"We recommend a greater size, the fewer points you have." +
+
+							"<h4>Opacity</h4>" +
+							"Increase this to _decrease_ the transparency of the respective element." +
+
+							"<h4>Outline and Outline Width</h4>" +
+							"Would you like the outline to match the 'Color palette', be 'black', or have 'none' at all?<br>" +
+							"The width determines how thick the outline is." +
+
+							"<h4>Violin Smoothing</h4>" +
+							"This percentage determines the smoothness of the probability density.<br>" +
+							"The lower, the stronger it is influenced by the presence/absence of individual points." +
+
+							"<h4>Point Jitter</h4>" +
+							"Use this with care!<br>" +
+							"It slightly jitters the points along the dependent variable axis. This means that the position of the points no longer matches the values of the observations.<br>" +
+							"If you want to have less overlap between the points while keeping an accurate visualization, increases the point spread.<br>" +
+							"Using point jitter can be useful in some cases. For example, if you are working with likert data." +
+
+							"<h4>ID Lines Width</h4>" +
+							"Determines how thick the lines are."
 						)
 		}
 
@@ -223,9 +270,6 @@ Form
 					name:				"vioNudge"
 					defaultValue:		(!customSides.checked) ? 0.09 : 0.24
 					negativeValues:		true
-					info:				qsTr(
-											"vioNudge: How far the violin is nudged from the center (axis tick)."
-										)
 				}
 
 				Label{ text: qsTr("Height") }
@@ -233,11 +277,6 @@ Form
 				{
 					name: 				"vioHeight"
 					defaultValue: 		0.7
-					info:				qsTr(
-											"vioHeight: The height of the violin. " +
-											"With a custom orientation to the left (see Advanced Section), it can be " +
-											"helpful to decrease the height if the violin overlaps with axis ticks."
-										)
 				}
 
 				// Placeholder Start
@@ -253,8 +292,6 @@ Form
 					name: "vioOpacity"
 					fieldWidth: 40
 					defaultValue: (showVio.checked) ? 50 : 0
-					infoLabel: qsTr("Opacity")
-					info: qsTr("Opacity of the violin.")
 
 				}
 
@@ -319,8 +356,6 @@ Form
 
 			Label		 { text: qsTr("Opacity") 														}
 			PercentField { name: "boxOpacity"; fieldWidth: 40; defaultValue: (showBox.checked) ? 50 : 0
-				infoLabel: qsTr("Opacity")
-					info: qsTr("Opacity of the box.")
 			}
 
 			Label{ text: qsTr("Outline") }
@@ -385,20 +420,25 @@ Form
 			// Placeholder End
 
 			Label	 { text: qsTr("Jitter")		  	   }
-			CheckBox { name: "jitter"; 		id: jitter; info: qsTr(" jitter: Lorem ispsum.") }
+			CheckBox { name: "jitter"; 		id: jitter }
 		}  // End group Point
 
 		Label{ text: ""; Layout.columnSpan: 3 }  // Placeholder
 
-		PercentField
+		Group
 		{
-			name:					"lineOpacity"
-			label:					qsTr("Subject lines opacity")
-			enabled:				subject.count === 1
-			fieldWidth: 			40
-			defaultValue:			25
-			Layout.columnSpan: 		2
-			info:					qsTr("The opacity of the subject lines. Hi Joris, this should only be shown if the PercentField is enabled, right? But its always shown!")
+			title: qsTr("ID lines")
+			enabled: observationId.count === 1
+			columns: 2
+
+			PercentField
+			{
+				name:					"observationIdLineOpacity"
+				label:					qsTr("Opacity")
+				fieldWidth: 			40
+				defaultValue:			25
+			}
+		DoubleField{ name: "observationIdLineWidth";   label: qsTr("Width");   defaultValue: 1 }
 		}
 	}  // End section Cloud Elements
 
@@ -406,7 +446,7 @@ Form
 
 	Section
 	{
-		title:   qsTr("Axes, Legend, Caption, Plot Size")
+		title:   qsTr("Axes, Caption, and Plot Size")
 		columns: 3
 
 		CheckBox
@@ -415,6 +455,15 @@ Form
 			label: 				qsTr("Custom limits for dependent variable axis:")
 			Layout.columnSpan:  2
 			childrenOnSameRow:  true
+			info:				qsTr(
+									"Use this with care!<br>" +
+									"If your dataset has observations that lie outside of the specified, the plot will be truncated and it will not show these observations.<br>" +
+									"The limits you specify may only be applied approximately. " +
+									"For further fine-tuning of the axis, click the title of the plot " +
+									"where it says the name of dependent variable.<br>" +
+									"Then select 'Edit Image' in the drop down menu and " +
+									"then go to the headers 'x-axis' or 'y-axis'."
+								)
 			
 			IntegerField{ name: "lowerAxisLimit"; label: qsTr("from"); negativeValues: true; defaultValue: 0	}
 			IntegerField{ name: "upperAxisLimit"; label: qsTr("to");   negativeValues: true; defaultValue: 1000 }
@@ -430,7 +479,21 @@ Form
 						)
 		}
 
-		CheckBox{ name: "showCaption"; id: showCaption; label: qsTr("Show caption"); checked: true; Layout.columnSpan: 3 }
+		CheckBox{
+			name: "showCaption"
+			id: showCaption
+			label: qsTr("Show caption")
+			checked: true
+			Layout.columnSpan: 3
+			info:		qsTr(
+							"The caption provides important information about the plot such as warnings, if there are any.<br>" +
+							"We strongly recommend to leave this checkbox checked and to only un-check it if you are otherwise happy with the plot and want to export it." +
+
+							"<h3>Plot Size: Width and Height</h3>" +  // Here and not below to combine the documentation for widthPlot and heightPlot
+							"This also includes the legend (if there is color coding) and the caption.<br>" +
+							"While you can also change the size of a JASP plot with your mouse, the precise specification of width and height allows you to exactly reproduce a plot."
+						)
+		}
 
 		Group
 		{
@@ -454,7 +517,7 @@ Form
 			}
 			IntegerField{ name: "heightPlot"; label: qsTr("Height"); defaultValue: (showCaption.checked) ? 550 : 450 }
 		}
-	}  // End section Axes, Legend, Caption, Plot Size
+	}  // End section Axes, Caption, and Plot Size
 
 
 
@@ -469,6 +532,22 @@ Form
 			id:   				mean
 			label:				qsTr("Mean")
 			Layout.columnSpan:  2
+			info:				qsTr(
+									"Whether to also show a mean for each cloud." +
+
+									"<h4>Position</h4>" +
+
+									"Use a 'Custom' position to have the mean placed inside of the box - even if you do not show the box.<br>" +
+									"In fact, the mean nudge and distance fields are synchronized with the box nudge and box fields, respectively.<br>" +
+									"Use the 'On axis ticks' position to have all means for each primary factor level on top of each other.<br>" +
+									"This can be useful if you want to show the change of secondary factor levels (e.g. groups) across the primary factor levels (e.g. time)." +
+
+									"<h4>Size</h4>" +
+									"Try different values to make your plot especially pretty." +
+
+									"<h4>Mean Lines: Width</h4>" +
+									"See outline width of box and violin as well as ID lines width."
+			)
 
 			RadioButtonGroup
 			{
@@ -517,8 +596,8 @@ Form
 				enabled: 			mean.checked
 				childrenOnSameRow:  true
 
-				DoubleField  { name: "meanLinesWidth";   label: qsTr("Width");   defaultValue: 1 				  }
 				PercentField { name: "meanLinesOpacity"; label: qsTr("Opacity"); defaultValue: 50; fieldWidth: 40 }
+				DoubleField  { name: "meanLinesWidth";   label: qsTr("Width");   defaultValue: 1 				  }
 			}
 		}  // End CheckBox Means
 
@@ -529,6 +608,27 @@ Form
 			label:  			qsTr("Interval around mean")
 			enabled:			mean.checked && !meanIntervalCustom.checked
 			Layout.columnSpan: 	3
+			info:				qsTr(
+									"Whether to also show an interval around the mean.<br>" +
+									"This hides the box, but if you really want, you can go up and check 'Show box' again." +
+
+									"<br><br>" +
+
+									"You can choose between ±1 standard deviation or a confidence interval.<br>" +
+									"The confidence interval is based on the assumption that all groups (i.e. all combinations of primary and secondary factor), are independent of each other." +
+
+									"<br>" +
+
+									"<h4>Method</h4>" +
+									"How should the confidence interval be computed?<br>" +
+
+									"'Normal model' uses a standard error defined as: " +
+									"_SD_<sub>group</sub> / square root of _N_<sub>group</sub><br>" +
+
+									"'T model' yields results identical to a one-sample t-test.<br>" +
+
+									"For 'Bootstrap' you can further specify the number of samples and set a seed for reproducible results."
+			)
 
 			RadioButtonGroup
 			{
@@ -605,23 +705,22 @@ Form
 
 			}  // End RadioButtonGroup meanIntervalOption
 		}  // End CheckBox meanInterval
-
+		
 		DoubleField
 		{
-			label: 				qsTr("Interval outline width")
+			label: 				qsTr("Interval line width")
 			isBound:			false  // Is not passed on to options, does not need a name
 			id:					intervalOutlineWidth
 			defaultValue: 		boxOutlineWidth.value
 			onValueChanged: 	boxOutlineWidth.value = intervalOutlineWidth.value
 			enabled: 			meanInterval.checked || meanIntervalCustom.checked
 			Layout.columnSpan:  2
-			info:				qstR(
-									"intervalOutlineWidth: Hi Joris, I think this does not work."
-								)
+			infoLabel:  		qsTr("Interval line width")
+			info: 				qsTr("Determines the thickness of the interval lines.")
 		}
 		HelpButton
 		{
-			toolTip:	qsTr("With of interval whiskers depends on mean distance.")
+			toolTip:	qsTr("Width of interval whiskers depends on mean distance.")
 		}
 
 
@@ -637,6 +736,36 @@ Form
 				label: qsTr("How many clouds are currently shown?")
 				min: 1
 				defaultValue: 1
+				info:				qsTr(
+										"To apply custom cloud orientation or custom mean intervals, you first must specify the number of clouds that are currently shown in the plot.<br>" +
+										"If the number you entered does not match the number of clouds in the plot, the plot caption will show a warning and you can correct your entry.<br>" +
+										"The number you specify determines the number of rows in the table." +
+
+										"<br><br>" +
+
+										"In the table, you can then specify the custom orientation ('L' vs. 'R') for each cloud as well as custom lower and upper interval limits for each mean.<br>" +
+										"Make sure to also check the corresponding checkboxes 'Apply custom orientation' or 'Apply custom mean interval limits'.<br>" +
+										"Otherwise, your input into the table will not be applied." +
+
+										"<br><br>" +
+
+										"The order in which the rows of the table are mapped to the clouds in the plot is as follows:<br>" +
+										"Suppose, there are three times of measurement (primary factor): pre, post, and follow-up.<br>" +
+										"Further, there are two species (secondary factor): alpha and beta.<br>" +
+										"This means that there are 6 clouds, in the following order:<br>" +
+										"pre-alpha<br>pre-beta<br>" +
+										"post-alpha<br>post-beta<br>" +
+										"follow-up-alpha<br>follow-up-beta<br><br>" +
+										"In this example you could now specify the odd rows as 'L' and the even rows as 'R'.<br>" +
+										"That way, at each time point, the left cloud would be alpha and the right cloud would be beta." +
+
+										"<br>" +
+
+										"If you have a 2x2 design (e.g. no follow-up in as primary factor), then a useful custom orientation could be LLRR.<br>" +
+										"That way, both the alpha and the beta cloud at time point pre would be left and at time point they would be right.<br>" +
+										"Combine this with ID input to connect the individual observations over time.<br>" +
+										"They will then run between the two clouds on the left to the two clouds on the right."
+				)
 			}
 
 			CheckBox{ id: customSides; name: "customSides"; label: qsTr("Apply custom orientation") }
@@ -699,18 +828,34 @@ Form
 
 	}  // End section Advanced
 
-	DoubleField
-	{
-		name: "myDouble"
-		label: qsTr("myDouble")
-		info: qsTr("Hi Joris, this is not supposed to be in bold font, right?. Because it still refers to the DoubleField.")
-	}
-
 	infoBottom: qsTr(
 
 		"The output is a raincloud plot for each dependent variable. Optionally, there is a table with statistics for each plot.<br><br><br>" +
 
-		"<b>References</b><br><br>" +
+		"<h1>How can I re-use my elaborate, customized plot settings for a different dataset?</h1><br>" +
+
+		"Suppose that you have two datasets A and B (in separate JASP files) for which you want to create the same raincloud plot.<br>" +
+		"Further, suppose that you already have a raincloud plot for dataset A and now you want the same one for dataset B.<br>" +
+		"There are two ways in which you can achieve this without having to specify the custom plot settings all over again.<br><br>" +
+
+		"1) If dataset B only has a different dependent variable but is otherwise identical,<br>" +
+		"then you can copy and paste this variable from the JASP file for dataset B into the JASP file for dataset A (see Edit Data header menu in JASP).<br>" +
+		"Next, select the newly created dependent variable in dataset A as an additional dependent variable for the raincloud plot." +
+
+		"<br><br>" +
+
+		"2) If dataset B is rather different from dataset A<br>(e.g. primary factor has different name and additional levels or there are fewer observations with different IDs),<br>" +
+		"then you have to take a different approach.<br>" +
+		"First, make a copy of the JASP file for dataset A (called target file in the following).<br>" +
+		"Second, open this target file. It should show the raincloud plot as specified for dataset A.<br>" +
+		"Third, go to the Edit Data header menu and _delete the entire dataset A_.<br>" +
+		"Fourth, go to the JASP file for dataset B and copy-paste its data to the target file.<br>" +
+		"Fifth, choose the dependent variables, primary and secondary factor, covariate, and ID for the raincloud plot.<br>" +
+		"Importantly, though, all the other specifications like point spread or custom interval limits should still be present from the raincloud plot for dataset A." +
+
+		"<br><br><br>" +
+
+		"<h1>References</h1><br>" +
 
 		"Allen, M., Poggiali, D., Whitaker, K., Marshall, T. R., van Langen, J., & Kievit, R. A. (2021). " +
 		"Raincloud plots: a multi-platform tool for robust data visualization. [version 2; peer review: 2 approved]. " +
@@ -722,7 +867,7 @@ Form
 
 		"<br><br>" +
 
-		 "JASP Team (2024). In particular: Ott, V. L., van den Bergh, D., Boutin, B., Goosen, J., Judd, N., Bartoš, F., & Wagenmakers, E. J." +
+		 "JASP Team (2024). For this module especially: Ott, V. L., van den Bergh, D., Boutin, B., Goosen, J., Judd, N., Bartoš, F., & Wagenmakers, E. J." +
 
 		"<br><br>" +
 
