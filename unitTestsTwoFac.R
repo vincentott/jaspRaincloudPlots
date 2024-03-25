@@ -80,8 +80,10 @@ options <- jaspTools::analysisOptions("defaultsUnitTests.jasp")
 options$dependentVariables <- "bill_length_mm"
 options$primaryFactor <- "island"
 options$secondaryFactor <- "species"
+options$colorPalette <- "colorblind2"
 options$colorAnyway <- FALSE
 options$covariate <- "sex"
+options$covariatePalette <- "ggplot2"
 options$vioOpacity <- 0
 options$vioOutline <- "none"
 options$boxOpacity <- 0

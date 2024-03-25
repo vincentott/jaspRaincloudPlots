@@ -615,7 +615,10 @@ Form
 									"<br><br>" +
 
 									"You can choose between ±1 standard deviation or a confidence interval.<br>" +
-									"The confidence interval is based on the assumption that all groups (i.e. all combinations of primary and secondary factor), are independent of each other." +
+									"The confidence interval is computed independently for each group. For this, the corresponding checkbox needs to be checked, to acknowledge that.<br>" +
+									"This computation means that any factors are treated as between-factors.<br>" +
+									"If your data does not meet this assumption, but you still want to show intervals around the means, you can specify custom intervals (see below).<br>" +
+									"One example where this assumption does not hold is with ID input. This is why ID input disables the computation of confidence intervals." +
 
 									"<br>" +
 
@@ -641,11 +644,12 @@ Form
 				{
 					label: qsTr("Confidence interval")
 					value: "ci"
+					enabled: observationId.count === 0
 
 					CheckBox
 					{
 						name: "meanCiAssumption"
-						label: qsTr("Assume that all groups are independent of each other.")
+						label: qsTr("Compute confidence interval independently for each group.")
 
 						Group    // Start group ci settings
 						{
@@ -764,7 +768,14 @@ Form
 										"If you have a 2x2 design (e.g. no follow-up in as primary factor), then a useful custom orientation could be LLRR.<br>" +
 										"That way, both the alpha and the beta cloud at time point pre would be left and at time point they would be right.<br>" +
 										"Combine this with ID input to connect the individual observations over time.<br>" +
-										"They will then run between the two clouds on the left to the two clouds on the right."
+										"They will then run between the two clouds on the left to the two clouds on the right." +
+
+										"<br><br>" +
+
+										"Any custom orientation or mean intervals will be applied to the plot of every dependent variable.<br>" +
+										"How can you specify different custom mean intervals for two dependent variables?<br>" +
+										"For this, you can duplicate the analysis (see symbol: white plus on green background),<br>" +
+										"only select one dependent variable in each version, and specify the custom intervals separately."
 				)
 			}
 

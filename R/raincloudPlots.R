@@ -138,7 +138,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
       output$upperBound[cloudNumber] <- xBar + sd
       output$successfulComputation <- TRUE
 
-    } else if (options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+    } else if (options$observationId == "" && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
       # The following is adapted from .descriptivesMeanCI() in jaspDescriptives
 
       if (options$meanCiMethod == "normalModel") {
@@ -165,7 +165,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
           bootData <- sample(currentCell, size = n, replace = TRUE)
           means[i] <- mean(bootData)
         }
-        percentiles <- (1 + c(-ciWidth, options$meanCiWidth)) / 2
+        percentiles <- (1 + c(-options$meanCiWidth, options$meanCiWidth)) / 2
         CIs <- quantile(means, probs = percentiles)
         output$lowerBound[cloudNumber] <- CIs[1]
         output$upperBound[cloudNumber] <- CIs[2]
@@ -708,11 +708,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   } else if (options$meanInterval) {
     if (options$meanIntervalOption == "sd") {
       meanInterval <- gettextf("Interval around mean represents ± 1 standard deviation.")
-    } else if (options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+    } else if (options$observationId == "" && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
       meanInterval <- paste0(
         "Interval around mean represents ",
         options$meanCiWidth * 100,
-        "% confidence interval;<br>this assumes that all groups are independent of each other.")
+        "% confidence interval;<br>confidence intervals were computed independently for each group.")
     } else {
       meanInterval <- NULL
     }
@@ -813,7 +813,7 @@ raincloudPlots <- function(jaspResults, dataset, options) {
     tableInProgress$addColumnInfo(name = "ymax",   title = "Upper Whisker",   type = "number", format = "dp:2")
   }
 
-  meanInterval <- options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption
+  meanInterval <- options$observationId == "" && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption
 
   if (options$mean && (meanInterval || options$meanIntervalCustom)) {
       tableInProgress$addColumnInfo(
@@ -894,11 +894,11 @@ raincloudPlots <- function(jaspResults, dataset, options) {
   }
   meanInterval <- if (options$meanIntervalCustom) {
     gettextf(" Interval around mean is custom.")
-  } else if (options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
+  } else if (options$observationId == "" && options$meanInterval && options$meanIntervalOption == "ci" && options$meanCiAssumption) {
     paste0(
       " Interval around mean represents ",
       options$meanCiWidth * 100,
-      "% confidence interval; this assumes that all groups are independent of each other.")
+      "% confidence interval; confidence intervals were computed independently for each group.")
   } else {
     NULL
   }
